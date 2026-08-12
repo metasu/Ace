@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宝塔 + Docker + NPM(Host) + 翻墙脚本 完整部署教程</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #8b9bb4;
+      --accent: #3b82f6;
+      --accent2: #8b5cf6;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --code-bg: #0d1117;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(160deg, #0f1419 0%, #1a1030 50%, #0f1419 100%);
+      color: var(--text);
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    header {
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      border-radius: 16px;
+      padding: 40px 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 50px rgba(37, 99, 235, 0.25);
+    }
+    header h1 { font-size: 1.85rem; margin-bottom: 10px; }
+    header p { opacity: 0.92; font-size: 1.05rem; }
+    .meta {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px;
+    }
+    .badge {
+      background: rgba(255,255,255,0.18);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    nav.toc h2 { font-size: 1.1rem; margin-bottom: 12px; color: var(--accent); }
+    nav.toc ol { padding-left: 22px; }
+    nav.toc a { color: var(--text); text-decoration: none; }
+    nav.toc a:hover { color: var(--accent); }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 26px;
+      margin-bottom: 22px;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      color: #93c5fd;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+    section h3 {
+      font-size: 1.1rem;
+      color: #c4b5fd;
+      margin: 22px 0 10px;
+    }
+    section h4 { font-size: 1rem; color: var(--yellow); margin: 16px 0 8px; }
+    p, li { color: var(--text); }
+    ul, ol { padding-left: 22px; margin: 8px 0 12px; }
+    li { margin: 4px 0; }
+    .muted { color: var(--muted); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #243044; color: #93c5fd; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 12px 0 16px;
+      position: relative;
+    }
+    pre code {
+      background: none;
+      color: #e6edf3;
+      padding: 0;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      white-space: pre;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: #2563eb; }
+    .copy-btn.ok { background: var(--green); }
+    .card {
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 14px 0;
+      border-left: 4px solid var(--accent);
+      background: rgba(59, 130, 246, 0.08);
+    }
+    .card.warn {
+      border-left-color: var(--yellow);
+      background: rgba(234, 179, 8, 0.1);
+    }
+    .card.danger {
+      border-left-color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .card.ok {
+      border-left-color: var(--green);
+      background: rgba(34, 197, 94, 0.1);
+    }
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .flow-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+    }
+    .flow-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 20px;
+    }
+    .port-ok { color: var(--green); font-weight: 600; }
+    .port-busy { color: var(--red); font-weight: 600; }
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.4rem; }
+      section { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>宝塔 + Docker + NPM(Host) + 翻墙脚本</h1>
+      <p>新机器完整重装教程（含卸载脚本系统 Nginx、NPM 证书软链、端口/数据库共存）</p>
+      <div class="meta">
+        <span class="badge">Ubuntu 推荐</span>
+        <span class="badge">Docker Compose V2</span>
+        <span class="badge">NPM Host 网络</span>
+        <span class="badge">sing-box / Reality + AnyTLS</span>
+        <span class="badge">2026 实操整理</span>
+      </div>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#arch">架构与工具清单</a></li>
+        <li><a href="#ports">端口规划</a></li>
+        <li><a href="#prep">准备与前提</a></li>
+        <li><a href="#bt">安装宝塔面板</a></li>
+        <li><a href="#bt-port">宝塔 Nginx 端口让出 80/443</a></li>
+        <li><a href="#docker">安装 Docker + Compose V2</a></li>
+        <li><a href="#npm">部署 NPM（Host 网络）</a></li>
+        <li><a href="#cert">用 NPM 申请证书并软链</a></li>
+        <li><a href="#proxy">安装翻墙脚本（install.sh）</a></li>
+        <li><a href="#rm-nginx">卸载脚本安装的系统 Nginx</a></li>
+        <li><a href="#verify">验收清单</a></li>
+        <li><a href="#ops">日常运维</a></li>
+        <li><a href="#faq">常见问题</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1 -->
+    <section id="arch">
+      <h2>1. 架构与工具清单</h2>
+      <p>本方案在<strong>同一台机器</strong>上同时运行：网站/面板（宝塔）、反向代理与证书（NPM）、代理核心（sing-box 等）。各组件职责分离，避免抢端口。</p>
+
+      <h3>1.1 最终架构</h3>
+      <div class="flow">
+        <div class="flow-item"><div class="flow-num">1</div><div><strong>宝塔面板</strong>：站点管理、PHP/MySQL 等；Nginx 监听 <code>10080/10443</code>（让出 80/443）；MySQL 默认 <code>3306</code></div></div>
+        <div class="flow-item"><div class="flow-num">2</div><div><strong>Docker Engine + Compose V2</strong>：运行 NPM 与 MariaDB</div></div>
+        <div class="flow-item"><div class="flow-num">3</div><div><strong>Nginx Proxy Manager（Host 网络）</strong>：占 <code>80/443/81</code>；申请/续期 Let's Encrypt；可选反代</div></div>
+        <div class="flow-item"><div class="flow-num">4</div><div><strong>v2ray-agent 脚本（install.sh）</strong>：安装 sing-box / Xray 等；协议示例：Reality + AnyTLS</div></div>
+        <div class="flow-item"><div class="flow-num">5</div><div><strong>证书链路</strong>：NPM 申请 → 软链到 <code>/etc/v2ray-agent/tls/</code> → 脚本/核心读取；续期靠 NPM</div></div>
+      </div>
+
+      <h3>1.2 使用的工具与文件</h3>
+      <table>
+        <thead>
+          <tr><th>类别</th><th>工具 / 路径</th><th>作用</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>面板</td>
+            <td>宝塔 BT-Panel</td>
+            <td>Web 面板、站点；默认面板端口常见 <code>9999</code></td>
+          </tr>
+          <tr>
+            <td>宝塔数据库</td>
+            <td>宝塔 MySQL <code>/www/server/mysql</code></td>
+            <td>默认端口 <code>3306</code>；与 NPM 库分离</td>
+          </tr>
+          <tr>
+            <td>Web 服务</td>
+            <td>宝塔 Nginx <code>/www/server/nginx</code></td>
+            <td>站点 HTTP/HTTPS；改端口后 <code>10080/10443</code></td>
+          </tr>
+          <tr>
+            <td>容器</td>
+            <td>Docker CE + Compose Plugin V2</td>
+            <td><code>docker</code> / <code>docker compose</code></td>
+          </tr>
+          <tr>
+            <td>反代与证书</td>
+            <td>Nginx Proxy Manager + MariaDB</td>
+            <td>镜像 <code>jc21/nginx-proxy-manager</code>、<code>mariadb:10.11</code>；库端口默认 <code>13306</code></td>
+          </tr>
+          <tr>
+            <td>NPM 部署脚本</td>
+            <td><code>/www/notes/npm-host.sh</code> → 安装到 <code>/opt/npm</code></td>
+            <td>Host 网络一键部署；管理面板 <code>:81</code></td>
+          </tr>
+          <tr>
+            <td>Docker 教程</td>
+            <td><code>/www/notes/Ubuntu系统安装DockerCompose V2的教程-2025.md</code></td>
+            <td>官方源安装 Docker/Compose</td>
+          </tr>
+          <tr>
+            <td>宝塔端口教程</td>
+            <td><code>/www/notes/宝塔Nginx修改默认端口80-443到10080-10443.md</code></td>
+            <td>Nginx + 面板 Python 同步改端口</td>
+          </tr>
+          <tr>
+            <td>翻墙脚本</td>
+            <td><code>/www/notes/install.sh</code>（v2ray-agent 类）</td>
+            <td>安装 sing-box/Xray、协议、账号</td>
+          </tr>
+          <tr>
+            <td>证书目录</td>
+            <td><code>/opt/npm/npm_letsencrypt/live/npm-*</code></td>
+            <td>NPM Let's Encrypt 实际文件</td>
+          </tr>
+          <tr>
+            <td>脚本证书目录</td>
+            <td><code>/etc/v2ray-agent/tls/域名.crt|.key</code></td>
+            <td>软链到 NPM live，供核心使用</td>
+          </tr>
+          <tr>
+            <td>代理核心</td>
+            <td>sing-box（示例）</td>
+            <td>Reality / AnyTLS 等；监听自定义高位端口</td>
+          </tr>
+          <tr>
+            <td>防火墙</td>
+            <td>UFW / 云安全组</td>
+            <td>放行 80/443/81/10080/10443/代理端口等</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card warn">
+        <strong>重要原则</strong>
+        <ul>
+          <li><strong>80/443</strong> 给 NPM（Host），不要给宝塔、不要给脚本系统 Nginx。</li>
+          <li>翻墙核心用<strong>自定义端口</strong>（如 8443、2053），避开 80/443/81。</li>
+          <li>数据库：宝塔 MySQL <code>3306</code> 与 NPM MariaDB <code>13306</code> <strong>默认不冲突</strong>；勿把 NPM 改成 3306。</li>
+          <li>证书优先用 NPM 申请 + 软链；脚本侧选「不重新安装证书」。</li>
+          <li>脚本可能 apt 安装系统 Nginx —— 装完后<strong>卸载系统包</strong>，勿动宝塔 Nginx 与 NPM。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="ports">
+      <h2>2. 端口规划</h2>
+      <table>
+        <thead>
+          <tr><th>端口</th><th>占用方</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="port-busy">80</td><td>NPM (Host)</td><td>HTTP / ACME 等</td></tr>
+          <tr><td class="port-busy">443</td><td>NPM (Host)</td><td>HTTPS 入口</td></tr>
+          <tr><td class="port-busy">81</td><td>NPM 管理面板</td><td>默认账号见下文</td></tr>
+          <tr><td class="port-ok">10080</td><td>宝塔 Nginx HTTP</td><td>由 80 改来</td></tr>
+          <tr><td class="port-ok">10443</td><td>宝塔 Nginx HTTPS</td><td>由 443 改来（有 SSL 站点时）</td></tr>
+          <tr><td class="port-ok">9999</td><td>宝塔面板（示例）</td><td>以实际面板端口为准</td></tr>
+          <tr><td class="port-ok">3306</td><td>宝塔 MySQL</td><td><code>/www/server/mysql</code> 默认端口</td></tr>
+          <tr><td class="port-ok">13306</td><td>NPM MariaDB (Host)</td><td><code>npm-host.sh</code> 默认 <code>MYSQL_PORT=13306</code>，与 3306 并存</td></tr>
+          <tr><td class="port-ok">自定义</td><td>sing-box Reality / AnyTLS</td><td><strong>禁止</strong> 80/443/81</td></tr>
+          <tr><td class="port-ok">888</td><td>宝塔 phpMyAdmin</td><td>无需修改</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.1 数据库端口是否冲突？</h3>
+      <div class="card ok">
+        <strong>结论：默认不冲突，可同时运行。</strong>
+      </div>
+      <table>
+        <thead>
+          <tr><th>组件</th><th>进程 / 路径</th><th>端口</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>宝塔 MySQL</td>
+            <td><code>mysqld</code> → <code>/www/server/mysql</code></td>
+            <td><code>3306</code></td>
+            <td>宝塔站点、面板业务库</td>
+          </tr>
+          <tr>
+            <td>NPM MariaDB</td>
+            <td>容器 Host 网络 → <code>mariadbd --port=13306</code></td>
+            <td><code>13306</code></td>
+            <td>仅 NPM 自身数据（代理主机、证书元数据等）</td>
+          </tr>
+        </tbody>
+      </table>
+      <ul>
+        <li><code>npm-host.sh</code> 在 Host 模式下故意使用 <code>13306</code>，避免与本机常见 <code>3306</code> 抢端口。</li>
+        <li>两套库<strong>数据互不相通</strong>：宝塔库管网站，NPM 库只管面板自己。</li>
+        <li>宝塔连接数据库仍用 <code>3306</code>；不要把 NPM 的 <code>MYSQL_PORT</code> 改成 <code>3306</code>，否则会冲突。</li>
+        <li>NPM 的 13306 可能监听 <code>0.0.0.0</code>：防火墙<strong>不要对公网开放 13306</strong>（仅本机访问即可）。</li>
+        <li>检查命令：</li>
+      </ul>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>ss -tlnp | grep -E ':(3306|13306)\b'
+# 预期示例：
+# 3306  → mysqld（宝塔）
+# 13306 → mariadbd（NPM）
+
+grep MYSQL_PORT /opt/npm/.env</code></pre>
+    </section>
+
+    <!-- 3 -->
+    <section id="prep">
+      <h2>3. 准备与前提</h2>
+      <ul>
+        <li>系统：Ubuntu 20.04/22.04/24.04 等（Debian 亦可，命令略有差异）</li>
+        <li>权限：root（或全程 <code>sudo</code>）</li>
+        <li>域名：已解析到服务器公网 IP（示例：<code>fr.plai.top</code>）</li>
+        <li>若用 DNS 申请证书：Cloudflare API Token 等（NPM 内配置）</li>
+        <li>建议磁盘 &gt; 10GB 可用</li>
+      </ul>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code># 基础检查
+cat /etc/os-release
+id -u   # 0 为 root
+df -h /
+ss -tlnp | head</code></pre>
+      <p class="muted">建议将本仓库 notes 中的脚本拷到新机器，例如：</p>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>mkdir -p /www/notes
+# 上传或 scp：
+#   install.sh
+#   npm-host.sh
+#   Ubuntu系统安装DockerCompose V2的教程-2025.md
+#   宝塔Nginx修改默认端口80-443到10080-10443.md
+#   本 HTML 教程</code></pre>
+    </section>
+
+    <!-- 4 -->
+    <section id="bt">
+      <h2>4. 安装宝塔面板</h2>
+      <p>按宝塔官方一键脚本安装（版本以官网为准）。安装完成后记录：面板地址、用户名、密码。</p>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code># 示例（以宝塔官网当前 Ubuntu/Debian 脚本为准）
+# wget -O install.sh https://download.bt.cn/install/install-ubuntu_6.0.sh && bash install.sh ed8484bec</code></pre>
+      <div class="card">
+        <ul>
+          <li>安装 LNMP 时会装宝塔 Nginx（路径 <code>/www/server/nginx</code>）。</li>
+          <li>默认可能监听 <strong>80</strong>，下一步必须改掉，否则 NPM 无法占 80/443。</li>
+          <li>面板端口（如 9999）与 80 无关，可保留。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="bt-port">
+      <h2>5. 宝塔 Nginx 端口 80/443 → 10080/10443</h2>
+      <p>完整 sed 列表见：<code>/www/notes/宝塔Nginx修改默认端口80-443到10080-10443.md</code>。以下为精简实操版。</p>
+
+      <h3>5.1 备份</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>TS=$(date +%Y%m%d_%H%M%S)
+mkdir -p /www/backup/panel/nginx_port_change_$TS
+cp -a /www/server/panel/vhost/nginx /www/backup/panel/nginx_port_change_$TS/
+cp -a /www/server/panel/class/{panelSite.py,sites.py,firewalls.py,firewall_new.py,public.py,ajax.py,setPanelLets.py} \
+  /www/backup/panel/nginx_port_change_$TS/</code></pre>
+
+      <h3>5.2 修改 vhost 监听</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>sed -i 's/listen 80;/listen 10080;/' /www/server/panel/vhost/nginx/phpfpm_status.conf
+# 批量替换（已包含 0.default.conf）
+sed -i 's/listen 80;/listen 10080;/g' /www/server/panel/vhost/nginx/*.conf 2>/dev/null
+sed -i 's/listen 443 ssl/listen 10443 ssl/g' /www/server/panel/vhost/nginx/*.conf 2>/dev/null
+sed -i 's/listen \[::\]:80;/listen [::]:10080;/g' /www/server/panel/vhost/nginx/*.conf 2>/dev/null
+sed -i 's/listen \[::\]:443 ssl/listen [::]:10443 ssl/g' /www/server/panel/vhost/nginx/*.conf 2>/dev/null</code></pre>
+
+      <h3>5.2a 关键：默认站 0.default.conf 必须改</h3>
+      <div class="card danger">
+        <strong>0.default.conf</strong> 是宝塔兜底页面，默认监听 <strong>80</strong>。部署 NPM（Host）后，80 被 NPM 占用，会导致整个宝塔 Nginx 无法启动，所有宝塔站点（包括 <code>127.0.0.1:15669</code> 这种自定义端口站点）都会变成 Connection refused。
+      </div>
+      <p>改完后的检查：</p>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>grep -n 'listen' /www/server/panel/vhost/nginx/0.default.conf
+# 预期只有：listen 10080;</code></pre>
+      <p>常见报错现象：</p>
+      <ul>
+        <li><code>ss -tlnp | grep 15669</code> 无结果</li>
+        <li>宝塔 Nginx 日志：<code>bind() to 0.0.0.0:80 failed (98: Address already in use)</code></li>
+        <li>NPM 反代报错：<code>connect() failed (111: Connection refused) while connecting to upstream, upstream: "http://127.0.0.1:15669/"</code></li>
+      </ul>
+
+      <h3>5.3 修改面板 Python（新建站默认端口）</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>cd /www/server/panel/class
+
+sed -i "s/&lt;VirtualHost \*:80&gt;/&lt;VirtualHost *:10080&gt;/" panelSite.py
+sed -i 's/listen \[::\]:80;/listen [::]:10080;/' panelSite.py
+sed -i 's/listen 80;%s/listen 10080;%s/' panelSite.py
+sed -i "s/Listen 443/Listen 10443/g" panelSite.py
+sed -i "s/self.sitePort != '80'/self.sitePort != '10080'/g" panelSite.py
+sed -i "s/get.port = '80'/get.port = '10080'/g" panelSite.py
+sed -i 's/get.port = "80"/get.port = "10080"/g' panelSite.py
+sed -i "s/get.port='443'/get.port='10443'/g" panelSite.py
+sed -i "s/data\['port'\] = '80'/data['port'] = '10080'/" panelSite.py
+sed -i "s/'port' in data else '80'/'port' in data else '10080'/" panelSite.py
+sed -i "s/if get.port == \"\": get.port = \"80\"/if get.port == \"\": get.port = \"10080\"/" panelSite.py
+sed -i "s/if get.port != '80'/if get.port != '10080'/g" panelSite.py
+sed -i "s/public.inArray(tmp, '443')/public.inArray(tmp, '10443')/" panelSite.py
+sed -i "s/listen \[::\]:443 ssl/listen [::]:10443 ssl/g" panelSite.py
+sed -i "s/listen 443 ssl/listen 10443 ssl/g" panelSite.py
+sed -i "s/apacheAddPort('443')/apacheAddPort('10443')/" panelSite.py
+sed -i "s/get.port = '443'/get.port = '10443'/" panelSite.py
+sed -i 's/listen\\s+443/listen\\s+10443/g' panelSite.py
+sed -i 's/listen\\s+\\[::\\]:443/listen\\s+\\[::\\]:10443/g' panelSite.py
+sed -i 's/VirtualHost \\*\\:443/VirtualHost \\*\\:10443/g' panelSite.py
+sed -i 's/NameVirtualHost  \*:443/NameVirtualHost  *:10443/' panelSite.py
+sed -i 's/listen\\s+80/listen\\s+10080/g' panelSite.py
+sed -i 's/listen 80;/listen 10080;/g' panelSite.py
+sed -i 's/listen \[::\]:80/listen [::]:10080/g' panelSite.py
+sed -i "s/port = '80'/port = '10080'/" panelSite.py
+sed -i "s/,domain,'80',/,domain,'10080',/" panelSite.py
+
+sed -i "s/tmp.append('80')/tmp.append('10080')/" sites.py
+sed -i "s/notudps = \['80','443'/notudps = ['10080','10443'/" firewalls.py
+sed -i "s/ports = \['21','25','80','443'/ports = ['21','25','10080','10443'/" firewalls.py
+sed -i "s/notudps = \['80', '443'/notudps = ['10080', '10443'/g" firewall_new.py
+sed -i "s/ports = \['21','25','80','443'/ports = ['21','25','10080','10443'/" firewall_new.py
+sed -i "s/ports = \['21','25','443'/ports = ['21','25','10443'/" public.py
+sed -i "s/rulePort = \['80', '443'/rulePort = ['10080', '10443'/" ajax.py
+sed -i "s/rulePort = \['80','443'/rulePort = ['10080','10443'/" ajax.py
+sed -i 's/get.port = "80"/get.port = "10080"/' setPanelLets.py</code></pre>
+
+      <h3>5.4 重载与防火墙</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>/www/server/nginx/sbin/nginx -t
+# 如果之前因 80 冲突没启动，先 reload 再检查
+/www/server/nginx/sbin/nginx -s reload
+ss -tlnp | grep -E '10080|10443|[:.]80\b|[:.]443\b'
+
+# 确认宝塔默认站已改 10080
+grep -n 'listen' /www/server/panel/vhost/nginx/0.default.conf
+
+# 确认宝塔站点自定义端口（如 15669）已监听
+ss -tlnp | grep 15669
+
+# UFW 示例
+ufw allow 10080/tcp
+ufw allow 10443/tcp
+# 云安全组同步放行 10080、10443</code></pre>
+      <div class="card ok">
+        预期：宝塔 Nginx 监听 <code>10080</code>；宿主机 <code>80/443</code> 已空闲，留给 NPM；宝塔站点（如 15669）可正常访问。
+      </div>
+      <div class="card warn">
+        宝塔升级可能覆盖 Python 及 vhost 配置，升级后需检查 <code>0.default.conf</code> 是否又被改回 80。
+      </div>
+      <div class="card danger">
+        <strong>如果你在宝塔面板里设置了伪静态（WordPress）后内页仍 404</strong>，通常是因为修改后没有触发 Nginx 重载。手动执行一次 <code>/www/server/nginx/sbin/nginx -s reload</code> 即可。
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="docker">
+      <h2>6. 安装 Docker + Compose V2</h2>
+      <p>参考：<code>/www/notes/Ubuntu系统安装DockerCompose V2的教程-2025.md</code></p>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code># 卸载旧包（未安装会提示，正常）
+sudo apt-get remove docker docker-engine docker.io containerd runc docker-ce docker-ce-cli docker-compose-plugin -y
+
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release -y
+
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+# 日志限制
+sudo mkdir -p /etc/docker
+cat &lt;&lt;'EOF' | sudo tee /etc/docker/daemon.json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "20m",
+    "max-file": "3"
+  }
+}
+EOF
+
+sudo systemctl restart docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER   # 非 root 用户需要；重新登录生效
+
+docker --version
+docker compose version</code></pre>
+    </section>
+
+    <!-- 7 -->
+    <section id="npm">
+      <h2>7. 部署 NPM（Host 网络）</h2>
+      <p>使用 <code>npm-host.sh</code>（Host 网络，直接监听宿主机 80/443/81）。</p>
+
+      <h3>7.1 为什么用 Host 版</h3>
+      <ul>
+        <li>与宿主机网络栈共用，证书/反代端口行为直观。</li>
+        <li>管理面板固定 <code>:81</code>；HTTP/HTTPS 为 <code>80/443</code>。</li>
+        <li>MariaDB 默认 <code>13306</code>（Host 模式），与宝塔 MySQL <code>3306</code> <strong>不冲突</strong>。</li>
+      </ul>
+
+      <h3>7.2 安装</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>mkdir -p /opt/npm
+cp /www/notes/npm-host.sh /opt/npm/npm-host.sh
+chmod +x /opt/npm/npm-host.sh
+bash /opt/npm/npm-host.sh up</code></pre>
+
+      <h3>7.3 验证</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>cd /opt/npm &amp;&amp; bash npm-host.sh status
+ss -tlnp | grep -E ':(80|81|443|13306)\b'
+docker ps</code></pre>
+
+      <h3>7.4 登录面板</h3>
+      <table>
+        <tr><th>项</th><th>值</th></tr>
+        <tr><td>地址</td><td><code>http://服务器公网IP:81</code>（优先用 IPv4）</td></tr>
+        <tr><td>默认邮箱</td><td><code>admin@example.com</code></td></tr>
+        <tr><td>默认密码</td><td><code>changeme</code></td></tr>
+      </table>
+      <div class="card danger">
+        首次登录后立即修改管理员密码；建议防火墙限制 81 仅本机/办公 IP 可访问。
+      </div>
+
+      <h3>7.5 常用命令</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>cd /opt/npm
+bash npm-host.sh status
+bash npm-host.sh logs
+bash npm-host.sh down    # 停止，保留数据目录
+bash npm-host.sh up      # 启动/更新</code></pre>
+
+      <h3>7.6 数据目录</h3>
+      <table>
+        <tr><th>路径</th><th>内容</th></tr>
+        <tr><td><code>/opt/npm/npm_data</code></td><td>NPM 数据</td></tr>
+        <tr><td><code>/opt/npm/npm_db</code></td><td>MariaDB 数据文件</td></tr>
+        <tr><td><code>/opt/npm/npm_letsencrypt</code></td><td>证书</td></tr>
+        <tr><td><code>/opt/npm/.env</code></td><td>含 <code>MYSQL_PORT=13306</code>、库密码等</td></tr>
+      </table>
+
+      <h3>7.7 与宝塔数据库的关系</h3>
+      <table>
+        <tr><th>对比项</th><th>宝塔 MySQL</th><th>NPM MariaDB</th></tr>
+        <tr><td>端口</td><td><code>3306</code></td><td><code>13306</code>（默认）</td></tr>
+        <tr><td>数据目录</td><td><code>/www/server/data</code>（常见）</td><td><code>/opt/npm/npm_db</code></td></tr>
+        <tr><td>是否冲突</td><td colspan="2">默认<strong>不冲突</strong>，可同时运行</td></tr>
+        <tr><td>谁在用</td><td>网站、宝塔业务</td><td>仅 NPM 面板</td></tr>
+      </table>
+      <div class="card warn">
+        若修改 <code>/opt/npm/.env</code> 中的 <code>MYSQL_PORT</code>，必须避开 <code>3306</code> 及其他已占用端口，然后 <code>bash npm-host.sh up</code> 重建容器。
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="cert">
+      <h2>8. 用 NPM 申请证书并软链给脚本</h2>
+
+      <h3>8.1 在 NPM 申请证书</h3>
+      <ol>
+        <li>打开 <code>http://IP:81</code> → <strong>SSL Certificates</strong> → <strong>Add SSL Certificate</strong> → Let's Encrypt</li>
+        <li>域名填：<code>fr.plai.top</code>（换成你的域名）</li>
+        <li>推荐 <strong>DNS Challenge</strong>（如 Cloudflare），不依赖 80 验证，续期更稳</li>
+        <li>申请成功后，证书可能显示 <strong>Not Used</strong> —— <strong>正常</strong>，表示尚未挂到 Proxy Host，仍会自动续期</li>
+      </ol>
+
+      <h3>8.2 确认磁盘路径</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>ls -la /opt/npm/npm_letsencrypt/live/
+# 常见为 npm-1、npm-2 ...
+openssl x509 -in /opt/npm/npm_letsencrypt/live/npm-2/fullchain.pem -noout -subject -dates
+# 确认 CN/SAN 为你的域名</code></pre>
+      <p class="muted">下面示例目录为 <code>npm-2</code>，请按实际 live 目录名替换。</p>
+
+      <h3>8.3 软链到脚本目录</h3>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>DOMAIN=fr.plai.top
+LIVE_DIR=/opt/npm/npm_letsencrypt/live/npm-2   # 改成实际目录
+
+mkdir -p /etc/v2ray-agent/tls
+ln -sfn "$LIVE_DIR/fullchain.pem" "/etc/v2ray-agent/tls/${DOMAIN}.crt"
+ln -sfn "$LIVE_DIR/privkey.pem"   "/etc/v2ray-agent/tls/${DOMAIN}.key"
+
+ls -la /etc/v2ray-agent/tls/${DOMAIN}.*
+openssl x509 -in /etc/v2ray-agent/tls/${DOMAIN}.crt -noout -subject -dates</code></pre>
+
+      <div class="card ok">
+        <strong>续期说明</strong>
+        <ul>
+          <li>NPM 容器运行中会自动续期 LE 证书（约 90 天一轮）。</li>
+          <li>软链指向 <code>live/npm-*</code> 固定路径，续期后一般<strong>无需重链</strong>。</li>
+          <li>面板显示 <strong>Not Used</strong> 不影响续期。</li>
+          <li>若代理核心启动时读入证书，续期后可能需重启 sing-box/xray 加载新证。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="proxy">
+      <h2>9. 安装翻墙脚本（install.sh）</h2>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>bash /www/notes/install.sh
+# 或安装后脚本常复制到：
+# bash /etc/v2ray-agent/install.sh</code></pre>
+
+      <h3>9.1 推荐选择（与本教程一致）</h3>
+      <table>
+        <tr><th>步骤</th><th>建议</th></tr>
+        <tr><td>菜单</td><td>安装 / 自定义安装（如选项 2）</td></tr>
+        <tr><td>核心</td><td><strong>sing-box</strong></td></tr>
+        <tr><td>协议示例</td><td><code>7</code> Reality+Vision；可选 <code>13</code> AnyTLS（多选如 <code>7,13</code>）</td></tr>
+        <tr><td>域名</td><td>与证书一致，如 <code>fr.plai.top</code></td></tr>
+        <tr><td>证书</td><td>出现「检测到证书」→ 是否重新安装选 <strong>n</strong></td></tr>
+        <tr><td>端口</td><td><strong>不要用 80/443/81</strong>；例如 8443、2053、自选高位端口</td></tr>
+        <tr><td>UUID</td><td>回车随机即可</td></tr>
+        <tr><td>Reality SNI</td><td>伪装站域名（如微软等），与 AnyTLS 用的真实域名可以不同</td></tr>
+      </table>
+
+      <div class="card warn">
+        <strong>关于脚本安装 Nginx</strong>
+        <p>选择含 <code>13</code>（AnyTLS）等组合时，脚本可能仍执行「安装 nginx」（系统 apt 包）。</p>
+        <ul>
+          <li>Reality / AnyTLS <strong>不依赖</strong>该系统 Nginx。</li>
+          <li>装完后按第 10 节<strong>卸载系统 nginx</strong>即可。</li>
+          <li>定时任务 <code>RenewTLS</code> <strong>不会</strong>反复安装 nginx。</li>
+          <li>自定义证书续期由 NPM 负责，脚本会提示无法对自定义证执行 renew（正常）。</li>
+        </ul>
+      </div>
+
+      <h3>9.2 宝塔证书列表</h3>
+      <p>脚本 <code>checkBTPanel</code> 只读宝塔站点证书目录。NPM 证书<strong>不会</strong>出现在列表中——依赖第 8 节软链即可，不必从宝塔选域名证书。</p>
+
+      <h3>9.3 客户端连接</h3>
+      <ul>
+        <li><strong>直连核心端口</strong>：地址填域名，端口填脚本配置的 Reality/AnyTLS 端口（非 443）。</li>
+        <li><strong>经 NPM 反代</strong>：仅适合 WS/gRPC/HTTP 类；Reality 等通常<strong>不适合</strong> HTTP 反代，优先直连。</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section id="rm-nginx">
+      <h2>10. 卸载脚本安装的系统 Nginx</h2>
+      <div class="card danger">
+        只卸载 <strong>apt 系统 nginx</strong>。不要删除：
+        <ul>
+          <li><code>/www/server/nginx</code>（宝塔）</li>
+          <li>NPM 容器</li>
+          <li><code>/usr/bin/nginx</code> 若指向宝塔 sbin（软链）——卸载 apt 包后可能仍保留宝塔软链，属正常</li>
+        </ul>
+      </div>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code># 确认系统包存在
+dpkg -l | grep -i nginx
+ls -la /usr/sbin/nginx /etc/nginx 2>/dev/null
+
+systemctl stop nginx 2>/dev/null
+systemctl disable nginx 2>/dev/null
+apt-get remove --purge -y nginx nginx-common nginx-core
+rm -f /etc/apt/sources.list.d/nginx.list /etc/apt/preferences.d/99nginx
+rm -rf /etc/nginx
+apt-get autoremove -y
+systemctl reset-failed nginx 2>/dev/null
+systemctl daemon-reload
+hash -r
+
+# 验收：系统包应消失；80/443 仍为 NPM
+dpkg -l | grep -i '^ii.*nginx' || echo 'no apt nginx'
+ss -tlnp | grep -E ':(80|443|81)\b'
+docker ps | grep npm
+test -x /www/server/nginx/sbin/nginx &amp;&amp; echo 'BT nginx OK'
+ls -la /etc/v2ray-agent/tls/</code></pre>
+
+      <h3>何时会再装回来？</h3>
+      <table>
+        <tr><th>场景</th><th>是否重装系统 nginx</th></tr>
+        <tr><td>NPM 自动续期</td><td>否</td></tr>
+        <tr><td>crontab RenewTLS</td><td>否</td></tr>
+        <tr><td>重启机器 / 启停 sing-box</td><td>否</td></tr>
+        <tr><td>再次完整运行 install.sh 安装流程</td><td>可能（取决于协议选择）</td></tr>
+      </table>
+    </section>
+
+    <!-- 11 -->
+    <section id="verify">
+      <h2>11. 验收清单</h2>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code># 1) 端口分工
+ss -tlnp | grep -E ':(80|81|443|10080|10443|9999|3306|13306)\b'
+
+# 2) Docker / NPM
+docker ps
+cd /opt/npm &amp;&amp; bash npm-host.sh status
+
+# 3) 证书软链
+ls -la /etc/v2ray-agent/tls/
+openssl x509 -in /etc/v2ray-agent/tls/fr.plai.top.crt -noout -subject -dates
+
+# 4) 代理核心
+systemctl status sing-box --no-pager
+# 或 ss -tlnp | grep sing-box
+
+# 5) 系统 nginx 已卸
+dpkg -l | grep -i nginx || echo OK_no_system_nginx_pkg
+# 宝塔 nginx 仍在
+/www/server/nginx/sbin/nginx -t</code></pre>
+      <div class="card ok">
+        <strong>健康状态参考</strong>
+        <ul>
+          <li>80/443/81 → NPM 容器内 nginx</li>
+          <li>10080 → 宝塔 Nginx</li>
+          <li>3306 → 宝塔 MySQL；13306 → NPM MariaDB（并存）</li>
+          <li>代理自定义端口 → sing-box</li>
+          <li>无 apt 系统 nginx 包（或仅宝塔相关软链）</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section id="ops">
+      <h2>12. 日常运维</h2>
+      <table>
+        <thead><tr><th>事项</th><th>命令 / 说明</th></tr></thead>
+        <tbody>
+          <tr><td>NPM 日志</td><td><code>cd /opt/npm &amp;&amp; bash npm-host.sh logs</code></td></tr>
+          <tr><td>NPM 备份</td><td>打包 <code>npm_data</code> <code>npm_db</code> <code>npm_letsencrypt</code> <code>.env</code></td></tr>
+          <tr><td>证书到期</td><td>NPM 自动续；检查 CF Token 有效</td></tr>
+          <tr><td>续期后核心</td><td><code>systemctl restart sing-box</code>（如需热加载）</td></tr>
+          <tr><td>脚本菜单</td><td><code>bash /etc/v2ray-agent/install.sh</code> 或 notes 中脚本</td></tr>
+          <tr><td>防火墙</td><td>UFW + 云安全组同步放行业务端口；<strong>勿对公网开放 13306/3306</strong></td></tr>
+          <tr><td>数据库</td><td>宝塔 3306 与 NPM 13306 分离；备份时分别备份</td></tr>
+          <tr><td>宝塔升级后</td><td>检查 Nginx 是否又监听 80；必要时重做端口修改</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 13 -->
+    <section id="faq">
+      <h2>13. 常见问题</h2>
+
+      <h3>Q1：脚本为什么还装 Nginx？</h3>
+      <p>协议组合（如 <code>7,13</code>）未命中脚本「免 Nginx」白名单（主要针对纯 Reality 等）。装完按第 10 节卸载即可。</p>
+
+      <h3>Q2：NPM 证书显示 Not Used？</h3>
+      <p>未绑定 Proxy Host 时的正常状态，不影响自动续期，也不影响软链给脚本使用。</p>
+
+      <h3>Q3：自定义证书无法 renew？</h3>
+      <p>脚本发现软链证书后会跳过 acme 续期。续期交给 NPM；这是预期行为。</p>
+
+      <h3>Q4：80 被占用装不了 NPM？</h3>
+      <p>先完成第 5 节宝塔改端口，确认 <code>ss -tlnp</code> 无宿主机 80/443 再部署 NPM。常见遗漏：宝塔默认站 <code>0.default.conf</code> 仍监听 80，会导致宝塔 Nginx 无法启动。</p>
+
+      <h3>Q5：宝塔自定义端口站点（如 15669）无法通过 NPM 反代访问？</h3>
+      <p>可能不是 NPM 反代问题，而是宝塔 Nginx 没启动。检查：</p>
+      <ul>
+        <li><code>ss -tlnp | grep 15669</code> 是否有监听？</li>
+        <li><code>grep -n 'listen' /www/server/panel/vhost/nginx/0.default.conf</code> 是否还是 80？</li>
+        <li>宝塔 Nginx 日志是否出现 <code>bind() to 0.0.0.0:80 failed</code>？</li>
+      </ul>
+      <p>解决方法：将 <code>0.default.conf</code> 改为 <code>listen 10080;</code>，然后重载宝塔 Nginx。</p>
+
+      <h3>Q6：PUBLIC_IP 变成 IPv6？</h3>
+      <p>npm-host 用 <code>ifconfig.me</code> 探测时可能拿到 IPv6。访问面板请用公网 IPv4：<code>http://x.x.x.x:81</code>。</p>
+
+      <h3>Q7：卸载系统 nginx 会不会弄坏宝塔？</h3>
+      <p>不会。宝塔使用 <code>/www/server/nginx/sbin/nginx</code>。卸的是 apt 的 <code>/usr/sbin/nginx</code> 与 <code>/etc/nginx</code>。</p>
+
+      <h3>Q8：推荐协议怎么选？</h3>
+      <ul>
+        <li>抗封锁直连：Reality（7）</li>
+        <li>需要域名真证书 TLS：AnyTLS（13）等，配合 NPM 证书软链</li>
+        <li>仅 CDN：WS 类（需 Nginx/反代，与本「卸系统 nginx」方案不同）</li>
+      </ul>
+
+      <h3>Q9：宝塔数据库端口和 NPM 冲突吗？</h3>
+      <p><strong>不冲突。</strong>宝塔 MySQL 默认 <code>3306</code>，NPM（Host）MariaDB 默认 <code>13306</code>，是两套独立数据库。</p>
+      <ul>
+        <li>检查：<code>ss -tlnp | grep -E ':(3306|13306)\b'</code></li>
+        <li>配置：<code>grep MYSQL_PORT /opt/npm/.env</code> 应为 <code>13306</code></li>
+        <li>切勿把 NPM 的 <code>MYSQL_PORT</code> 改成 <code>3306</code></li>
+        <li>13306 / 3306 均建议不对公网开放</li>
+      </ul>
+
+      <h3>Q10：WordPress 经 NPM 反代后页面样式异常（CSS/JS 加载失败）？</h3>
+      <p>通常是 WordPress 生成的资源地址是 <code>http://</code>，而浏览器通过 <code>https://</code> 访问，触发混合内容拦截，导致 CSS/JS 无法加载，页面变形。</p>
+      <p>在站点 <code>wp-config.php</code> 的 <code>/* Add any custom values... */</code> 与 <code>/* That's all, stop editing... */</code> 之间添加：</p>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>/** NPM 反向代理：强制站点地址为 HTTPS */
+define( 'WP_HOME', 'https://your-domain.com' );
+define( 'WP_SITEURL', 'https://your-domain.com' );
+
+/** 信任 NPM 的 X-Forwarded-Proto 头，让 WordPress 识别 HTTPS */
+if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] ) {
+    $_SERVER['HTTPS'] = 'on';
+}
+
+/** 后台强制 HTTPS（可选） */
+define( 'FORCE_SSL_ADMIN', true );</code></pre>
+      <ul>
+        <li>将 <code>your-domain.com</code> 换成你的实际域名（如 <code>ace.lc</code>）。</li>
+        <li>NPM 默认会传递 <code>X-Forwarded-Proto: https</code>，无需额外配置。</li>
+        <li>若已登录后台，修改 <code>wp-config.php</code> 后清除浏览器缓存再刷新。</li>
+        <li>少数主题/插件仍写死 <code>http://</code> 外链，需手动替换或修改主题。</li>
+      </ul>
+
+      <h3>Q11：WordPress 内页（如 /vip/）设置伪静态后仍 404？</h3>
+      <p>宝塔面板设置伪静态后，有时不会自动触发 Nginx 重载。手动执行：</p>
+      <pre><button class="copy-btn" onclick="copyCode(this)">复制</button><code>/www/server/nginx/sbin/nginx -t
+/www/server/nginx/sbin/nginx -s reload</code></pre>
+      <p>然后再刷新 <code>https://your-domain.com/vip/</code>。如果还 404，进入 WordPress 后台 → 设置 → 固定链接 → 直接点击「保存更改」刷新重写规则。</p>
+    </section>
+
+    <section>
+      <h2>附录 A：推荐安装顺序（速查）</h2>
+      <ol>
+        <li>装宝塔 → 改 Nginx 到 10080/10443 → 确认 80/443 空闲</li>
+        <li>装 Docker + Compose V2 + daemon 日志限制</li>
+        <li><code>npm-host.sh up</code> 到 <code>/opt/npm</code> → 改管理员密码</li>
+        <li>NPM 申请域名证书 → 软链到 <code>/etc/v2ray-agent/tls/</code></li>
+        <li><code>bash install.sh</code>：sing-box + 协议；证书选 n；端口避开 80/443/81</li>
+        <li>卸载 apt 系统 nginx → 验收端口与服务</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>附录 B：本机 notes 文件对照</h2>
+      <table>
+        <tr><th>文件</th><th>用途</th></tr>
+        <tr><td><code>Ubuntu系统安装DockerCompose V2的教程-2025.md</code></td><td>Docker 官方源安装</td></tr>
+        <tr><td><code>宝塔Nginx修改默认端口80-443到10080-10443.md</code></td><td>宝塔让出 80/443</td></tr>
+        <tr><td><code>npm-host.sh</code></td><td>NPM Host 一键部署</td></tr>
+        <tr><td><code>install.sh</code></td><td>翻墙核心安装脚本</td></tr>
+        <tr><td><code>宝塔-NPM-翻墙脚本完整部署教程.html</code></td><td>本文档</td></tr>
+      </table>
+    </section>
+
+    <footer>
+      根据实操会话整理 · 端口与路径以实际机器为准 · 请遵守当地法律法规使用网络服务
+    </footer>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.parentElement.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = '已复制';
+        btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('ok'); }, 1500);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '已复制';
+        setTimeout(() => { btn.textContent = '复制'; }, 1500);
+      });
+    }
+  </script>
+</body>
+</html>

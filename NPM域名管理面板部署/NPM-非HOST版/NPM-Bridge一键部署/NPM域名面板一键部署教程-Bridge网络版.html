@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Nginx Proxy Manager 一键部署教程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.8;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .card.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .card.danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .code-block code {
+            display: block;
+            white-space: pre;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .step {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1em;
+        }
+
+        .step h3 {
+            display: inline-block;
+            margin: 0;
+        }
+
+        .step-content {
+            margin-top: 12px;
+            margin-left: 45px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .copy-btn {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .code-block {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Nginx Proxy Manager 一键部署</h1>
+            <p>复制粘贴即用 | Docker Compose v2 | 自动化配置</p>
+        </header>
+
+        <div class="content">
+            <div class="section">
+                <h2>📖 简介</h2>
+                <p>Nginx Proxy Manager（NPM）是一个网络代理管理工具，可以：</p>
+                <ul>
+                    <li>🌐 在一台服务器上管理多个网站</li>
+                    <li>🔒 自动申请和续期 SSL 证书</li>
+                    <li>⚙️ 反向代理内部应用程序</li>
+                    <li>📊 通过网页界面管理所有配置</li>
+                </ul>
+                <p>本教程提供一个完整脚本，一键部署 NPM、MariaDB 和 proxy 网络。</p>
+            </div>
+
+            <div class="section">
+                <h2>🔍 前置条件</h2>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>检查系统</h3>
+                    <div class="step-content">
+                        <p>支持的系统：Ubuntu 18.04+、Debian 10+、CentOS 7+ 等 Linux 系统</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cat /etc/os-release</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>检查 root 权限</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>id -u</code>
+                        </div>
+                        <p>输出 <code>0</code> 表示是 root。否则用 <code>sudo -i</code> 切换。</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>检查磁盘空间</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>df -h /</code>
+                        </div>
+                        <p>确保可用空间 > 5GB</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎯 安装步骤</h2>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>创建目录并进入</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>mkdir -p /opt/npm && cd /opt/npm</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>创建部署脚本</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cat > /opt/npm/npm.sh << 'SCRIPT_EOF'
+#!/usr/bin/env bash
+set -u -o pipefail
+[[ "${DEBUG:-0}" == "1" ]] && set -x
+
+ROOT_DIR="$(dirname "$(readlink -f "${0:-$PWD/npm.sh}")")"
+COMPOSE_FILE="$ROOT_DIR/docker-compose.yml"
+ENV_FILE="$ROOT_DIR/.env"
+
+_san_raw="$(basename "$ROOT_DIR" | tr -c 'a-zA-Z0-9-' '_' )"
+if [[ -z "$_san_raw" ]]; then
+  PROJECT_NAME="npm"
+else
+  first="${_san_raw:0:1}"
+  [[ "$first" =~ [A-Za-z0-9] ]] && PROJECT_NAME="$_san_raw" || PROJECT_NAME="p$_san_raw"
+fi
+export COMPOSE_PROJECT_NAME="$PROJECT_NAME"
+
+G='\033[0;32m'; Y='\033[1;33m'; R='\033[0;31m'; B='\033[34m'; NC='\033[0m'
+say(){ echo -e "${B}ℹ️ $*${NC}"; }
+ok(){  echo -e "${G}✅ $*${NC}"; }
+wrn(){ echo -e "${Y}⚠️ $*${NC}"; }
+die(){ echo -e "${R}❌ $*${NC}"; exit 1; }
+
+have(){ command -v "${1:-}" >/dev/null 2>&1; }
+ensure_root(){ [[ ${EUID:-$(id -u)} -eq 0 ]] || die "需要 root：sudo $0"; }
+rand_b64(){ head -c 24 /dev/urandom | base64; }
+
+detect_ip(){
+  curl -fsS --max-time 2 ifconfig.me 2>/dev/null && return 0
+  hostname -I 2>/dev/null | awk '{print $1}' && return 0
+  echo 127.0.0.1
+}
+
+detect_tz(){
+  cat /etc/timezone 2>/dev/null && return 0
+  echo UTC
+}
+
+compose(){
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+}
+
+declare -A DEFAULT_PORTS=(
+  [NPM_ADMIN_PORT]=40002
+  [NPM_HTTP_PORT]=80
+  [NPM_HTTPS_PORT]=443
+)
+
+fixlf(){
+  find "$ROOT_DIR" -maxdepth 1 -type f \( -name "*.sh" -o -name "*.yml" -o -name ".env*" \) \
+    -exec sed -i '1s/^\xEF\xBB\xBF//; s/\r$//' {} \; 2>/dev/null || true
+}
+
+install_docker_if_missing(){
+  if ! have docker; then
+    say "安装 Docker..."
+    apt-get update -y && apt-get install -y docker.io docker-compose-plugin || true
+    systemctl enable --now docker || true
+  fi
+  docker compose version >/dev/null 2>&1 || die "需要 Docker Compose v2"
+}
+
+create_env(){
+  if [[ ! -s "$ENV_FILE" ]]; then
+    say "生成 .env 文件..."
+    cat > "$ENV_FILE" << ENVEOF
+PUBLIC_IP=$(detect_ip)
+TZ=$(detect_tz)
+NPM_HTTP_PORT=${DEFAULT_PORTS[NPM_HTTP_PORT]}
+NPM_HTTPS_PORT=${DEFAULT_PORTS[NPM_HTTPS_PORT]}
+NPM_ADMIN_PORT=${DEFAULT_PORTS[NPM_ADMIN_PORT]}
+MYSQL_ROOT_PASSWORD=$(rand_b64)
+MYSQL_PASSWORD=$(rand_b64)
+MYSQL_DATABASE=npm
+MYSQL_USER=npm
+TAG_NPM=latest
+TAG_MARIADB=10.11
+ENVEOF
+    chmod 600 "$ENV_FILE"
+    ok ".env 已生成"
+  else
+    ok ".env 已存在"
+  fi
+}
+
+load_env(){
+  set -o allexport
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +o allexport
+}
+
+create_compose(){
+  say "生成 docker-compose.yml..."
+  cat > "$COMPOSE_FILE" << 'YAMLEOF'
+services:
+  npm-app:
+    image: jc21/nginx-proxy-manager:${TAG_NPM}
+    restart: unless-stopped
+    ports:
+      - "${NPM_HTTP_PORT}:80"
+      - "${NPM_HTTPS_PORT}:443"
+      - "${NPM_ADMIN_PORT}:81"
+    environment:
+      DB_MYSQL_HOST: "npm-db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: "${MYSQL_USER}"
+      DB_MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      DB_MYSQL_NAME: "${MYSQL_DATABASE}"
+      TZ: "${TZ}"
+    volumes:
+      - ./npm_data:/data
+      - ./npm_letsencrypt:/etc/letsencrypt
+    depends_on:
+      npm-db:
+        condition: service_healthy
+    networks:
+      - npm_internal
+      - proxy
+
+  npm-db:
+    image: mariadb:${TAG_MARIADB}
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      TZ: "${TZ}"
+    volumes:
+      - ./npm_db:/var/lib/mysql
+    networks:
+      - npm_internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  npm_internal:
+    driver: bridge
+  proxy:
+    external: true
+YAMLEOF
+  ok "docker-compose.yml 已生成"
+}
+
+ensure_proxy_network(){
+  if docker network inspect proxy >/dev/null 2>&1; then
+    ok "已存在外部网络：proxy"
+  else
+    say "创建外部网络：proxy"
+    docker network create proxy >/dev/null 2>&1 || true
+  fi
+}
+
+do_up(){
+  ensure_root
+  install_docker_if_missing
+  mkdir -p "$ROOT_DIR"/{npm_data,npm_letsencrypt,npm_db}
+  create_env
+  load_env
+  fixlf
+  create_compose
+  ensure_proxy_network
+  say "拉取镜像..."
+  compose pull || true
+  say "启动服务..."
+  compose up -d
+  
+  set -o allexport
+  source "$ENV_FILE"
+  set +o allexport
+  
+  echo
+  echo "================= 🚀 部署完成 🚀 ================="
+  echo "NPM 管理面板: http://${PUBLIC_IP}:${NPM_ADMIN_PORT}"
+  echo "HTTP 端口: ${NPM_HTTP_PORT}  HTTPS 端口: ${NPM_HTTPS_PORT}"
+  echo "默认账户: admin@example.com / changeme"
+  echo "=================================================="
+  compose ps || true
+}
+
+do_down(){
+  ensure_root
+  compose down --remove-orphans
+  ok "已停止（数据已保留）"
+}
+
+do_logs(){
+  ensure_root
+  compose logs -f --tail=200 "${@:-}"
+}
+
+do_status(){
+  ensure_root
+  compose ps "${@:-}"
+}
+
+main(){
+  case "${1:-up}" in
+    up)     do_up ;;
+    down)   do_down ;;
+    logs)   shift || true; do_logs "$@" ;;
+    status) shift || true; do_status "$@" ;;
+    *)      echo "用法：$0 [up|down|logs|status]"; exit 1 ;;
+  esac
+}
+
+main "$@"
+SCRIPT_EOF
+chmod +x /opt/npm/npm.sh</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>执行部署</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && bash npm.sh up</code>
+                        </div>
+                        <p>脚本会自动安装 Docker、生成配置、创建网络并启动服务。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>✅ 验证部署</h2>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>检查容器状态</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && bash npm.sh status</code>
+                        </div>
+                        <p>两个容器都应该显示 "Up" 状态。</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>访问管理面板</h3>
+                    <div class="step-content">
+                        <p>打开浏览器访问：</p>
+                        <div class="code-block">
+                            <code>http://YOUR_SERVER_IP:40002</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 默认登录凭证：</strong>
+                            <p>邮箱：<code>admin@example.com</code> | 密码：<code>changeme</code></p>
+                            <p><strong>首次登录后立即修改密码！</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>检查 proxy 网络</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network ls | grep proxy</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 常见操作</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>操作</th>
+                            <th>命令</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>查看日志</td>
+                            <td><code>cd /opt/npm && bash npm.sh logs</code></td>
+                        </tr>
+                        <tr>
+                            <td>查看特定容器日志</td>
+                            <td><code>cd /opt/npm && bash npm.sh logs npm-app</code></td>
+                        </tr>
+                        <tr>
+                            <td>停止服务</td>
+                            <td><code>cd /opt/npm && bash npm.sh down</code></td>
+                        </tr>
+                        <tr>
+                            <td>重启服务</td>
+                            <td><code>cd /opt/npm && bash npm.sh up</code></td>
+                        </tr>
+                        <tr>
+                            <td>查看配置</td>
+                            <td><code>cat /opt/npm/.env</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>🌐 网络管理</h2>
+
+                <p>NPM 创建了一个外部 <code>proxy</code> 网络，其他容器可以连接到它，这样 NPM 就可以代理这些容器的流量。</p>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>查看所有网络</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network ls</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>将已存在的容器连接到 proxy 网络</h3>
+                    <div class="step-content">
+                        <p>如果你已经有一个运行中的容器（例如 <code>mytest</code>），想让 NPM 代理它：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network connect proxy mytest</code>
+                        </div>
+                        <p><strong>示例：</strong> 连接名为 <code>myapp</code> 的容器</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network connect proxy myapp</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>将容器从网络断开</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network disconnect proxy mytest</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <h3>查看网络中的容器</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network inspect proxy</code>
+                        </div>
+                        <p>显示所有连接到 <code>proxy</code> 网络的容器及其 IP 地址。</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">5</span>
+                    <h3>在 NPM 中配置代理</h3>
+                    <div class="step-content">
+                        <p>容器连接到 <code>proxy</code> 网络后，在 NPM 管理面板中配置：</p>
+                        <ol>
+                            <li>访问 NPM：<code>http://YOUR_SERVER_IP:40002</code></li>
+                            <li>登录后点击 "Proxy Hosts" → "Add Proxy Host"</li>
+                            <li>填写：
+                                <ul>
+                                    <li><strong>Domain Names：</strong> 你的域名（例如 <code>myapp.example.com</code>）</li>
+                                    <li><strong>Scheme：</strong> <code>http</code> 或 <code>https</code></li>
+                                    <li><strong>Forward Hostname / IP：</strong> 容器名称（例如 <code>myapp</code>）</li>
+                                    <li><strong>Forward Port：</strong> 容器内部端口（例如 <code>8080</code>）</li>
+                                </ul>
+                            </li>
+                            <li>点击 "Save" 保存</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🚨 故障排查</h2>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>容器无法启动</h3>
+                    <div class="step-content">
+                        <p><strong>查看日志：</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && docker compose logs --tail=50</code>
+                        </div>
+                        <p><strong>常见原因：</strong></p>
+                        <ul>
+                            <li>端口被占用：<code>sudo netstat -tulpn | grep -E ':(80|443|40002)'</code></li>
+                            <li>磁盘空间不足：<code>df -h</code></li>
+                            <li>Docker 未运行：<code>sudo systemctl restart docker</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>无法访问管理面板</h3>
+                    <div class="step-content">
+                        <p><strong>检查步骤：</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 检查容器状态
+cd /opt/npm && docker compose ps
+
+# 检查端口监听
+sudo netstat -tulpn | grep 40002
+
+# 检查防火墙
+sudo ufw status
+
+# 开放端口
+sudo ufw allow 80/tcp && sudo ufw allow 443/tcp && sudo ufw allow 40002/tcp</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>数据库连接失败</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 查看数据库日志
+cd /opt/npm && docker compose logs npm-db | tail -30
+
+# 重启数据库
+docker compose restart npm-db
+
+# 如果需要重新初始化（会删除数据）
+docker compose down && rm -rf npm_db && docker compose up -d</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <h3>proxy 网络不存在</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 手动创建网络
+docker network create proxy
+
+# 重启 NPM
+cd /opt/npm && docker compose up -d</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">5</span>
+                    <h3>容器之间无法通信</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 进入 NPM 容器测试
+docker exec -it npm-app bash
+ping myapp
+
+# 确保容器连接到 proxy 网络
+docker network inspect proxy
+
+# 如果未连接，手动连接
+docker network connect proxy myapp
+
+# 重启容器
+docker restart myapp</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔐 安全建议</h2>
+
+                <div class="card danger">
+                    <strong>⚠️ 重要提示</strong>
+                    <ul>
+                        <li>首次登录后立即修改管理员密码</li>
+                        <li>不要将 40002 端口暴露到公网，使用防火墙限制访问</li>
+                        <li>定期备份 <code>/opt/npm/npm_data</code> 和 <code>/opt/npm/npm_db</code></li>
+                        <li>定期更新镜像：<code>docker compose pull</code></li>
+                        <li>定期检查日志发现异常</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>创建备份脚本</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cat > /opt/npm/backup.sh << 'BACKUP_EOF'
+#!/bin/bash
+BACKUP_DIR="/opt/npm/backups"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+mkdir -p "$BACKUP_DIR"
+tar -czf "$BACKUP_DIR/npm_backup_$TIMESTAMP.tar.gz" \
+  -C /opt/npm npm_data npm_db npm_letsencrypt .env
+echo "✅ 备份完成: $BACKUP_DIR/npm_backup_$TIMESTAMP.tar.gz"
+BACKUP_EOF
+chmod +x /opt/npm/backup.sh</code>
+                        </div>
+                        <p>运行备份：<code>/opt/npm/backup.sh</code></p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>恢复备份</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && tar -xzf backups/npm_backup_YYYYMMDD_HHMMSS.tar.gz && docker compose up -d</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🗑️ 清理和回滚</h2>
+
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>停止服务（保留数据）</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && bash npm.sh down</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>完全卸载（删除所有数据）</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && docker compose down -v && rm -rf /opt/npm</code>
+                        </div>
+                        <p><strong>⚠️ 警告：</strong> 此命令会删除所有数据，无法恢复。</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>删除 proxy 网络</h3>
+                    <div class="step-content">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>docker network rm proxy</code>
+                        </div>
+                        <p><strong>注意：</strong> 如果有容器连接到此网络，删除会失败。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>❓ 常见问题</h2>
+
+                <div class="step">
+                    <h3>Q: 脚本需要 root 权限吗？</h3>
+                    <div class="step-content">
+                        <p>A: 是的。Docker 操作需要 root 权限。可以用 <code>sudo</code> 运行或切换到 root 用户。</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3>Q: 如何修改管理面板端口？</h3>
+                    <div class="step-content">
+                        <p>A: 编辑 <code>/opt/npm/.env</code>，修改 <code>NPM_ADMIN_PORT</code>，然后重启：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && sed -i 's/NPM_ADMIN_PORT=40002/NPM_ADMIN_PORT=YOUR_PORT/' .env && docker compose restart npm-app</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3>Q: 如何升级 NPM 版本？</h3>
+                    <div class="step-content">
+                        <p>A: 编辑 <code>/opt/npm/.env</code>，修改 <code>TAG_NPM</code>，然后重新拉取并重启：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>cd /opt/npm && sed -i 's/TAG_NPM=latest/TAG_NPM=2.x.x/' .env && docker compose pull && docker compose up -d</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3>Q: 如何连接外部数据库？</h3>
+                    <div class="step-content">
+                        <p>A: 编辑 <code>docker-compose.yml</code>，修改 NPM 的 <code>DB_MYSQL_*</code> 环境变量，删除 <code>npm-db</code> 服务，然后重启。</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3>Q: 脚本支持哪些操作系统？</h3>
+                    <div class="step-content">
+                        <p>A: 所有 Linux 系统，包括 Ubuntu 18.04+、Debian 10+、CentOS 7+ 等。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📋 快速参考</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>操作</th>
+                            <th>命令</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>启动服务</td>
+                            <td><code>cd /opt/npm && bash npm.sh up</code></td>
+                        </tr>
+                        <tr>
+                            <td>停止服务</td>
+                            <td><code>cd /opt/npm && bash npm.sh down</code></td>
+                        </tr>
+                        <tr>
+                            <td>查看状态</td>
+                            <td><code>cd /opt/npm && bash npm.sh status</code></td>
+                        </tr>
+                        <tr>
+                            <td>查看日志</td>
+                            <td><code>cd /opt/npm && bash npm.sh logs</code></td>
+                        </tr>
+                        <tr>
+                            <td>查看网络</td>
+                            <td><code>docker network ls</code></td>
+                        </tr>
+                        <tr>
+                            <td>连接容器到 proxy</td>
+                            <td><code>docker network connect proxy CONTAINER_NAME</code></td>
+                        </tr>
+                        <tr>
+                            <td>断开容器连接</td>
+                            <td><code>docker network disconnect proxy CONTAINER_NAME</code></td>
+                        </tr>
+                        <tr>
+                            <td>查看网络中的容器</td>
+                            <td><code>docker network inspect proxy</code></td>
+                        </tr>
+                        <tr>
+                            <td>备份数据</td>
+                            <td><code>/opt/npm/backup.sh</code></td>
+                        </tr>
+                        <tr>
+                            <td>完全卸载</td>
+                            <td><code>cd /opt/npm && docker compose down -v && rm -rf /opt/npm</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p>📄 Nginx Proxy Manager 一键部署教程 | 复制粘贴即用</p>
+            <p>所有命令和脚本可直接复制使用，无需任何修改。</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            const code = codeBlock.innerText;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.innerText;
+                button.innerText = '✅ 已复制';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+    </script>
+</body>
+</html>

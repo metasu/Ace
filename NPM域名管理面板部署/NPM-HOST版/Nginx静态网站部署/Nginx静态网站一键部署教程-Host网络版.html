@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🚀 Nginx 静态网站一键部署教程 (Host 网络版)</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d2e;
+      --card-border: #2a2d40;
+      --accent: #a78bfa;
+      --accent2: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #4ade80;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --code-bg: #0d1117;
+      --code-border: #21262d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 0;
+      overflow-x: hidden;
+      width: 100%;
+    }
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #0c4a6e 100%);
+      padding: 60px 20px 50px;
+      text-align: center;
+      border-bottom: 1px solid var(--card-border);
+      width: 100%;
+    }
+    .hero h1 { font-size: 2.4rem; margin-bottom: 12px; }
+    .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto; }
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+    .toc { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px 28px; margin-bottom: 40px; }
+    .toc h2 { font-size: 1.2rem; margin-bottom: 12px; color: var(--accent); }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--accent2); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .step { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 28px 28px 24px; margin-bottom: 28px; overflow: hidden; }
+    .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .step-num { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; flex-shrink: 0; }
+    .step-title { font-size: 1.25rem; font-weight: 700; }
+    .step p, .step ul, .step ol { margin-bottom: 14px; color: var(--muted); }
+    .step ul, .step ol { padding-left: 20px; }
+    .step li { margin-bottom: 4px; }
+    .step strong { color: var(--text); }
+    .note { background: rgba(167,139,250,0.08); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.92rem; color: var(--muted); }
+    .note.warn { background: rgba(251,191,36,0.08); border-left-color: var(--yellow); }
+    .note.danger { background: rgba(248,113,113,0.08); border-left-color: var(--red); }
+    .note.success { background: rgba(74,222,128,0.08); border-left-color: var(--green); }
+    .note strong { color: var(--text); }
+    .code-wrap { position: relative; margin: 14px 0; max-width: 100%; }
+    .code-wrap pre {
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", "Cascadia Code", Consolas, monospace;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #c9d1d9;
+      white-space: pre;
+      word-wrap: normal;
+      max-width: 100%;
+    }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: #30363d; color: #c9d1d9; border: 1px solid #484f58;
+      border-radius: 6px; padding: 4px 10px; font-size: 0.75rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .copy-btn:hover { background: #484f58; }
+    .copy-btn.copied { background: #238636; border-color: #2ea043; color: #fff; }
+    h2.section-title { font-size: 1.5rem; margin: 48px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--card-border); color: var(--accent); }
+    .table-wrap { width: 100%; overflow-x: auto; margin: 14px 0; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+    th, td { padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); word-wrap: break-word; overflow-wrap: break-word; }
+    th { background: rgba(167,139,250,0.1); color: var(--accent); font-weight: 600; }
+    td { color: var(--muted); }
+    td code { word-break: break-all; }
+    code { background: #21262d; padding: 2px 6px; border-radius: 4px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.88em; color: #f0883e; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 6px; }
+    .tag-required { background: rgba(248,113,113,0.15); color: var(--red); }
+    .tag-optional { background: rgba(74,222,128,0.15); color: var(--green); }
+    .faq-item { margin-bottom: 18px; }
+    .faq-q { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .faq-a { color: var(--muted); }
+
+    @media print {
+      body { background: #fff; color: #1a1a1a; font-size: 11pt; }
+      .hero { background: none; border-bottom: 2px solid #333; padding: 30px 0; }
+      .hero h1 span { -webkit-text-fill-color: #333; }
+      .hero p { color: #555; }
+      .container { padding: 0; max-width: 100%; }
+      .step, .toc, .note { break-inside: avoid; page-break-inside: avoid; border-color: #ccc; background: #f9f9f9; }
+      .code-wrap pre { background: #f5f5f5; border-color: #ddd; color: #333; font-size: 9pt; }
+      .copy-btn { display: none; }
+      table { break-inside: avoid; page-break-inside: avoid; }
+      th { background: #eee; color: #333; }
+      td { color: #555; }
+      h2.section-title { color: #333; border-bottom-color: #ccc; }
+      code { background: #eee; color: #c7254e; }
+      .note { border-left-width: 3px; }
+      a { color: #333; text-decoration: underline; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🚀 <span>Nginx 静态网站一键部署</span></h1>
+  <p>基于 Docker Compose v2 + Nginx 1.26，Host 网络模式，零手动上传，复制即用，新手友好。</p>
+</div>
+
+<div class="container">
+
+  <!-- 目录 -->
+  <div class="toc">
+    <h2>📑 目录</h2>
+    <ol>
+      <li><a href="#intro">简介与目标</a></li>
+      <li><a href="#step0">步骤 0 — 环境检查</a></li>
+      <li><a href="#step1">步骤 1 — 创建目录结构</a></li>
+      <li><a href="#step2">步骤 2 — 生成 docker-compose.yml</a></li>
+      <li><a href="#step3">步骤 3 — 生成 Nginx 配置</a></li>
+      <li><a href="#step4">步骤 4 — 生成默认站点首页</a></li>
+      <li><a href="#step5">步骤 5 — 启动服务</a></li>
+      <li><a href="#verify">✅ 验证（Health Check）</a></li>
+      <li><a href="#ops">🔧 日常运维命令</a></li>
+      <li><a href="#add-site">📂 新增站点（子目录方式）</a></li>
+      <li><a href="#npm-pcloud">🔁 NPM 反代 pCloud 短链接</a></li>
+      <li><a href="#faq">❓ 常见问题排查</a></li>
+      <li><a href="#cleanup">🧹 清理 / 回滚</a></li>
+    </ol>
+  </div>
+
+  <!-- 简介 -->
+  <h2 class="section-title" id="intro">📌 简介与目标</h2>
+  <div class="step">
+    <p><strong>目标：</strong>在一台全新的 Linux 服务器上，使用 Docker Compose v2 部署 Nginx 1.26 静态网站服务。</p>
+    <p><strong>最终效果：</strong></p>
+    <ul>
+      <li>访问 <code>http://你的IP:50080</code> 即可看到主页</li>
+      <li>将 HTML 文件丢到 <code>/opt/sites/</code> 即可对外提供访问</li>
+      <li>支持子目录多站点：<code>/opt/sites/站点名/index.html</code></li>
+      <li>采用 <code>network_mode: "host"</code>，容器直接使用宿主机网络，获取真实访客 IP</li>
+    </ul>
+    <div class="note warn"><strong>⚠️ 端口占用提醒：</strong>Host 网络模式下，Nginx 将直接占用宿主机的 <strong>50080</strong> 和 <strong>50443</strong> 端口。请确保部署前这些端口未被其他程序使用。</div>
+    <p><strong>架构：</strong></p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>组件</th><th>版本</th><th>用途</th></tr>
+      <tr><td>Docker Compose</td><td>v2</td><td>容器编排</td></tr>
+      <tr><td>Nginx</td><td>1.26</td><td>静态文件服务</td></tr>
+      <tr><td>网络模式</td><td>host</td><td>直接使用宿主机网络，获取真实 IP</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- 步骤 0 -->
+  <h2 class="section-title" id="step0">🔍 步骤 0 — 环境检查</h2>
+  <div class="step">
+    <div class="step-header"><div class="step-num">0</div><div class="step-title">确认 Docker 和 Docker Compose v2 已安装</div></div>
+    <p><strong>目的：</strong>确保目标服务器上已安装 Docker 和 Compose v2（<code>docker compose</code> 命令）。</p>
+    <div class="code-wrap"><pre>docker --version
+docker compose version</pre></div>
+    <div class="note success"><strong>✅ 期望输出：</strong>看到 Docker 版本号和 <code>Docker Compose version v2.x.x</code> 即可。</div>
+    <div class="note warn"><strong>⚠️ 如果未安装 Docker：</strong>请先参考 <a href="https://docs.docker.com/engine/install/" target="_blank">Docker 官方安装文档</a> 安装。以下命令适用于 Ubuntu/Debian：</div>
+    <div class="code-wrap"><pre># 仅在未安装 Docker 时执行
+curl -fsSL https://get.docker.com | sh
+sudo systemctl enable --now docker</pre></div>
+    <div class="note danger"><strong>🔴 注意：</strong>本教程使用 <code>docker compose</code>（无连字符，v2 版本），而非旧版 <code>docker-compose</code>。</div>
+  </div>
+
+  <!-- 步骤 1 -->
+  <h2 class="section-title" id="step1">📁 步骤 1 — 创建目录结构</h2>
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><div class="step-title">创建 Nginx 配置目录和站点目录</div></div>
+    <p><strong>目的：</strong>建好所有必需的目录。</p>
+    <div class="code-wrap"><pre>mkdir -p /opt/Nginx/conf /opt/Nginx/conf.d /opt/sites</pre></div>
+    <p><strong>目录说明：</strong></p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>目录</th><th>用途</th></tr>
+      <tr><td><code>/opt/Nginx/</code></td><td>Nginx Docker Compose 项目根目录</td></tr>
+      <tr><td><code>/opt/Nginx/conf/</code></td><td>Nginx 主配置文件</td></tr>
+      <tr><td><code>/opt/Nginx/conf.d/</code></td><td>站点配置文件（server 块）</td></tr>
+      <tr><td><code>/opt/sites/</code></td><td>静态网站文件根目录</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- 步骤 2 -->
+  <h2 class="section-title" id="step2">🐳 步骤 2 — 生成 docker-compose.yml</h2>
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><div class="step-title">自动创建 Docker Compose 配置</div></div>
+    <p><strong>目的：</strong>定义 Nginx 1.26 容器，挂载配置和站点目录，使用 Host 网络模式。</p>
+    <div class="code-wrap"><pre>cat > /opt/Nginx/docker-compose.yml &lt;&lt; 'EOF'
+services:
+  nginx:
+    image: nginx:1.26
+    container_name: nginx-1.26
+    restart: unless-stopped
+    network_mode: "host"
+    volumes:
+      - /opt/sites:/usr/share/nginx/html:ro
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./conf.d:/etc/nginx/conf.d:ro
+EOF</pre></div>
+    <div class="note"><strong>💡 说明：</strong>Host 网络模式下容器直接使用宿主机网络，Nginx 监听宿主机 <code>50080</code>（HTTP）和 <code>50443</code>（HTTPS）端口，无需端口映射。</div>
+    <div class="note warn"><strong>⚠️ 安全提示：</strong>生产环境建议通过 NPM 反向代理 + SSL 访问。Host 模式下 NPM 的 Forward Hostname 填 <code>127.0.0.1</code>，Forward Port 填 <code>50080</code>。</div>
+  </div>
+
+  <!-- 步骤 3 -->
+  <h2 class="section-title" id="step3">⚙️ 步骤 3 — 生成 Nginx 配置</h2>
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><div class="step-title">生成主配置和默认站点配置</div></div>
+    <p><strong>4a — 主配置 nginx.conf</strong></p>
+    <div class="code-wrap"><pre>cat > /opt/Nginx/conf/nginx.conf &lt;&lt; 'EOF'
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log warn;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access.log main;
+
+    sendfile on;
+    tcp_nopush on;
+    keepalive_timeout 65;
+    gzip on;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+EOF</pre></div>
+
+    <p><strong>4b — 默认站点配置 default.conf</strong></p>
+    <div class="code-wrap"><pre>cat > /opt/Nginx/conf.d/default.conf &lt;&lt; 'EOF'
+server {
+    listen 50080;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF</pre></div>
+    <div class="note"><strong>💡 说明：</strong><code>server_name _;</code> 表示匹配所有域名。<code>root</code> 指向容器内的 <code>/usr/share/nginx/html</code>，即宿主机的 <code>/opt/sites/</code>。如需 HTTPS，可再添加监听 <code>50443</code> 的 server 块。</div>
+  </div>
+
+  <!-- 步骤 4 -->
+  <h2 class="section-title" id="step4">🏠 步骤 4 — 生成默认站点首页</h2>
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><div class="step-title">创建一个测试首页</div></div>
+    <p><strong>目的：</strong>验证部署是否成功。你之后可以替换成自己的 HTML。</p>
+    <div class="code-wrap"><pre>cat > /opt/sites/index.html &lt;&lt; 'EOF'
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;My Site&lt;/title&gt;
+  &lt;style&gt;
+    body { font-family: sans-serif; display: flex; justify-content: center;
+           align-items: center; min-height: 100vh; margin: 0;
+           background: #1a1b2e; color: #e2e8f0; }
+    h1 { font-size: 2.5rem; }
+    span { color: #a78bfa; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;🎉 &lt;span&gt;Nginx 1.26&lt;/span&gt; 部署成功！&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+EOF</pre></div>
+  </div>
+
+  <!-- 步骤 5 -->
+  <h2 class="section-title" id="step5">▶️ 步骤 5 — 启动服务</h2>
+  <div class="step">
+    <div class="step-header"><div class="step-num">5</div><div class="step-title">拉取镜像并启动 Nginx 容器</div></div>
+    <div class="code-wrap"><pre>cd /opt/Nginx &amp;&amp; docker compose up -d</pre></div>
+    <div class="note success"><strong>✅ 期望输出：</strong><code>✔ Container nginx-1.26 Started</code></div>
+  </div>
+
+  <!-- 验证 -->
+  <h2 class="section-title" id="verify">✅ 验证（Health Check）</h2>
+  <div class="step">
+    <p><strong>1. 检查容器运行状态：</strong></p>
+    <div class="code-wrap"><pre>docker ps --filter name=nginx-1.26</pre></div>
+    <div class="note success"><strong>✅ 期望：</strong>STATUS 列显示 <code>Up</code>。Host 模式下 PORTS 列为空，这是正常的。</div>
+
+    <p><strong>2. 检查端口是否监听：</strong></p>
+    <div class="code-wrap"><pre>ss -tlnp | grep ':50080'</pre></div>
+    <div class="note success"><strong>✅ 期望：</strong>看到 <code>0.0.0.0:50080</code> 正在监听。</div>
+
+    <p><strong>3. 用 curl 测试访问：</strong></p>
+    <div class="code-wrap"><pre>curl -s http://localhost:50080 | head -5</pre></div>
+    <div class="note success"><strong>✅ 期望：</strong>看到 HTML 内容，说明部署成功！</div>
+
+    <p><strong>4. 浏览器访问：</strong></p>
+    <div class="code-wrap"><pre># 替换为你的服务器公网 IP
+http://你的IP:50080</pre></div>
+  </div>
+
+  <!-- 运维命令 -->
+  <h2 class="section-title" id="ops">🔧 日常运维命令</h2>
+  <div class="step">
+    <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col style="width: 25%;">
+        <col style="width: 75%;">
+      </colgroup>
+      <tr><th>操作</th><th>命令</th></tr>
+      <tr><td>查看日志</td><td><code>cd /opt/Nginx &amp;&amp; docker compose logs -f nginx</code></td></tr>
+      <tr><td>查看访问日志</td><td><code>docker exec nginx-1.26 tail -f /var/log/nginx/access.log</code></td></tr>
+      <tr><td>查看错误日志</td><td><code>docker exec nginx-1.26 tail -f /var/log/nginx/error.log</code></td></tr>
+      <tr><td>重启容器</td><td><code>cd /opt/Nginx &amp;&amp; docker compose restart nginx</code></td></tr>
+      <tr><td>停止服务</td><td><code>cd /opt/Nginx &amp;&amp; docker compose stop</code></td></tr>
+      <tr><td>启动服务</td><td><code>cd /opt/Nginx &amp;&amp; docker compose start</code></td></tr>
+      <tr><td>重建容器</td><td><code>cd /opt/Nginx &amp;&amp; docker compose down &amp;&amp; docker compose up -d</code></td></tr>
+      <tr><td>测试配置是否正确</td><td><code>docker exec nginx-1.26 nginx -t</code></td></tr>
+      <tr><td>热重载配置（不停机）</td><td><code>docker exec nginx-1.26 nginx -s reload</code></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- 新增站点 -->
+  <h2 class="section-title" id="add-site">📂 新增站点（子目录方式）</h2>
+  <div class="step">
+    <p><strong>方法极其简单：</strong>在 <code>/opt/sites/</code> 下新建文件夹，放入 HTML 文件，即可访问。<strong>无需改任何配置，无需重启。</strong></p>
+    <div class="code-wrap"><pre># 示例：新增一个名为 "blog" 的站点
+mkdir -p /opt/sites/blog
+
+cat > /opt/sites/blog/index.html &lt;&lt; 'EOF'
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;My Blog&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;&lt;h1&gt;这是我的博客&lt;/h1&gt;&lt;/body&gt;
+&lt;/html&gt;
+EOF</pre></div>
+    <p><strong>立即可访问：</strong></p>
+    <div class="code-wrap"><pre>http://你的IP:50080/blog/</pre></div>
+    <p><strong>站点目录结构示例：</strong></p>
+    <div class="code-wrap"><pre>/opt/sites/
+├── index.html              ← 主页（http://IP:50080）
+├── blog/
+│   └── index.html          ← http://IP:50080/blog/
+├── docs/
+│   └── index.html          ← http://IP:50080/docs/
+└── tools/
+    └── index.html          ← http://IP:50080/tools/</pre></div>
+    <div class="note success"><strong>✅ 记住：</strong>丢文件夹 → 立即能访问，就这么简单。</div>
+  </div>
+
+  <!-- NPM 反代 pCloud 短链接 -->
+  <h2 class="section-title" id="npm-pcloud">🔁 NPM 反代 pCloud 短链接</h2>
+  <div class="step">
+    <p><strong>场景：</strong>你有一个 pCloud 公开文件夹链接如 <code>https://filedn.eu/你的pCloud_code/</code>（例如 <code>luAFbRWknPyfToYDs9VNNI8</code>），想通过自有域名 <code>https://你的域名/</code> 直接访问，<strong>隐藏冗长的 pCloud code 前缀</strong>，并支持在 WordPress 中 iframe 嵌入。</p>
+    <p><strong>最终效果：</strong></p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>原始链接</th><th>短链接</th></tr>
+      <tr><td><code>https://filedn.eu/你的pCloud_code/tut/file.html</code></td><td><code>https://你的域名/tut/file.html</code></td></tr>
+      <tr><td><code>https://filedn.eu/你的pCloud_code/doc.pdf</code></td><td><code>https://你的域名/doc.pdf</code></td></tr>
+    </table>
+    </div>
+    <div class="note warn"><strong>⚠️ 前置条件：</strong>你的域名 DNS A 记录已指向 NPM 服务器公网 IP，且 80/443 端口可达。</div>
+
+    <p><strong>第 1 步 — NPM 面板 Details 标签：</strong></p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>字段</th><th>填写</th></tr>
+      <tr><td>Domain Names</td><td><code>你的域名</code>（如 <code>m.anut.top</code>）</td></tr>
+      <tr><td>Scheme</td><td><code>https</code></td></tr>
+      <tr><td>Forward Hostname / IP</td><td><code>filedn.eu</code></td></tr>
+      <tr><td>Forward Port</td><td><code>443</code></td></tr>
+    </table>
+    </div>
+
+    <p><strong>第 2 步 — SSL 标签：</strong></p>
+    <ul>
+      <li>SSL Certificate → <strong>Request a new SSL Certificate</strong>（Let's Encrypt）</li>
+      <li>✅ 勾选 <strong>Force SSL</strong></li>
+      <li>✅ 勾选 <strong>HTTP/2 Support</strong></li>
+      <li>✅ 勾选 <strong>I Agree to the Let's Encrypt Terms of Service</strong></li>
+    </ul>
+
+    <p><strong>第 3 步 — Advanced 标签（核心）：</strong></p>
+    <p>清空默认内容，粘贴以下完整配置。请将 <code>你的pCloud_code</code> 替换为你的实际 code（如 <code>luAFbRWknPyfToYDs9VNNI8</code>），将 <code>你的域名</code> 替换为实际域名：</p>
+    <div class="code-wrap"><pre># ① 长链接自动 301 跳转到短链接
+location ~ ^/你的pCloud_code/(.*)$ {
+  return 301 https://你的域名/$1$is_args$args;
+}
+
+# ② 主代理（正则 location 优先级高于 NPM 默认的 location /）
+location ~ ^/(?!\.well-known/) {
+    proxy_ssl_server_name on;
+    proxy_ssl_name filedn.eu;
+    proxy_http_version 1.1;
+    proxy_set_header Host filedn.eu;
+    proxy_set_header Referer "";
+    proxy_set_header Origin "";
+
+    # 替换响应中的 pCloud code，避免页面内链接带前缀
+    proxy_set_header Accept-Encoding "";
+    sub_filter '"code": "你的pCloud_code"' '"code": "."';
+    sub_filter '/你的pCloud_code/' '/';
+    sub_filter_once off;
+    sub_filter_types *;
+
+    # 允许 iframe 嵌入 + 跨域
+    proxy_hide_header X-Frame-Options;
+    proxy_hide_header Content-Security-Policy;
+    proxy_hide_header Access-Control-Allow-Origin;
+    add_header Access-Control-Allow-Origin "*" always;
+    add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;
+    add_header Content-Disposition "inline" always;
+
+    # 断点续传 &amp; 超时
+    proxy_set_header Range $http_range;
+    proxy_set_header If-Range $http_if_range;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    proxy_pass https://filedn.eu/你的pCloud_code$request_uri;
+}</pre></div>
+
+    <div class="note"><strong>💡 原理说明：</strong></div>
+    <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col style="width: 40%;">
+        <col style="width: 60%;">
+      </colgroup>
+      <tr><th>配置项</th><th>作用</th></tr>
+      <tr><td><code>location ~ ^/code/(.*)</code></td><td>拦截残留的长路径，301 跳转到短链接</td></tr>
+      <tr><td><code>location ~ ^/(?!\.well-known/)</code></td><td>正则 location 优先级高于 NPM 默认的 <code>location /</code>，接管所有请求（排除证书续签路径）</td></tr>
+      <tr><td><code>proxy_pass ...code$request_uri</code></td><td>将短路径拼上 pCloud code 前缀后转发给上游</td></tr>
+      <tr><td><code>sub_filter "code"→"."</code></td><td>pCloud JS 用 <code>"/" + code + dirpath</code> 拼链接，code 改为 <code>"."</code> 可避免双斜杠问题（<code>/./tut/</code> 被浏览器规范化为 <code>/tut/</code>）</td></tr>
+      <tr><td><code>proxy_set_header Accept-Encoding ""</code></td><td>禁止上游压缩，否则 sub_filter 无法替换内容</td></tr>
+      <tr><td>CORS / X-Frame-Options 头</td><td>允许在 WordPress 等站点通过 iframe 嵌入</td></tr>
+    </table>
+    </div>
+
+    <p><strong>第 4 步 — 验证：</strong></p>
+    <div class="code-wrap"><pre># 测试短链接直接访问
+curl -sI https://你的域名/tut/file.html | head -5
+
+# 测试长链接是否 301 跳转
+curl -sI https://你的域名/你的pCloud_code/tut/file.html | grep location</pre></div>
+    <div class="note success"><strong>✅ 期望：</strong>短链接返回 200，长链接返回 <code>301 → https://你的域名/tut/file.html</code>。</div>
+
+    <p><strong>WordPress iframe 嵌入示例：</strong></p>
+    <div class="code-wrap"><pre>&lt;iframe src="https://你的域名/tut/file.html"
+        width="100%" height="720" frameborder="0"&gt;&lt;/iframe&gt;</pre></div>
+  </div>
+
+  <!-- FAQ -->
+  <h2 class="section-title" id="faq">❓ 常见问题排查</h2>
+  <div class="step">
+
+    <div class="faq-item">
+      <div class="faq-q">Q1：访问 50080 端口显示 403 Forbidden</div>
+      <div class="faq-a">
+        <strong>原因：</strong><code>/opt/sites/</code> 下没有 <code>index.html</code> 文件。<br>
+        <strong>解决：</strong>确认文件存在：
+      </div>
+      <div class="code-wrap"><pre>ls -la /opt/sites/index.html</pre></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q2：容器启动失败 / 不断重启</div>
+      <div class="faq-a"><strong>诊断：</strong></div>
+      <div class="code-wrap"><pre># 查看容器日志
+cd /opt/Nginx &amp;&amp; docker compose logs nginx
+
+# 测试 Nginx 配置语法
+docker exec nginx-1.26 nginx -t</pre></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q3：端口 50080 已被占用</div>
+      <div class="faq-a"><strong>诊断并释放：</strong></div>
+      <div class="code-wrap"><pre># 查看谁占用了 50080
+ss -tlnp | grep ':50080'
+
+# 方法一：停止占用该端口的程序
+# 方法二：修改 /opt/Nginx/conf.d/default.conf 中的 listen 端口为其他值，然后重建容器</pre></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q4：通过 NPM 反代后显示 502 Bad Gateway</div>
+      <div class="faq-a">
+        <strong>原因：</strong>NPM 代理目标写错。<br>
+        <strong>解决：</strong>由于 NPM 也使用 Host 网络模式，两者共享宿主机网络。NPM 的 Forward Hostname 填 <code>127.0.0.1</code>，Forward Port 填 <code>50080</code>。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q5：Host 模式下容器 PORTS 列为空，正常吗？</div>
+      <div class="faq-a"><strong>正常。</strong>Host 网络模式下容器直接使用宿主机网络栈，不通过 Docker 端口映射，所以 <code>docker ps</code> 的 PORTS 列为空。用 <code>ss -tlnp | grep ':50080'</code> 确认端口监听即可。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q6：中文文件名 URL 访问 404</div>
+      <div class="faq-a"><strong>原因：</strong>浏览器会对中文 URL 编码。建议文件名使用英文或拼音，避免中文路径问题。</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q7：NPM 反代 pCloud 后 Advanced 配置导致 ERR_SSL_UNRECOGNIZED_NAME_ALERT</div>
+      <div class="faq-a">
+        <strong>原因：</strong>NPM 已自动处理 SSL/SNI，在 <strong>server 上下文</strong>重复添加 <code>proxy_ssl_server_name</code> 等指令会冲突。<br>
+        <strong>解决：</strong>这些指令必须放在自定义的 <code>location</code> 块内（如教程所示），不能直接写在 Advanced 顶层。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q8：NPM 反代 pCloud 目录页点击链接跳到 <code>//tut/file</code>（无头网址）</div>
+      <div class="faq-a">
+        <strong>原因：</strong>pCloud JS 用 <code>"/" + code + dirpath</code> 拼链接，code 为空时产生双斜杠 <code>//</code>，被浏览器解析为协议相对 URL。<br>
+        <strong>解决：</strong>将 sub_filter 中 code 替换为 <code>"."</code> 而非空字符串，<code>/./tut/</code> 会被浏览器规范化为 <code>/tut/</code>。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q9：NPM 的 <code>rewrite</code> 不生效，无法添加路径前缀</div>
+      <div class="faq-a">
+        <strong>原因：</strong>NPM 内置的 <code>proxy_pass</code> 使用 <code>$request_uri</code>（原始请求 URI），而 <code>rewrite</code> 只修改 <code>$uri</code>，不影响 <code>$request_uri</code>。<br>
+        <strong>解决：</strong>用自定义 <code>location ~ </code> 块覆盖默认路由，在其中直接写带路径前缀的 <code>proxy_pass</code>。
+      </div>
+    </div>
+  </div>
+
+  <!-- 清理 -->
+  <h2 class="section-title" id="cleanup">🧹 清理 / 回滚</h2>
+  <div class="step">
+    <p><strong>如需完全卸载，按顺序执行以下命令：</strong></p>
+    <div class="note danger"><strong>🔴 警告：</strong>以下操作将删除 Nginx 容器、配置文件和所有站点数据，<strong>不可恢复</strong>。请确认后再执行。</div>
+    <div class="code-wrap"><pre># 1. 停止并删除容器和卷
+cd /opt/Nginx &amp;&amp; docker compose down --volumes --remove-orphans
+
+# 2. 删除 Nginx 配置目录
+rm -rf /opt/Nginx
+
+# 3. 删除站点数据（⚠️ 会删除所有网站文件！）
+rm -rf /opt/sites
+
+# 4. 清理无用的 Docker 镜像（可选）
+docker image prune -f</pre></div>
+  </div>
+
+</div>
+
+<script>
+// 一键复制按钮
+document.querySelectorAll('.code-wrap').forEach(wrap => {
+  const pre = wrap.querySelector('pre');
+  if (!pre) return;
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = '复制';
+  btn.addEventListener('click', () => {
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '已复制 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); btn.textContent = '已复制 ✓'; btn.classList.add('copied'); }
+      catch(e) { btn.textContent = '失败'; }
+      document.body.removeChild(ta);
+      setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+  wrap.appendChild(btn);
+});
+</script>
+
+</body>
+</html>

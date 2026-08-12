@@ -1,0 +1,5 @@
+# Exclude 术数类 content
+Class Space/术数类/
+
+# Exclude services
+services/

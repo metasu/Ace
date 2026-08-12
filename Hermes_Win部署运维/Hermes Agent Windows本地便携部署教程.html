@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermes Agent Windows 本地便携部署教程</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: #333; line-height: 1.8; padding: 20px; min-height: 100vh; }
+        .container { max-width: 950px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden; }
+        header { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); color: white; padding: 40px 30px; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        header h1 { font-size: 2.2em; margin-bottom: 10px; color: #ffffff; }
+        header p { font-size: 1.05em; opacity: 0.95; margin-bottom: 15px; color: #eefcf7; }
+        .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .badge { display: inline-block; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+        .content { padding: 40px 30px; }
+        .section { margin-bottom: 40px; }
+        .section h2 { color: #1f4037; font-size: 1.8em; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #1f4037; }
+        .section h3 { color: #2c5364; font-size: 1.3em; margin-top: 20px; margin-bottom: 15px; }
+        .card { background: #f8f9fa; border-left: 4px solid #1f4037; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .card.warning { background: #fff3cd; border-left-color: #ffc107; color: #856404; }
+        .card.danger { background: #f8d7da; border-left-color: #dc3545; color: #721c24; }
+        .card.success { background: #d4edda; border-left-color: #28a745; color: #155724; }
+        .code-block { background: #1e1e1e; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; position: relative; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; line-height: 1.5; border: 1px solid #333; }
+        .code-block code { display: block; white-space: pre; }
+        .copy-btn { position: absolute; top: 8px; right: 8px; background: #1f4037; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; transition: all 0.3s ease; }
+        .copy-btn:hover { background: #2c5364; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; background: white; }
+        table th { background: #1f4037; color: white; padding: 10px; text-align: left; font-weight: 600; border: 1px solid #1f4037; }
+        table td { padding: 10px; border: 1px solid #ddd; }
+        .step { background: white; border: 2px solid #1f4037; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .step-number { display: inline-block; background: #1f4037; color: white; width: 35px; height: 35px; border-radius: 50%; text-align: center; line-height: 35px; font-weight: bold; margin-right: 10px; font-size: 1em; }
+        .step h3 { display: inline-block; margin: 0; vertical-align: middle; }
+        .step-content { margin-top: 12px; margin-left: 45px; }
+        ul, ol { margin-left: 20px; margin-bottom: 10px; }
+        li { margin-bottom: 6px; }
+        .toc { background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid #ddd; }
+        .toc h2 { font-size: 1.4em; color: #333; margin-bottom: 15px; border-bottom: none; }
+        .toc ol { margin-left: 25px; }
+        .toc a { color: #1f4037; text-decoration: none; font-weight: 600; }
+        .toc a:hover { text-decoration: underline; }
+        footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #666; border-top: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hermes Agent Windows 本地便携部署教程</h1>
+            <p>100% 动态盘符自适应 · 移动硬盘/U盘即插即用 · 现有模型一键切换 · 自动回退保护 · WebUI 模型高亮</p>
+            <div class="badges">
+                <span class="badge">Windows 10/11</span>
+                <span class="badge">Python 3.12.13 (Portable)</span>
+                <span class="badge">Node.js v26 (Portable)</span>
+                <span class="badge">Git for Windows (Portable)</span>
+                <span class="badge">Python 3.12 (Portable)</span>
+                <span class="badge">Hermes Agent CLI</span>
+                <span class="badge">Hermes WebUI</span>
+                <span class="badge">现有模型零增删</span>
+                <span class="badge">Provider 自动回退</span>
+                <span class="badge">模型名称角色高亮</span>
+                <span class="badge">6 MCP 服务 (kuaipao grok-image + AtlasCloud Seedream v5.0 Pro 文生图 + Seedream v5.0 Pro 编辑 + Seedream v5.0 Lite 连续编辑 + Wan 2.7 × 2)</span>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <div class="toc">
+                <h2>📑 目录</h2>
+                <ol>
+                    <li><a href="#intro">一、 简介与架构设计</a></li>
+                    <li><a href="#step1">二、 依赖与盘符自适应设计</a></li>
+                    <li><a href="#step2">三、 Step 1 · 目录骨架搭建</a></li>
+                    <li><a href="#step3">四、 Step 2 · 基础环境与源码克隆</a></li>
+                    <li><a href="#step4">五、 Step 3 · 便携配置文件编写</a></li>
+                    <li><a href="#step5">六、 Step 4 · 便携一键启动脚本 (`start.bat`)</a></li>
+                    <li><a href="#step6">七、 Step 5 · 启动与端到端验证</a></li>
+                    <li><a href="#zhlang">八、 🌐 WebUI 默认中文设置</a></li>
+                    <li><a href="#fontsize">九、 💡 高DPI WebUI 字太小调节指南</a></li>
+                    <li><a href="#troubleshoot">十、 🔧 故障排除速查</a></li>
+                </ol>
+            </div>
+
+            <!-- ========== 简介与架构 ========== -->
+            <div class="section" id="intro">
+                <h2>一、 简介与架构设计</h2>
+                <p>本教程专为 <strong>Windows 本地便携化（U盘/移动硬盘）环境</strong> 打造。与基于 Linux/Docker 的重度聚合架构不同，本方案剥离了 NewAPI、Nginx、Systemd 等繁琐组件，采用<b>“轻量 Gateway 后台 + 纯 Python 本地 WebUI”</b>的两层结构，完美适配盘符漂移场景。</p>
+                <div class="code-block">
+                    <code>用户浏览器 (本机 Chrome / Edge)
+↓ 访问 http://localhost:8787
+Hermes WebUI (静态前端 + Python 极简 BFF 接口)
+↓ 转发请求到 http://127.0.0.1:50001/v1
+Hermes Agent CLI (Gateway 模式，后台静默运行)
+↓ 根据 start.bat 一键切换的配置
+├── 1. 快跑 GPT 渠道 (kuaipao.ai -> gpt-5.6-sol)
+├── 2. AtlasCloud GLM 渠道 (api.atlascloud.ai -> zai-org/glm-5.2)
+├── 3. AtlasCloud Grok 渠道 (api.atlascloud.ai -> xai/grok-4.3)
+└── 4. cc-vibe-gpt 渠道 (cc-vibe.com -> gpt-5.6-sol，默认)
+
+故障保护（按当前已有 provider 动态生成，不增删模型）：
+主渠道 cc-vibe-gpt/gpt-5.6-sol
+ ↓ 失败、超时、限流或服务错误
+Fallback 1 kuaipao/gpt-5.6-sol
+ ↓ 仍失败
+Fallback 2 atlascloud/xai/grok-4.3</code>
+                </div>
+            </div>
+
+            <!-- ========== 盘符自适应设计 ========== -->
+            <div class="section" id="step1">
+                <h2>二、 依赖与盘符自适应设计</h2>
+                <div class="card warning">
+                    <strong>⚠️ 盘符漂移痛点：</strong>移动硬盘接入不同电脑时，盘符可能从 <code>F:</code> 变成 <code>E:</code> 或 <code>G:</code>。<br>
+                    1. Python 虚拟环境中的 <code>Scripts\hermes.exe</code> 等包装器内部固化了安装时的绝对路径，一旦换盘符便会失效报“找不到解释器”错误。<br>
+                    2. 配置文件 <code>config.yaml</code>、<code>.env</code> 若含绝对路径，换盘后会导致网关或会话崩溃；<code>auth.lock</code> 是运行期互斥锁文件，应保持为空。<br>
+                    3. <strong>MCP server 配置含盘符路径和 API Key：</strong><code>config.yaml</code> 中 <code>mcp_servers</code> 的 <code>args</code>（如 <code>F:\hermes_ui\mcp\kuaipao-image\build\index.js</code>）、<code>env.DEFAULT_OUTPUT_PATH</code>（如 <code>F:\hermes_ui\output</code>）和 <code>env.API_KEY</code> 均为含盘符的绝对路径或明文密钥。换盘后 Node 子进程找不到入口脚本，MCP 服务全部加载失败，表现为 <code>Connection closed</code> 或工具列表为空；config.yaml 泄露也会暴露所有 MCP API Key。<br>
+                    4. <strong>Node.js 不在目标电脑 PATH 中：</strong>MCP server 配置为 <code>command: node</code>，hermes 在启动 MCP 子进程时会在 <code>PATH</code> 中查找 <code>node</code>。新电脑如果没装 Node.js 或安装路径不同，<code>node</code> 命令找不到，所有 MCP 服务直接启动失败——即使 config.yaml 路径已修复也没用。<br>
+                    5. <strong>缺少 Git for Windows：</strong>Hermes 的 terminal、read_file、write_file、search_files 等核心工具依赖 <code>bash.exe</code> 执行。新电脑如果没装 Git for Windows，所有依赖 bash 的功能全部失效，报 <code>Git Bash not found</code> 错误，MCP 工具也无法正常使用。即使装了，不同电脑安装路径不同（<code>C:\Program Files\Git</code> vs <code>C:\soft\Git</code>），config.yaml 里写死的 <code>bash_path</code> 换电脑就失效。<br>
+                    6. <strong>editable-install finder 路径固化盘符：</strong>使用 <code>uv pip install -e</code> 以可编辑模式安装 hermes-agent 后，venv 的 <code>site-packages</code> 中会生成 <code>__editable___hermes_agent_*_finder.py</code> 文件，其中写死了安装时的绝对路径（如 <code>F:\hermes_ui\hermes-agent\...</code>）。换盘符后此路径失效，Python 无法定位源码目录，导致 <code>python -m hermes_cli.main</code> 报 <code>ModuleNotFoundError: No module named 'hermes_cli'</code>，Gateway 和 WebUI 全部无法启动。
+                </div>
+                <div class="card success">
+                    <strong>🚀 盘符自适应解决方案：</strong><br>
+                    1. <strong>全相对路径配置文件：</strong> <code>config.yaml</code> 与 <code>.env</code> 中所有路径均使用 <code>"."</code> 或由启动脚本动态注入，确保配置文件 100% 盘符无关。<br>
+                    2. <strong>使用模块入口绕过可执行包装：</strong> 在启动脚本中，完全不调用 <code>hermes.exe</code>，而是直接使用当前虚拟环境的 <code>python.exe -m hermes_cli.main</code> 驱动 Gateway 及管理命令，彻底免疫 `venv` 的绝对路径绑定。<br>
+                    3. <strong>MCP 配置动态注入脚本 <code>inject_mcp_config.py</code>：</strong>独立 Python 脚本，在 <code>start.bat</code> 启动 Hermes 之前执行，将完整的 <code>mcp_servers</code> YAML 段落生成并注入到 <code>config.yaml</code> 中。路径使用当前 <code>ROOT_DIR</code>，API Key 从 <code>start.bat</code> 设置的环境变量读取（<code>HERMES_KUAIPAO_GPT_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>）。<strong>config.yaml 中不再保存任何 MCP 配置</strong>——每次启动时由脚本动态生成，彻底免疫盘符漂移，且 config.yaml 泄露不暴露任何 MCP 密钥。<br>
+                    4. <strong>Node.js 便携化：</strong>将 Node.js 运行时复制到 <code>F:\rely\node\</code> 目录，<code>start.bat</code> 启动时自动将其加入 <code>PATH</code>。换任何电脑都不依赖目标机器是否安装 Node.js，MCP 子进程始终能找到 <code>node</code> 命令。<br>
+                    5. <strong>Git for Windows 便携化 + 环境变量动态注入：</strong>将 Git for Windows 复制到 <code>F:\rely\git\</code> 目录，<code>start.bat</code> 启动时通过 <code>HERMES_GIT_BASH_PATH</code> 环境变量指向便携目录的 <code>bash.exe</code>，同时加入 <code>PATH</code>。换任何电脑都不依赖目标机器是否安装 Git，也不依赖安装路径。<strong>不在 config.yaml 中写 <code>bash_path</code></strong>——因为 config.yaml 里的路径是含盘符的绝对路径，换盘后会失效；环境变量由 <code>start.bat</code> 动态设置，始终正确。<br>
+                    6. <strong>Python + venv 便携化 + pyvenv.cfg 动态修复：</strong>将 CPython 3.12 和 venv 都放在 <code>F:\rely\</code> 中。venv 的 <code>pyvenv.cfg</code> 会写死 host Python 路径，<code>start.bat</code> 每次启动时通过 <code>fix_pyvenv.py</code> 自动将 <code>home=</code> 重写为 <code>%RELY_DIR%python</code>，确保 venv 始终找到便携 Python。<br>
+                    7. <strong>editable-install finder 路径动态修复：</strong>使用 <code>uv pip install -e</code> 以可编辑模式安装 hermes-agent 后，venv 的 <code>site-packages</code> 中会生成 <code>__editable___hermes_agent_*_finder.py</code> 文件，其中固化了安装时的绝对路径（如 <code>F:\hermes_ui\hermes-agent\...</code>）。换盘符后此路径失效，导致 <code>import hermes_cli</code> 报 <code>ModuleNotFoundError</code>。<code>start.bat</code> 每次启动时通过 <code>fix_editable_finder.py</code> 自动将 finder 文件中的路径重写为当前 <code>%ROOT_DIR%hermes-agent</code>，确保可编辑安装始终指向正确位置。<br>
+                    8. <strong>HERMES_WEBUI_PYTHON 环境变量显式注入：</strong>WebUI 的 <code>config.py</code> 中 <code>_discover_python()</code> 函数按优先级查找 Python 解释器：① <code>HERMES_WEBUI_PYTHON</code> 环境变量 → ② agent venv → ③ 本地 .venv → ④ <code>shutil.which("python3")</code> / <code>shutil.which("python")</code>。在 Windows 上，如果前三步都未命中，第④步会从 <code>PATH</code> 中查找 <code>python</code>，而 Windows 系统自带的 <code>C:\Users\&lt;user&gt;\AppData\Local\Microsoft\WindowsApps\python.exe</code> 是一个 0 字节的 Windows Store 重定向 stub——调用它会弹出应用商店页面而非执行 Python，导致 WebUI 对话卡死无响应。<code>start.bat</code> 通过显式设置 <code>HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe</code>，让 <code>_discover_python()</code> 在第①步直接命中便携 venv Python，彻底绕开 Windows Store stub 陷阱。<br>
+                    9. <strong>HERMES_WEBUI_AGENT_DIR 环境变量显式注入：</strong>WebUI 的 <code>_discover_agent_dir()</code> 函数用于定位 hermes-agent 源码目录。如果未显式设置 <code>HERMES_WEBUI_AGENT_DIR</code>，函数会尝试多种自动发现逻辑（相对路径推断、<code>HERMES_HOME</code> 下查找等），在某些目录结构或盘符漂移场景下可能失败，导致 <code>_HERMES_FOUND=False</code>，Agent 功能不可用。<code>start.bat</code> 通过显式设置 <code>HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent</code>，确保 Agent 目录始终被正确发现。<br>
+                    10. <strong>模型回退配置器：</strong><code>configure_failover.py</code> 每次启动以及每次菜单切换模型后都会读取现有 <code>providers</code>，排除当前主 provider，再生成有序 <code>fallback_providers</code>。它只维护顶层回退段和 <code>agent.api_max_retries</code>，不会创建、删除或改写任何 provider/model 清单。<br>
+                    11. <strong>有界请求与 WebUI 角色高亮：</strong><code>start.bat</code> 设置 <code>HERMES_API_TIMEOUT=60</code>，避免故障上游无限卡住；WebUI 模型选择器根据同一回退链显示 <code>Primary</code>、<code>Fallback 1</code>、<code>Fallback 2</code>。即使模型目录请求超时进入最小目录模式，角色高亮仍会保留。
+                </div>
+            </div>
+
+            <!-- ========== Step 1 目录骨架 ========== -->
+            <div class="section" id="step2">
+                <h2>三、 Step 1 · 目录骨架搭建</h2>
+                <p>在移动硬盘根目录中（以 <code>F:\</code> 为例，实际部署时脚本会自动识别），创建以下目录：</p>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>创建物理文件夹</h3>
+                    <div class="step-content">
+                        <p>打开 PowerShell 或 CMD，执行以下命令：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>mkdir F:\hermes_ui
+mkdir F:\hermes_ui\data
+mkdir F:\rely\venv
+mkdir F:\hermes_ui\mcp
+mkdir F:\hermes_ui\output</code>
+                        </div>
+                        <p><strong>Node.js 便携化（关键！MCP 依赖项）：</strong>将本机已安装的 Node.js 复制到 <code>rely\</code> 目录，换电脑不依赖目标机器是否装 Node：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 从本机已有 Node.js 复制（以 D:\soft6\codelan\node-v26.1.0-win-x64 为例）
+xcopy "D:\soft6\codelan\node-v26.1.0-win-x64" "F:\rely\node\" /E /I /Y
+
+# 验证
+F:\rely\node\node.exe --version
+# 应输出 v26.1.0</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 为什么必须便携化 Node.js？</strong>MCP server 配置为 <code>command: node</code>，hermes 启动 MCP 子进程时在 <code>PATH</code> 中查找 <code>node</code>。如果不便携化，换到没装 Node.js 的电脑时所有 MCP 服务直接启动失败——即使 config.yaml 路径已修复也没用。便携化后 <code>start.bat</code> 自动把 <code>%RELY_DIR%node</code> 加入 <code>PATH</code>，换任何电脑都能找到 <code>node</code>。
+                        </div>
+                        <p><strong>Git for Windows 便携化（关键！terminal/文件工具依赖项）：</strong>将本机已安装的 Git for Windows 复制到 <code>rely\</code> 目录，换电脑不依赖目标机器是否装 Git：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 从本机已有 Git 复制（以 C:\Program Files\Git 为例）
+xcopy "C:\Program Files\Git" "F:\rely\git\" /E /I /Y
+
+# 验证
+F:\rely\git\bin\git.exe --version
+F:\rely\git\bin\bash.exe -c "echo bash_ok"
+# 应输出 git version 2.51.x 和 bash_ok</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 为什么必须便携化 Git？</strong>Hermes 的 terminal、read_file、write_file、search_files 等核心工具全部依赖 <code>bash.exe</code>。如果不便携化，换到没装 Git 的电脑时报 <code>Git Bash not found</code> 全部失效；即使装了，不同电脑安装路径不同（<code>C:\Program Files\Git</code> vs <code>C:\soft\Git</code>），config.yaml 里写死的路径也会失效。便携化后 <code>start.bat</code> 通过 <code>HERMES_GIT_BASH_PATH</code> 环境变量动态指向便携目录，换任何电脑都正确。<strong>不要在 config.yaml 中写 <code>bash_path</code></strong>——用环境变量更可靠。
+                        </div>
+                        <p><strong>Python 3.12 便携化（关键！venv 底座）：</strong>将 uv 管理的 CPython 复制到 <code>rely\</code> 目录，venv 的 <code>pyvenv.cfg</code> 由 <code>fix_pyvenv.py</code> 动态指向此目录：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 从 uv 管理的 Python 复制（路径见 venv\pyvenv.cfg 的 home= 行）
+xcopy "C:\Users\Administrator\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none" "F:\rely\python\" /E /I /Y
+
+# 验证
+F:\rely\python\python.exe --version
+# 应输出 Python 3.12.13</code>
+                        </div>
+                        <p><strong>uv 包管理器便携化（用于首次创建/重建 venv）：</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 用 venv 的 pip 安装 uv 到 rely\uv（一行命令）
+F:\rely\venv\Scripts\python.exe -m pip install uv --target F:\rely\uv
+# 整理：只保留 uv.exe
+move F:\rely\uv\bin\uv.exe F:\rely\uv\uv.exe
+del /s /q F:\rely\uv\bin F:\rely\uv\uv F:\rely\uv\*.dist-info 2>nul
+
+# 验证
+F:\rely\uv\uv.exe --version
+# 应输出 uv 0.11.x</code>
+                        </div>
+                        <p><strong>目录角色：</strong><br>
+                        - <code>F:\hermes_ui\data</code>：存放全套本地数据、历史会话数据库及配置文件（<code>.env</code>、<code>config.yaml</code>、空白的 <code>auth.lock</code>）。<br>
+                        - <code>F:\hermes_ui\hermes-agent</code>：Hermes 核心引擎源码仓。<br>
+                        - <code>F:\hermes_ui\hermes-webui</code>：轻量级 Web 交互面板源码仓。<br>
+                        - <code>F:\hermes_ui\mcp</code>：便携化 MCP 服务目录（含 <code>kuaipao-image</code>、<code>atlascloud-seedream-v5-pro</code>、<code>atlascloud-seedream-edit</code>、<code>atlascloud-seedream-edit-sequential</code>、<code>atlascloud-wan-edit</code>、<code>atlascloud-wan-edit-pro</code> 六个子目录，各含 <code>build/</code> 和 <code>node_modules/</code>）。<br>
+                        - <code>F:\hermes_ui\output</code>：MCP 媒体生成默认输出目录（图片编辑结果落盘位置，由 <code>inject_mcp_config.py</code> 动态注入的 <code>DEFAULT_OUTPUT_PATH</code> 指向）。<br>
+                        - <code>F:\hermes_ui\start.bat</code>：一键启动脚本（控制中枢）。<br>
+                        - <code>F:\hermes_ui\inject_mcp_config.py</code>：MCP 配置动态注入脚本。<br>
+                        - <code>F:\hermes_ui\configure_failover.py</code>：模型回退保护配置器；只使用已有 provider/model，幂等维护回退链。<br>
+                        - <code>F:\hermes_ui\fix_pyvenv.py</code>：venv pyvenv.cfg 自动修复脚本。<br>
+                        - <code>F:\hermes_ui\fix_editable_finder.py</code>：editable-install finder 路径自动修复脚本。</p>
+                        <p><strong>便携依赖目录（<code>F:\rely\</code>，与 <code>hermes_ui\</code> 同级）：</strong><br>
+                        - <code>F:\rely\python</code>：便携化 CPython 3.12.13（约 64MB），venv 的底座解释器。<br>
+                        - <code>F:\rely\venv</code>：隔离的 Python 3.12 虚拟环境（约 137MB），<code>pyvenv.cfg</code> 由 <code>fix_pyvenv.py</code> 动态指向 <code>rely\python</code>。<br>
+                        - <code>F:\rely\node</code>：便携化 Node.js 运行时（含 <code>node.exe</code>、<code>npm</code>、<code>npx</code> 等，约 174MB），<code>start.bat</code> 自动加入 <code>PATH</code>，MCP 子进程依赖此目录。<br>
+                        - <code>F:\rely\git</code>：便携化 Git for Windows（含 <code>bash.exe</code>、<code>git.exe</code> 等，约 407MB），<code>start.bat</code> 通过 <code>HERMES_GIT_BASH_PATH</code> 环境变量指向此目录的 <code>bash.exe</code>，terminal/文件工具依赖此目录。<br>
+                        - <code>F:\rely\uv</code>：便携化 uv 包管理器（<code>uv.exe</code>，约 15MB），用于首次创建/重建 venv。</p>
+                        <div class="card info">
+                            <strong>💡 为什么依赖放在 <code>rely\</code> 而不是 <code>hermes_ui\</code>？</strong>将公共依赖（Python/Node/Git/uv）与应用目录（hermes_ui）分离，结构更清晰，且 <code>rely\</code> 可以被多个项目共享。<code>start.bat</code> 通过 <code>%ROOT_DIR%..\rely\</code> 引用（即 <code>hermes_ui\..\rely\</code>），<strong>不写死任何盘符</strong>——移动硬盘换电脑盘符从 F: 变成 E:/G: 时，相对路径自动适配。
+                        </div>
+                        <div class="card warning">
+                            <strong>部署包必要文件：</strong>复制或迁移 <code>hermes_ui\</code> 时必须保留同级的 <code>configure_failover.py</code>。该文件与 <code>start.bat</code>、<code>inject_mcp_config.py</code>、<code>fix_pyvenv.py</code>、<code>fix_editable_finder.py</code> 一起属于启动链，不要只复制批处理文件。启动预检会检查其存在性。
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>创建 MCP 配置动态注入脚本 <code>inject_mcp_config.py</code></h3>
+                    <div class="step-content">
+                        <div class="card success">
+                            <strong>💡 为什么需要这个脚本？</strong>移动硬盘换电脑后盘符会变（<code>F:</code> → <code>E:</code> / <code>G:</code> 等），且 MCP 服务的 API Key 不应明文写在 <code>config.yaml</code> 中。此脚本在 <code>start.bat</code> 启动 Hermes 之前自动运行，将完整的 <code>mcp_servers</code> YAML 段落生成并注入到 <code>config.yaml</code> 中。路径使用当前 <code>ROOT_DIR</code>，API Key 从 <code>start.bat</code> 设置的环境变量读取。<strong>config.yaml 中不再保存任何 MCP 配置</strong>——每次启动时由脚本动态生成，彻底免疫盘符漂移，且 config.yaml 泄露不暴露任何 MCP 密钥。
+                        </div>
+                        <p>保存路径：<code>F:\hermes_ui\inject_mcp_config.py</code>（与 <code>start.bat</code> 同级）</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>"""Inject MCP server configuration into data/config.yaml.
+
+Generates the entire mcp_servers YAML section with paths relative to
+ROOT_DIR and API keys read from environment variables, then replaces
+any existing mcp_servers section in config.yaml.
+
+This keeps all MCP configuration OUT of config.yaml — it is generated
+at startup by start.bat calling this script, so paths always match the
+current drive letter and keys come from start.bat env vars.
+
+Usage:
+    python inject_mcp_config.py             # auto-detect root = script dir
+    python inject_mcp_config.py F:\\hermes_ui  # explicit root
+"""
+
+from __future__ import annotations
+
+import os
+import re
+import sys
+from pathlib import Path
+
+
+def _env(name: str) -&gt; str:
+    return os.environ.get(name, "")
+
+
+def generate_mcp_yaml(root: str) -&gt; str:
+    kuaipao_key = _env("HERMES_KUAIPAO_GPT_KEY")
+    atlascloud_key = _env("MCP_ATLASCLOUD_KEY")
+    out = f"{root}\\output"
+
+    return (
+        "mcp_servers:\n"
+        "  kuaipao-image:\n"
+        "    command: node\n"
+        "    args:\n"
+        f"      - {root}\\mcp\\kuaipao-image\\build\\index.js\n"
+        "    timeout: 660\n"
+        "    env:\n"
+        f"      API_KEY: {kuaipao_key}\n"
+        "      API_URL: https://kuaipao.ai/v1\n"
+        "      DEFAULT_IMAGE_MODEL: grok-image\n"
+        f"      DEFAULT_OUTPUT_PATH: {out}\n"
+        "      REQUEST_TIMEOUT: '600000'\n"
+        "  atlascloud-seedream-v5.0-pro:\n"
+        "    command: node\n"
+        "    args:\n"
+        f"      - {root}\\mcp\\atlascloud-seedream-v5-pro\\build\\index.js\n"
+        "    timeout: 360\n"
+        "    env:\n"
+        f"      API_KEY: {atlascloud_key}\n"
+        "      API_URL: https://api.atlascloud.ai\n"
+        "      DEFAULT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/text-to-image\n"
+        f"      DEFAULT_OUTPUT_PATH: {out}\n"
+        "      REQUEST_TIMEOUT: '600000'\n"
+        "  atlascloud-seedream-v5.0-pro-edit:\n"
+        "    command: node\n"
+        "    args:\n"
+        f"      - {root}\\mcp\\atlascloud-seedream-edit\\build\\index.js\n"
+        "    timeout: 660\n"
+        "    env:\n"
+        f"      API_KEY: {atlascloud_key}\n"
+        "      API_URL: https://api.atlascloud.ai\n"
+        "      DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/edit\n"
+        f"      DEFAULT_OUTPUT_PATH: {out}\n"
+        "      REQUEST_TIMEOUT: '600000'\n"
+        "  atlascloud-seedream-v5.0-lite-sequential:\n"
+        "    command: node\n"
+        "    args:\n"
+        f"      - {root}\\mcp\\atlascloud-seedream-edit-sequential\\build\\index.js\n"
+        "    timeout: 660\n"
+        "    env:\n"
+        f"      API_KEY: {atlascloud_key}\n"
+        "      API_URL: https://api.atlascloud.ai\n"
+        "      DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-lite/edit-sequential\n"
+        f"      DEFAULT_OUTPUT_PATH: {out}\n"
+        "      REQUEST_TIMEOUT: '600000'\n"
+        "  atlascloud-wan-edit:\n"
+        "    command: node\n"
+        "    args:\n"
+        f"      - {root}\\mcp\\atlascloud-wan-edit\\build\\index.js\n"
+        "    timeout: 660\n"
+        "    env:\n"
+        f"      API_KEY: {atlascloud_key}\n"
+        "      API_URL: https://api.atlascloud.ai\n"
+        "      DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7/image-edit\n"
+        f"      DEFAULT_OUTPUT_PATH: {out}\n"
+        "      REQUEST_TIMEOUT: '600000'\n"
+        "  atlascloud-wan-edit-pro:\n"
+        "    command: node\n"
+        "    args:\n"
+        f"      - {root}\\mcp\\atlascloud-wan-edit-pro\\build\\index.js\n"
+        "    timeout: 660\n"
+        "    env:\n"
+        f"      API_KEY: {atlascloud_key}\n"
+        "      API_URL: https://api.atlascloud.ai\n"
+        "      DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7-pro/image-edit\n"
+        f"      DEFAULT_OUTPUT_PATH: {out}\n"
+        "      REQUEST_TIMEOUT: '600000'\n"
+        "\n"
+    )
+
+
+# Match from "mcp_servers:" at column 0 to the next non-whitespace line at column 0
+_MCP_BLOCK_RE = re.compile(
+    r"^mcp_servers:\n.*?(?=^[^\s]|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+
+
+def inject_mcp_config(config_path: Path, root: str) -&gt; bool:
+    text = config_path.read_text(encoding="utf-8")
+    new_block = generate_mcp_yaml(root)
+
+    if _MCP_BLOCK_RE.search(text):
+        text = _MCP_BLOCK_RE.sub(new_block, text)
+    else:
+        text = text.rstrip("\n") + "\n\n" + new_block
+
+    config_path.write_text(text, encoding="utf-8", newline="\n")
+    return True
+
+
+def main() -&gt; int:
+    if len(sys.argv) &gt; 1:
+        root = str(Path(sys.argv[1]).resolve()).rstrip("\\")
+    else:
+        root = str(Path(__file__).resolve().parent).rstrip("\\")
+
+    config = Path(root) / "data" / "config.yaml"
+    if not config.is_file():
+        print(f"[inject_mcp_config] config not found: {config}", file=sys.stderr)
+        return 1
+
+    inject_mcp_config(config, root)
+    print(f"[inject_mcp_config] OK - mcp_servers injected into {config}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 前置化要求：</strong>此脚本必须在 <code>start.bat</code> 中 <strong>先于 Hermes Gateway 启动</strong>执行（在 <code>fix_pyvenv</code> 和 <code>fix_editable_finder</code> 之后）。脚本本身是幂等的——每次启动都会用最新环境变量重新生成 MCP 配置，可安全多次运行。新增或修改 MCP 服务只需编辑此脚本的 <code>generate_mcp_yaml()</code> 函数。<strong>编辑类 MCP 只设置 <code>DEFAULT_EDIT_IMAGE_MODEL</code>，不设置 <code>DEFAULT_IMAGE_MODEL</code></strong>——因为编辑工具的 handler 只读取 <code>defaultEditImageModel</code>。
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>创建 editable-install finder 路径修复脚本 <code>fix_editable_finder.py</code></h3>
+                    <div class="step-content">
+                        <div class="card success">
+                            <strong>💡 为什么需要这个脚本？</strong>使用 <code>uv pip install -e</code> 以可编辑模式安装 hermes-agent 后，venv 的 <code>site-packages</code> 中会生成 <code>__editable___hermes_agent_*_finder.py</code> 文件，其中固化了安装时的绝对路径（如 <code>F:\\hermes_ui\\hermes-agent\\...</code>）。移动硬盘换电脑后盘符变化，此路径失效，导致 <code>python -m hermes_cli.main</code> 报 <code>ModuleNotFoundError: No module named 'hermes_cli'</code>。此脚本在 <code>start.bat</code> 启动 Hermes 之前自动运行，将 finder 文件中的路径重写为当前盘符。
+                        </div>
+                        <p>保存路径：<code>F:\hermes_ui\fix_editable_finder.py</code>（与 <code>start.bat</code> 同级）</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>r"""Fix editable-install finder paths to current drive (anti-drive-drift).
+
+Usage: python fix_editable_finder.py &lt;rely_dir&gt; &lt;root_dir&gt;
+  &lt;rely_dir&gt;  absolute path to the rely directory (e.g. D:\rely)
+  &lt;root_dir&gt;  absolute path to the hermes_ui directory (e.g. D:\hermes_ui)
+
+When the portable bundle is moved to a different drive letter, the
+__editable___hermes_agent_*_finder.py file in venv site-packages still
+contains the old drive letter (e.g. F:\\hermes_ui\\hermes-agent\\...).
+This script rewrites every path that ends with \\hermes-agent\\... to
+use the current &lt;root_dir&gt;\\hermes-agent\\..., making the editable
+install work regardless of which drive the bundle is mounted on.
+"""
+import pathlib
+import re
+import sys
+
+
+def main():
+    if len(sys.argv) &lt; 3:
+        print("[fix_editable_finder] ERROR: missing arguments", file=sys.stderr)
+        return 1
+    rely = pathlib.Path(sys.argv[1]).resolve()
+    root = pathlib.Path(sys.argv[2]).resolve()
+
+    sp = rely / "venv" / "Lib" / "site-packages"
+    if not sp.exists():
+        print(f"[fix_editable_finder] SKIP - {sp} not found")
+        return 0
+
+    # Find the editable finder file
+    candidates = list(sp.glob("__editable___hermes_agent_*_finder.py"))
+    if not candidates:
+        print("[fix_editable_finder] SKIP - no editable finder file found")
+        return 0
+
+    # The canonical hermes-agent source dir under root
+    agent_src = str(root / "hermes-agent")
+    # In the finder file, backslashes are doubled (Python string literals)
+    agent_src_escaped = agent_src.replace("\\", "\\\\")
+
+    changed = False
+    for finder_file in candidates:
+        text = finder_file.read_text(encoding="utf-8")
+        # Replace any drive-letter-prefixed path containing hermes-agent.
+        # Match: &lt;letter&gt;: + one-or-more backslashes + ... + hermes-agent
+        # Use a lambda for replacement so re.sub doesn't interpret backslashes.
+        new = re.sub(
+            r"[A-Za-z]:[\\]+[^']*?hermes-agent",
+            lambda m: agent_src_escaped,
+            text,
+        )
+        if new != text:
+            finder_file.write_text(new, encoding="utf-8")
+            print(f"[fix_editable_finder] OK - paths rewritten to {agent_src_escaped} in {finder_file.name}")
+            changed = True
+        else:
+            print(f"[fix_editable_finder] OK - paths already correct in {finder_file.name}")
+
+    if not changed:
+        print("[fix_editable_finder] OK - no changes needed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 前置化要求：</strong>此脚本必须在 <code>start.bat</code> 中 <strong>先于 Hermes Gateway 启动</strong>执行（在 <code>fix_pyvenv</code> 之后、<code>inject_mcp_config</code> 之前）。脚本本身是幂等的——路径已正确时不会重复写入，可安全多次运行。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== Step 2 环境部署 ========== -->
+            <div class="section" id="step3">
+                <h2>四、 Step 2 · 基础环境与源码克隆</h2>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>Git for Windows 已便携化（无需目标电脑安装）</h3>
+                    <div class="step-content">
+                        <div class="card success">
+                            <strong>✅ 已便携化：</strong>Git for Windows 已在 Step 1 复制到 <code>F:\rely\git\</code> 目录。<code>start.bat</code> 启动时自动设置 <code>HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe</code> 并加入 <code>PATH</code>。<strong>换电脑无需安装 Git，也无需修改 config.yaml。</strong>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 不要在 config.yaml 中写 <code>bash_path</code>：</strong>config.yaml 里的路径是含盘符的绝对路径，换盘后会失效。Hermes 查找 bash 的优先级为：<code>config.yaml 的 bash_path</code> → <code>HERMES_GIT_BASH_PATH 环境变量</code> → 自动搜索 PATH。用 <code>start.bat</code> 设置环境变量最可靠——动态注入，始终正确。
+                        </div>
+                        <p><strong>首次部署时获取 Git for Windows（如果本机还没装）：</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 方式 1: 官方下载安装到本机，再复制到便携目录
+# https://git-scm.com/download/win → 默认安装到 C:\Program Files\Git
+xcopy "C:\Program Files\Git" "F:\rely\git\" /E /I /Y
+
+# 方式 2: PowerShell 下载 MinGit 便携版（免安装）
+powershell -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest 'https://registry.npmmirror.com/-/binary/git-for-windows/v2.51.0.windows.2/MinGit-2.51.0-64-bit.zip' -OutFile $env:TEMP\git.zip; Expand-Archive $env:TEMP\git.zip 'F:\rely\git' -Force"
+
+# 验证
+F:\rely\git\bin\git.exe --version
+F:\rely\git\bin\bash.exe -c "echo bash_ok"</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>创建 Python 3.12 虚拟环境</h3>
+                    <div class="step-content">
+                        <p>利用便携化的 <code>uv</code> 包管理器创建 100% 清洁的虚拟环境（venv 放在 <code>rely\</code> 中）：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>F:\rely\uv\uv.exe venv --python 3.12.13 F:\rely\venv</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ venv 的 <code>pyvenv.cfg</code> 会写死 host Python 路径：</strong><code>uv venv</code> 创建时 <code>pyvenv.cfg</code> 的 <code>home=</code> 行指向创建时的 Python 位置（如 <code>C:\Users\...\uv\python\...</code>）。换电脑后此路径失效。<code>start.bat</code> 中的 <code>fix_pyvenv.py</code> 会在每次启动时自动将 <code>home=</code> 重写为 <code>%RELY_DIR%python</code>，确保 venv 始终找到便携 Python。
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>克隆核心引擎与 WebUI 源码</h3>
+                    <div class="step-content">
+                        <p>由于国内 GitHub 直连极易中断，<strong>强烈建议配置 Git 代理</strong>后进行克隆：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 配置全局 Git 代理 (以本地 10808 端口为例)
+git config --global http.proxy http://127.0.0.1:10808
+git config --global https.proxy http://127.0.0.1:10808
+
+# 克隆核心引擎 (NousResearch 官方仓库)
+git clone --depth 1 https://github.com/NousResearch/hermes-agent.git F:\hermes_ui\hermes-agent
+
+# 克隆 Web 交互界面 (nesquena 官方推荐 WebUI)
+git clone --depth 1 https://github.com/nesquena/hermes-webui.git F:\hermes_ui\hermes-webui</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <h3>安装运行时依赖</h3>
+                    <div class="step-content">
+                        <p>利用 <code>uv pip</code> 极速安装核心与 WebUI 依赖：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 安装核心引擎
+F:\rely\uv\uv.exe pip install --python F:\rely\venv\Scripts\python.exe -e F:\hermes_ui\hermes-agent
+
+# 安装 WebUI 所需依赖 (微型轻量依赖，包含 pyyaml, cryptography 等)
+F:\rely\uv\uv.exe pip install --python F:\rely\venv\Scripts\python.exe -r F:\hermes_ui\hermes-webui\requirements.txt</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">5</span>
+                    <h3>复制 MCP 服务到便携目录</h3>
+                    <div class="step-content">
+                        <p>将 Windsurf 安装的 MCP server 复制到便携目录，实现盘符无关：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code># 快跑 grok-image 文生图 MCP（OpenAI 兼容）
+xcopy "C:\Users\Administrator\.codeium\windsurf\mcp-servers\openapi-integrator-mcp" "F:\hermes_ui\mcp\kuaipao-image\" /E /I /Y
+
+# AtlasCloud Seedream v5.0 Pro 文生图 MCP（原生异步轮询）
+Copy-Item -Path "F:\hermes_ui\mcp\kuaipao-image" -Destination "F:\hermes_ui\mcp\atlascloud-seedream-v5-pro" -Recurse -Force
+# 需重写 handlers.js 和 definitions.js 以适配 AtlasCloud 原生 API（/api/v1/model/generateImage + 异步轮询）
+
+# AtlasCloud 图片编辑 MCP（从 seedream-v5-pro 复制并改为图生图）
+# 物理目录名 → inject_mcp_config.py 中的 server 名：
+#   atlascloud-seedream-edit           → atlascloud-seedream-v5.0-pro-edit (模型 bytedance/seedream-v5.0-pro/edit)
+#   atlascloud-seedream-edit-sequential → atlascloud-seedream-v5.0-lite-sequential (模型 bytedance/seedream-v5.0-lite/edit-sequential)
+#   atlascloud-wan-edit                → atlascloud-wan-edit (模型 alibaba/wan-2.7/image-edit)
+#   atlascloud-wan-edit-pro            → atlascloud-wan-edit-pro (模型 alibaba/wan-2.7-pro/image-edit)
+Copy-Item -Path "F:\hermes_ui\mcp\atlascloud-seedream-v5-pro" -Destination "F:\hermes_ui\mcp\atlascloud-seedream-edit" -Recurse -Force
+Copy-Item -Path "F:\hermes_ui\mcp\atlascloud-seedream-edit" -Destination "F:\hermes_ui\mcp\atlascloud-seedream-edit-sequential" -Recurse -Force
+Copy-Item -Path "F:\hermes_ui\mcp\atlascloud-seedream-edit" -Destination "F:\hermes_ui\mcp\atlascloud-wan-edit" -Recurse -Force
+Copy-Item -Path "F:\hermes_ui\mcp\atlascloud-seedream-edit" -Destination "F:\hermes_ui\mcp\atlascloud-wan-edit-pro" -Recurse -Force</code>
+                        </div>
+                        <div class="card warning">
+                            <strong>⚠️ 注意：</strong>此步骤仅需执行一次。复制后 <code>F:\hermes_ui\mcp\</code> 包含完整的 <code>build/</code> 和 <code>node_modules/</code>，随移动硬盘一起携带，换机无需重新安装。<br><br>
+                            <strong>⚠️ AtlasCloud MCP 需额外重写代码：</strong>从 <code>kuaipao-img</code> 复制目录后，必须重写 <code>build/tools/handlers.js</code> 和 <code>build/tools/definitions.js</code> 以适配 AtlasCloud 原生 API（<code>/api/v1/model/generateImage</code> + 异步轮询）。直接使用 <code>kuaopao-img</code> 原代码会因 API 格式不兼容导致 <code>ECONNRESET</code> 错误。详见故障排除章节。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== Step 3 配置文件 ========== -->
+            <div class="section" id="step4">
+                <h2>五、 Step 3 · 便携配置文件编写</h2>
+                <div class="card warning">
+                    <strong>重要：</strong>所有文件必须以 <code>UTF-8 (无 BOM)</code> 格式保存于 <code>F:\hermes_ui\data</code> 目录下，且不得包含任何带盘符的路径！
+                </div>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>编写 `.env` 环境变量文件</h3>
+                    <div class="step-content">
+                        <p>保存路径：<code>F:\hermes_ui\data\.env</code></p>
+                        <div class="code-block">
+                            <code>API_SERVER_ENABLED=true
+API_SERVER_HOST=127.0.0.1
+API_SERVER_PORT=50001
+API_SERVER_KEY=local-dev-key-not-for-production
+
+OPENAI_BASE_URL=https://kuaipao.ai/v1
+OPENAI_API_KEY=sk-YOUR_KUAIPAO_KEY
+
+ATLASCLOUD_BASE_URL=https://api.atlascloud.ai/v1
+ATLASCLOUD_API_KEY=apikey-YOUR_ATLASCLOUD_KEY
+
+HERMES_ATLASCLOUD_KEY=apikey-YOUR_ATLASCLOUD_KEY
+HERMES_KUAIPAO_GPT_KEY=sk-YOUR_KUAIPAO_KEY
+HERMES_CCVIBE_GPT_KEY=sk-YOUR_CCVIBE_KEY
+
+HERMES_USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36
+WEB_TOOLS_DEBUG=false
+HERMES_HUMAN_DELAY_MODE=off</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>编写 `config.yaml` 引擎配置文件</h3>
+                    <div class="step-content">
+                        <p>保存路径：<code>F:\hermes_ui\data\config.yaml</code></p>
+                        <div class="code-block">
+                            <code>model:
+  default: "gpt-5.6-sol"
+  provider: "cc-vibe-gpt"
+  base_url: "https://cc-vibe.com/v1"
+  default_headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+      like Gecko) Chrome/124.0.0.0 Safari/537.36
+providers:
+  atlascloud:
+    type: custom
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_KEY
+  kuaipao:
+    type: custom
+    base_url: https://kuaipao.ai/v1
+    key_env: HERMES_KUAIPAO_GPT_KEY
+  cc-vibe-gpt:
+    type: custom
+    base_url: https://cc-vibe.com/v1
+    key_env: HERMES_CCVIBE_GPT_KEY
+agent:
+  api_max_retries: 1
+  reasoning_effort: none
+
+fallback_providers:
+- provider: kuaipao
+  model: gpt-5.6-sol
+  key_env: HERMES_KUAIPAO_GPT_KEY
+  base_url: https://kuaipao.ai/v1
+- provider: atlascloud
+  model: xai/grok-4.3
+  key_env: HERMES_ATLASCLOUD_KEY
+  base_url: https://api.atlascloud.ai/v1
+
+terminal:
+  backend: local
+  cwd: .
+  timeout: 180
+compression:
+  enabled: true
+  threshold: 0.5
+  target_ratio: 0.2
+  protect_last_n: 20
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+command_allowlist:
+- execute_code
+- recursive delete
+streaming: true
+_config_version: 33
+
+# ── Security ──────────────────────────────────────────────────────────
+# Secret redaction is ON by default — strings that look like API keys,
+# tokens, and passwords are masked in tool output, logs, and chat
+# responses before the model or user ever sees them. Set redact_secrets
+# to false to disable (e.g. when developing the redactor itself).
+# tirith pre-exec scanning is enabled by default when the tirith binary
+# is available. Configure via security.tirith_* keys or env vars
+# (TIRITH_ENABLED, TIRITH_BIN, TIRITH_TIMEOUT, TIRITH_FAIL_OPEN).
+#
+# security:
+#   redact_secrets: true
+#   tirith_enabled: true
+#   tirith_path: "tirith"
+#   tirith_timeout: 5
+#   tirith_fail_open: true
+
+# fallback_providers 由 configure_failover.py 幂等维护。
+# 不要在此手工加入本机不存在的 provider 或 model。</code>
+                        </div>
+                        <div class="card success">
+                            <strong>💡 注意：</strong><code>mcp_servers</code> 配置段不再写在 <code>config.yaml</code> 中。每次启动时由 <code>start.bat</code> 调用 <code>inject_mcp_config.py</code> 脚本动态注入，路径和 API Key 从环境变量读取，确保盘符自适应且密钥不暴露在配置文件中。
+                        </div>
+                        <div class="card success">
+                            <strong>模型零增删原则：</strong><code>configure_failover.py</code> 只从现有 <code>providers</code> 读取可用回退目标，不会修改各 provider 下的 <code>models</code>。当前默认主模型为 <code>cc-vibe-gpt/gpt-5.6-sol</code>；回退顺序为 <code>kuaipao/gpt-5.6-sol</code>、<code>atlascloud/xai/grok-4.3</code>。切换主 provider 后，脚本会自动排除当前主渠道并重建顺序。
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    
+
+            <h3>MCP 服务配置说明（由 <code>inject_mcp_config.py</code> 动态注入）</h3>
+            <div class="card success">
+                <strong>💡 便携化设计：</strong>MCP server 入口脚本已从 <code>C:\Users\Administrator\.codeium\windsurf\mcp-servers\</code> 复制到便携目录 <code>F:\hermes_ui\mcp\</code> 下。<code>start.bat</code> 启动时会调用 <code>inject_mcp_config.py</code> 脚本，将完整的 <code>mcp_servers</code> 配置段动态注入到 <code>config.yaml</code> 中。路径使用当前 <code>%ROOT_DIR%</code>，API Key 从环境变量读取（<code>HERMES_KUAIPAO_GPT_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>），彻底免疫盘符漂移且密钥不暴露在配置文件中。
+            </div>
+            <p>六个 MCP 服务（快跑 grok-image 文生图 + AtlasCloud Seedream v5.0 Pro 文生图 + Seedream v5.0 Pro 编辑 + Seedream v5.0 Lite 连续编辑 + Wan 2.7 × 2）均指向便携目录。配置由 <code>inject_mcp_config.py</code> 的 <code>generate_mcp_yaml()</code> 函数生成，无需手动写入 <code>config.yaml</code>。</p>
+            <div class="card warning">
+                <strong>⚠️ 编辑类 MCP 只设置 <code>DEFAULT_EDIT_IMAGE_MODEL</code>：</strong>图片编辑 MCP 的 <code>handlers.js</code> 中 <code>edit_image</code> 工具使用 <code>args.model || config.defaultEditImageModel</code> 选择模型，不读取 <code>defaultImageModel</code>。因此 <code>inject_mcp_config.py</code> 中编辑类 MCP 只设置 <code>DEFAULT_EDIT_IMAGE_MODEL</code>，不设置 <code>DEFAULT_IMAGE_MODEL</code>，避免冗余配置。
+            </div>
+            <div class="card warning">
+                <strong>⚠️ MCP 配置不在 config.yaml 中持久保存：</strong>每次 <code>start.bat</code> 启动时，<code>inject_mcp_config.py</code> 会用正则匹配并替换 <code>config.yaml</code> 中已有的 <code>mcp_servers</code> 段落（如果存在），或追加到文件末尾。修改 MCP 配置只需编辑 <code>inject_mcp_config.py</code> 的 <code>generate_mcp_yaml()</code> 函数，不要手动编辑 <code>config.yaml</code> 中的 <code>mcp_servers</code> 段——下次启动会被覆盖。
+            </div>
+            <p>修改后重启 Hermes WebUI，或在已支持热重载的会话中执行 <code>/reload-mcp</code>，新的媒体生成结果会写入 <code>F:\hermes_ui\output</code>。</p>
+
+            <h3>AtlasCloud 图片编辑 MCP 用法对比</h3>
+            <p>当前便携部署包含 4 个 AtlasCloud 图片编辑 MCP 服务器，均使用同一 API Key 和 <code>API_URL</code>，但模型能力、参数格式和适用场景不同：</p>
+            <table>
+                <tr>
+                    <th style="width:18%">MCP 名称</th>
+                    <th style="width:22%">模型 ID</th>
+                    <th style="width:15%">size 格式</th>
+                    <th style="width:15%">独有参数</th>
+                    <th style="width:30%">适用场景</th>
+                </tr>
+                <tr>
+                    <td><code>atlascloud-seedream-v5.0-pro-edit</code></td>
+                    <td><code>bytedance/seedream-v5.0-pro/edit</code></td>
+                    <td><code>2048*2048</code>（宽*高）</td>
+                    <td><code>output_format</code>（jpeg/png）</td>
+                    <td>ByteDance Seedream Pro 单图编辑，保面部特征和细节，质量更高</td>
+                </tr>
+                <tr>
+                    <td><code>atlascloud-seedream-v5.0-lite-sequential</code></td>
+                    <td><code>bytedance/seedream-v5.0-lite/edit-sequential</code></td>
+                    <td><code>2048*2048</code>（宽*高）</td>
+                    <td><code>max_images</code>（1-15）<br><code>output_format</code></td>
+                    <td>Seedream Lite 连续编辑，一次生成多张关联图片（最多 15 张）</td>
+                </tr>
+                <tr>
+                    <td><code>atlascloud-wan-edit</code></td>
+                    <td><code>alibaba/wan-2.7/image-edit</code></td>
+                    <td><code>1K</code> 或 <code>2K</code></td>
+                    <td><code>n</code>（1-4）<br><code>thinking_mode</code>（bool）</td>
+                    <td>阿里 Wan 2.7 指令式编辑，支持多图引用合成（最多 9 张输入），可改服装/材质/场景</td>
+                </tr>
+                <tr>
+                    <td><code>atlascloud-wan-edit-pro</code></td>
+                    <td><code>alibaba/wan-2.7-pro/image-edit</code></td>
+                    <td><code>1K</code> 或 <code>2K</code></td>
+                    <td><code>n</code>（1-4）<br><code>thinking_mode</code>（bool）</td>
+                    <td>Wan 2.7 Pro 高质量版，同功能但输出质量更高，适合精细编辑</td>
+                </tr>
+            </table>
+            <div class="card">
+                <strong>📋 关键差异速查：</strong>
+                <ul>
+                    <li><strong>Seedream 系列</strong>用 <code>WIDTH*HEIGHT</code> 格式指定尺寸（如 <code>2048*2048</code>、<code>1280*720</code>），支持 <code>output_format</code> 选择 jpeg/png。</li>
+                    <li><strong>Wan 2.7 系列</strong>用预设档位 <code>1K</code>/<code>2K</code> 指定分辨率，不支持 <code>output_format</code>，但支持 <code>n</code>（一次生成多张）和 <code>thinking_mode</code>（思考模式提升质量）。</li>
+                    <li><strong>多图输入：</strong>Wan 2.7 系列支持最多 9 张参考图（第一张为主图，后续为参考），Seedream 系列仅支持单图编辑。</li>
+                    <li><strong>批量生成：</strong>Seedream Sequential 支持 <code>max_images</code>（1-15）生成关联序列图；Wan 2.7 支持 <code>n</code>（1-4）生成多张独立结果。</li>
+                    <li><strong>共同点：</strong>4 个 MCP 均走 AtlasCloud 原生 API（<code>/api/v1/model/generateImage</code> + 异步轮询），均为 0 审查（不发送 <code>moderation</code> 参数），本地图片均需先上传到 <code>/api/v1/model/uploadMedia</code>。</li>
+                </ul>
+            </div>
+
+<h3>创建空白的 `auth.lock` 互斥锁文件</h3>
+                    <div class="step-content">
+                        <p>保存路径：<code>F:\hermes_ui\data\auth.lock</code></p>
+                        <div class="card warning">
+                            <strong>⚠️ 文件内容必须为空：</strong><code>auth.lock</code> 是 Hermes 管理鉴权状态时使用的运行期互斥锁，不是令牌凭据池，也不是 JSON 配置文件。不要向其中写入 API Key、JSON 或其他文本；API Key 由 <code>.env</code> 和 <code>start.bat</code> 中的环境变量提供。
+                        </div>
+                        <div class="code-block">
+                            <code>type nul > F:\hermes_ui\data\auth.lock</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== Step 4 start.bat ========== -->
+            <div class="section" id="step5">
+                <h2>六、 Step 4 · 便携一键启动脚本 (`start.bat`)</h2>
+                <p>保存路径：<code>F:\hermes_ui\start.bat</code></p>
+                <div class="card success">
+                    <strong>💡 功能点：</strong>此脚本整合了【自动根路径识别】、【Gateway/WebUI 拉起】、【现有模型一键切换】、【60 秒请求上限】、【有序 provider 回退】、【无保护拒绝启动】、【进程清理】和【API 连通性测试】，是整个便携系统的控制中枢。
+                </div>
+                <div class="code-block"> <button class="copy-btn" onclick="copyCode(this)">复制</button> <code>@echo off
+chcp 65001 >nul 2>&1
+title Hermes CLI + WebUI Launcher
+
+:top
+:: Resolve the folder where this batch file sits (ends with a backslash, e.g. "F:\hermes_ui\")
+set "ROOT_DIR=%~dp0"
+:: Remove trailing backslash for clean path joining where needed
+set "ROOT_DIR_NO_SLASH=%ROOT_DIR:~0,-1%"
+:: Portable dependencies live in a sibling directory (e.g. "F:\rely\") — no hardcoded drive letter
+:: Use `for %%I` to resolve ..\rely to a fully-qualified absolute path (no ..\ in variables/PATH)
+for %%I in ("%ROOT_DIR%..\rely") do set "RELY_DIR=%%~fI\"
+for %%I in ("%ROOT_DIR%..\rely") do set "RELY_DIR_NO_SLASH=%%~fI"
+
+set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
+set "HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe"
+set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"
+
+:: Only prepend to PATH once per window session. `:top` re-runs on every
+:: "goto menu" round-trip (after each menu action), and unconditionally
+:: prepending would grow PATH a little more each loop — after enough
+:: menu round-trips in one long-lived window, PATH exceeds cmd's ~8191
+:: char command-line limit and every command fails with "The input line
+:: is too long". Guard with a sentinel so this only happens once.
+if not defined _HERMES_PATH_INIT (
+  set "PATH=%RELY_DIR%venv\Scripts;%RELY_DIR%node;%RELY_DIR%git\bin;%PATH%"
+  set "_HERMES_PATH_INIT=1"
+)
+
+:: Safety: ensure HERMES_HOME is an absolute path (drive letter + backslash).
+:: If %~dp0 fails (e.g. wrong line endings), HERMES_HOME would be relative
+:: and the WebUI would resolve it against hermes-webui\ — wrong config, no
+:: core tools. Abort early with a clear message instead of silently broken.
+set "_SEP=%HERMES_HOME:~2,1%"
+set "BS=\"
+if not "%_SEP%"=="%BS%" goto bad_home
+goto home_ok
+
+:bad_home
+echo ========================================
+echo  FATAL: HERMES_HOME is not an absolute path!
+echo  HERMES_HOME = %HERMES_HOME%
+echo  ROOT_DIR    = %ROOT_DIR%
+echo  start.bat may have wrong line endings: LF instead of CRLF.
+echo  Fix: open in VS Code, set line endings to CRLF, save, retry.
+echo ========================================
+pause
+exit /b 1
+
+:home_ok
+
+:: ===== Inject API keys as environment variables (key_env references in config.yaml) =====
+:: Keys live here (start.bat), NOT in config.yaml — so config.yaml leaking alone exposes no key.
+set "HERMES_ATLASCLOUD_KEY=your-atlascloud-key"
+set "HERMES_CCVIBE_GPT_KEY=your-cc-vibe-key"
+set "HERMES_KUAIPAO_GPT_KEY=your-kuaipao-key"
+set "MCP_ATLASCLOUD_KEY=your-atlascloud-mcp-key"
+:: Bound each upstream request so provider fallback cannot be held indefinitely.
+set "HERMES_API_TIMEOUT=60"
+
+:: ===== Pre-flight diagnostics: verify all critical paths exist =====
+call :check_deps
+
+:: Fix venv pyvenv.cfg to point at portable Python (anti-drive-drift)
+call :fix_pyvenv
+:: Fix editable-install finder paths to current drive (anti-drive-drift)
+call :fix_editable_finder
+:: Inject MCP server config into config.yaml (paths + keys from env vars)
+call :inject_mcp_config
+:: Maintain a failover chain using existing providers/models only.
+call :configure_failover
+if errorlevel 1 goto failover_config_error
+
+echo ========================================
+echo  Hermes Agent CLI + WebUI Launcher (Portable)
+echo ========================================
+echo.
+echo  Detected Root  = %ROOT_DIR_NO_SLASH%
+echo  Rely Dir       = %RELY_DIR_NO_SLASH%
+echo  HERMES_HOME    = %HERMES_HOME%
+echo  Python venv    = %RELY_DIR%venv
+echo  WebUI          = http://localhost:8787
+echo  API Server     = http://localhost:50001
+echo.
+echo  [1] Start Hermes Gateway (background)
+echo  [2] Start Hermes WebUI (foreground)
+echo  [3] Start both (gateway background + webui foreground)
+echo  [4] Stop all Hermes processes
+echo  [5] Test API connection
+echo  [6] Exit
+echo  [7] Test CURRENT configured channel API
+echo  [8] Switch to kuaipao (gpt-5.6-sol)
+echo  [9] Switch to atlascloud (zai-org/glm-5.2)
+echo  [10] Switch to atlascloud (xai/grok-4.3)
+echo  [11] Switch to cc-vibe-gpt (gpt-5.6-sol)
+echo.
+set "choice="
+set /p choice="Select [1-11]: "
+if not defined choice goto no_choice
+
+if "%choice%"=="1" goto start_gateway
+if "%choice%"=="2" goto start_webui
+if "%choice%"=="3" goto start_both
+if "%choice%"=="4" goto stop_all
+if "%choice%"=="5" goto test_api
+if "%choice%"=="6" exit
+if "%choice%"=="7" goto test_current_api
+if "%choice%"=="8" goto switch_kuaipao
+if "%choice%"=="9" goto switch_atlascloud
+if "%choice%"=="10" goto switch_atlascloud_grok
+if "%choice%"=="11" goto switch_ccvibe_gpt
+goto invalid_choice
+
+:start_gateway
+echo Starting Hermes Gateway...
+set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
+:: Re-verify the venv right before launch (defensive: pyvenv.cfg can get
+:: re-poisoned if this same rely\ folder was just used on another drive
+:: letter). Cheap check, avoids a silent crash in the new window below.
+call :fix_pyvenv
+:: Use `cmd /k` instead of launching python.exe directly as the window's
+:: host process. If python.exe crashes immediately (broken venv, missing
+:: module, blocked by AV, etc.) BEFORE it can print the startup banner,
+:: a bare `start "title" python.exe ...` window closes the instant the
+:: process exits — the user sees no window at all ("界面不出现"). Wrapping
+:: in `cmd /k` keeps the window open after the command exits (success OR
+:: crash) so the real error is always visible instead of a vanishing window.
+start "Hermes Gateway" cmd /k ""%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main gateway run --replace"
+echo Gateway started in background window.
+echo (If the window closes/shows an error immediately, that window now
+echo  stays open with the exact error — read it before reporting "no window".)
+pause
+goto menu
+
+:start_webui
+echo Starting Hermes WebUI on port 8787...
+cd /d "%ROOT_DIR%hermes-webui"
+set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+call :fix_pyvenv
+"%RELY_DIR%venv\Scripts\python.exe" server.py
+pause
+goto menu
+
+:start_both
+echo Starting Hermes Gateway (background)...
+set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
+call :fix_pyvenv
+start "Hermes Gateway" cmd /k ""%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main gateway run --replace"
+timeout /t 3 /nobreak >nul
+echo Starting Hermes WebUI on port 8787...
+cd /d "%ROOT_DIR%hermes-webui"
+set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+"%RELY_DIR%venv\Scripts\python.exe" server.py
+pause
+goto menu
+
+:stop_all
+echo Stopping all Hermes processes...
+taskkill /f /im python.exe /fi "WINDOWTITLE eq Hermes Gateway" 2>nul
+taskkill /f /im python.exe /fi "WINDOWTITLE eq Hermes WebUI" 2>nul
+wmic process where "commandline like '%%hermes_cli.main%%' or commandline like '%%server.py%%'" call terminate >nul 2>&1
+taskkill /f /im python.exe /fi "COMMANDLINE like '%%server.py%%'" 2>nul
+taskkill /f /im python.exe /fi "COMMANDLINE like '%%hermes_cli.main%%'" 2>nul
+echo Done.
+pause
+goto menu
+
+:no_choice
+echo No menu input received. Returning to menu safely...
+pause
+goto menu
+
+:invalid_choice
+echo Invalid menu choice. Returning to menu safely...
+pause
+goto menu
+
+:test_api
+echo Testing API connection...
+set "HERMES_HOME=%ROOT_DIR%data"
+"%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main doctor
+echo.
+echo Testing kuaipao API...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import urllib.request,json; req=urllib.request.Request('https://kuaipao.ai/v1/models',headers={'Authorization':'Bearer sk-YOUR_KUAIPAO_KEY'}); r=urllib.request.urlopen(req); print('kuaipao OK:',[m['id'] for m in json.loads(r.read())['data'][:5]])"
+echo.
+pause
+goto menu
+
+:test_current_api
+echo ===================================================
+echo  Testing CURRENT configured API channel in config.yaml
+echo ===================================================
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib, yaml, urllib.request, json, os; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); cfg=yaml.safe_load(p.read_text(encoding='utf-8')); m_cfg=cfg.get('model',{}); prov=m_cfg.get('provider'); url=m_cfg.get('base_url','').rstrip('/')+'/models'; key_var=cfg.get('providers',{}).get(prov,{}).get('key_env'); key=os.environ.get(key_var) if key_var else None; print('Provider:', prov); print('URL:', url); print('Key Env:', key_var); print('Key Value:', (key[:15]+'...') if key else 'None'); req=urllib.request.Request(url,headers={'Authorization':f'Bearer {key}'} if key else {}); r=urllib.request.urlopen(req, timeout=10); print('HTTP Status:', r.status); print('Models List:', [m['id'] for m in json.loads(r.read().decode('utf-8'))['data']][:8])"
+if errorlevel 1 (
+    echo.
+    echo [FAIL] API Test failed! Please verify base_url and API key.
+) else (
+    echo.
+    echo [SUCCESS] Current API channel is working perfectly!
+)
+pause
+goto menu
+
+:switch_kuaipao
+echo Switching to kuaipao (gpt-5.6-sol)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"kuaipao\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://kuaipao.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to kuaipao gpt-5.6-sol')"
+call :configure_failover
+pause
+goto menu
+
+:switch_atlascloud
+echo Switching to atlascloud (zai-org/glm-5.2)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"zai-org/glm-5.2\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud zai-org/glm-5.2')"
+call :configure_failover
+pause
+goto menu
+
+:switch_atlascloud_grok
+echo Switching to atlascloud (xai/grok-4.3)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
+call :configure_failover
+pause
+goto menu
+
+:switch_ccvibe_gpt
+echo Switching to cc-vibe-gpt (gpt-5.6-sol)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"cc-vibe-gpt\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://cc-vibe.com/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to cc-vibe-gpt gpt-5.6-sol')"
+call :configure_failover
+pause
+goto menu
+
+:check_deps
+:: Pre-flight check: verify all critical paths exist before proceeding
+set "_DEPS_OK=1"
+echo ========================================
+echo  Pre-flight Dependency Check
+echo ========================================
+echo  ROOT_DIR    = %ROOT_DIR_NO_SLASH%
+echo  RELY_DIR    = %RELY_DIR_NO_SLASH%
+echo  HERMES_HOME = %HERMES_HOME%
+echo.
+
+:: Check rely directory itself
+if not exist "%RELY_DIR%" (
+  echo  [FAIL] rely directory not found: %RELY_DIR_NO_SLASH%
+  echo         Expected at: %ROOT_DIR%..\rely
+  echo         Please ensure the rely folder is at the same level as hermes_ui
+  set "_DEPS_OK=0"
+)
+
+:: Check portable Python
+if not exist "%RELY_DIR%python\python.exe" (
+  echo  [FAIL] Portable Python not found: %RELY_DIR%python\python.exe
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] Python: %RELY_DIR%python\python.exe
+)
+
+:: Check venv
+if not exist "%RELY_DIR%venv\Scripts\python.exe" (
+  echo  [FAIL] venv Python not found: %RELY_DIR%venv\Scripts\python.exe
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] venv:  %RELY_DIR%venv\Scripts\python.exe
+)
+
+:: Check Node.js
+if not exist "%RELY_DIR%node\node.exe" (
+  echo  [FAIL] Node.js not found: %RELY_DIR%node\node.exe
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] node:  %RELY_DIR%node\node.exe
+)
+
+:: Check Git/bash
+if not exist "%RELY_DIR%git\bin\bash.exe" (
+  echo  [FAIL] Git bash not found: %RELY_DIR%git\bin\bash.exe
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] git:   %RELY_DIR%git\bin\bash.exe
+)
+
+:: Check config.yaml
+if not exist "%ROOT_DIR%data\config.yaml" (
+  echo  [FAIL] config.yaml not found: %ROOT_DIR%data\config.yaml
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] config: %ROOT_DIR%data\config.yaml
+)
+
+:: Check .env
+if not exist "%ROOT_DIR%data\.env" (
+  echo  [WARN] .env not found: %ROOT_DIR%data\.env
+  echo         API keys may be missing - LLM provider might not work
+) else (
+  echo  [ OK ] .env:   %ROOT_DIR%data\.env
+)
+
+:: Check fix scripts
+if not exist "%ROOT_DIR%fix_pyvenv.py" (
+  echo  [FAIL] fix_pyvenv.py not found: %ROOT_DIR%fix_pyvenv.py
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] fix_pyvenv.py
+)
+
+if not exist "%ROOT_DIR%inject_mcp_config.py" (
+  echo  [FAIL] inject_mcp_config.py not found: %ROOT_DIR%inject_mcp_config.py
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] inject_mcp_config.py
+)
+
+if not exist "%ROOT_DIR%configure_failover.py" (
+  echo  [FAIL] configure_failover.py not found: %ROOT_DIR%configure_failover.py
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] configure_failover.py
+)
+
+if not exist "%ROOT_DIR%fix_editable_finder.py" (
+  echo  [FAIL] fix_editable_finder.py not found: %ROOT_DIR%fix_editable_finder.py
+  set "_DEPS_OK=0"
+) else (
+  echo  [ OK ] fix_editable_finder.py
+)
+
+echo.
+if "%_DEPS_OK%"=="0" (
+  echo  ========================================
+  echo  CRITICAL: One or more dependencies are missing!
+  echo  Hermes will NOT work correctly without these.
+  echo  ========================================
+  echo.
+  echo  Press any key to continue anyway, or Ctrl+C to abort.
+  pause >nul
+) else (
+  echo  All dependencies OK.
+)
+echo.
+goto :eof
+
+:fix_pyvenv
+:: Rewrite venv/pyvenv.cfg home= line to point at portable Python (anti-drive-drift)
+:: Use portable Python directly (not venv) to avoid chicken-and-egg if pyvenv.cfg is stale
+"%RELY_DIR%python\python.exe" "%ROOT_DIR%fix_pyvenv.py" "%RELY_DIR_NO_SLASH%"
+goto :eof
+
+:inject_mcp_config
+"%RELY_DIR%venv\Scripts\python.exe" "%ROOT_DIR%inject_mcp_config.py" "%ROOT_DIR_NO_SLASH%"
+goto :eof
+
+:configure_failover
+"%RELY_DIR%venv\Scripts\python.exe" "%ROOT_DIR%configure_failover.py" "%ROOT_DIR_NO_SLASH%"
+goto :eof
+
+:fix_editable_finder
+"%RELY_DIR%python\python.exe" "%ROOT_DIR%fix_editable_finder.py" "%RELY_DIR_NO_SLASH%" "%ROOT_DIR_NO_SLASH%"
+goto :eof
+
+:failover_config_error
+echo.
+echo ========================================
+echo  FATAL: Provider failover configuration failed.
+echo  Hermes was not started without fallback protection.
+echo  Review the error above and data\config.yaml.
+echo ========================================
+pause
+exit /b 1
+
+:menu
+cls
+goto top
+</code>
+                </div>
+                <div class="card warning">
+                    <strong>⚠️ 为什么显式设置 HERMES_WEBUI_STATE_DIR、HERMES_WEBUI_PYTHON、HERMES_WEBUI_AGENT_DIR？</strong><br>
+                    <strong>HERMES_WEBUI_STATE_DIR：</strong>WebUI 的会话、设置和 pinned 数据默认存放在 <code>%HERMES_HOME%\webui</code> 下。如果系统环境变量里残留了旧的 <code>HERMES_HOME</code>（例如换盘符前的路径或带尾部空格的值），WebUI 会读取到错误位置，导致左侧显示的是外部/只读会话，或新会话无法保存。通过 <code>HERMES_WEBUI_STATE_DIR</code> 强制指定为便携目录的 <code>data\webui</code>，可以彻底避免盘符漂移和旧环境变量带来的会话路径混乱。<br><br>
+                    <strong>HERMES_WEBUI_PYTHON：</strong>WebUI 的 <code>_discover_python()</code> 函数在未设置此环境变量时，会回退到 <code>shutil.which("python")</code> 从 <code>PATH</code> 查找 Python。Windows 系统自带的 <code>C:\Users\&lt;user&gt;\AppData\Local\Microsoft\WindowsApps\python.exe</code> 是一个 0 字节的 Windows Store 重定向 stub，调用它会弹出应用商店页面而非执行 Python，导致 WebUI 对话卡死无响应（表现为发送消息后长时间无反应，控制台无输出）。显式设置 <code>HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe</code> 确保使用便携 venv Python。<br><br>
+                    <strong>HERMES_WEBUI_AGENT_DIR：</strong>WebUI 的 <code>_discover_agent_dir()</code> 函数用于定位 hermes-agent 源码目录。显式设置 <code>HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent</code> 确保 Agent 功能始终可用，避免自动发现逻辑在特殊目录结构下失败。
+                </div>
+                <div class="card warning">
+                    <strong>启动顺序不可省略：</strong><code>fix_pyvenv</code> → <code>fix_editable_finder</code> → <code>inject_mcp_config</code> → <code>configure_failover</code>。最后一步失败时脚本会显示 <code>FATAL: Provider failover configuration failed</code> 并退出，避免在没有回退保护的情况下启动 Hermes。
+                </div>
+                <div class="card success">
+                    <strong>WebUI 模型名称高亮：</strong>模型选择器顶部的 Configured 区按顺序显示主模型和回退模型。<code>Primary</code> 表示当前主路由，<code>Fallback 1</code>/<code>Fallback 2</code> 表示故障时的尝试顺序；选中行还会保持 active 高亮。该显示来自 <code>config.yaml</code>，不代表新增了模型。
+                </div>
+            </div>
+
+            <!-- ========== Step 5 验证 ========== -->
+            <div class="section" id="step6">
+                <h2>七、 Step 5 · 启动与端到端验证</h2>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>双击运行 start.bat</h3>
+                    <div class="step-content">
+                        <p>1. 双击 <code>F:\hermes_ui\start.bat</code> 打开中枢控制台。<br>
+                        2. 推荐选择 <strong>`[3] Start both`</strong>，它会自动在后台拉起网关并在前台启动 Web 交互服务。<br>
+                        3. 看到以下日志，说明启动成功：</p>
+                        <div class="code-block" style="background:#0c1015;color:#39ff14;border-color:#39ff14">
+                            <code>[Hermes Web UI] Starting HTTPServer on port 8787 ...
+[Hermes Web UI] Serving static files from static/
+[Hermes Web UI] Forwarding API calls to http://127.0.0.1:50001/v1</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>验证回退配置器</h3>
+                    <div class="step-content">
+                        <p>启动菜单出现前应看到以下摘要。重复运行不会重复添加条目，输出 <code>already current</code> 表示配置已是目标状态：</p>
+                        <div class="code-block" style="background:#0c1015;color:#39ff14;border-color:#39ff14">
+                            <code>[configure_failover] primary: cc-vibe-gpt
+[configure_failover] fallback: kuaipao/gpt-5.6-sol -> atlascloud/xai/grok-4.3
+[configure_failover] already current: F:\hermes_ui\data\config.yaml</code>
+                        </div>
+                        <p>也可手动执行：</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                            <code>F:\rely\venv\Scripts\python.exe F:\hermes_ui\configure_failover.py F:\hermes_ui</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h3>浏览器检查模型名称高亮</h3>
+                    <div class="step-content">
+                        <p>打开 Chrome 或 Edge，访问 <strong><code>http://localhost:8787/</code></strong>。点击输入框底部的模型选择器，在顶部 Configured 区确认：</p>
+                        <ul>
+                            <li><code>cc-vibe-gpt / gpt-5.6-sol</code> 显示 <strong>Primary</strong>。</li>
+                            <li><code>kuaipao / gpt-5.6-sol</code> 显示 <strong>Fallback 1</strong>。</li>
+                            <li><code>atlascloud / xai/grok-4.3</code> 显示 <strong>Fallback 2</strong>。</li>
+                            <li>当前选中模型行保持 active 背景高亮；这些 badge 仅描述路由角色，不会增删模型。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <h3>验证模型切换后的保护链</h3>
+                    <div class="step-content">
+                        <p>从 <code>start.bat</code> 菜单选择任一模型切换项后，控制台会再次运行 <code>configure_failover.py</code>。检查输出中当前主 provider 不再出现在 fallback 列表，然后重启 Gateway 使新主路由生效。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 默认中文设置 ========== -->
+            <div class="section" id="zhlang">
+                <h2>八、 🌐 WebUI 默认中文设置</h2>
+                <p>WebUI 首次加载时可能因浏览器缓存或默认配置显示英文。为确保每次打开都是中文，需要同时修改配置和前端缓存。</p>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h3>修改配置文件</h3>
+                    <div class="step-content">
+                        <p>打开 <code>F:\hermes_ui\data\webui\settings.json</code>，将 <code>language</code> 改为 <code>"zh"</code>：</p>
+                        <div class="code-block">
+                            <code>"language": "zh",</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h3>强制浏览器 localStorage 为中文</h3>
+                    <div class="step-content">
+                        <p>编辑 <code>F:\hermes_ui\hermes-webui\static\index.html</code>，在现有 <code>localStorage</code> 设置脚本旁新增一行：</p>
+                        <div class="code-block">
+                            <code>&lt;script&gt;(function(){try{localStorage.setItem('hermes-lang','zh');}catch(e){}})();&lt;/script&gt;</code>
+                        </div>
+                        <p>这会在页面加载时立即覆盖浏览器缓存，避免旧语言设置残留。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 高DPI字太小调节指南 ========== -->
+            <div class="section" id="fontsize">
+                <h2>九、 💡 高DPI WebUI 字太小调节指南</h2>
+                <p>由于 WebUI 为高密度三栏版面设计，且未自动作 DPI 转换，部分 Windows 高分屏用户可能会觉得默认字体偏小。请使用以下内置机制随时进行调大：</p>
+                
+                <div class="card success">
+                    <strong>📌 方案 A：通过控制面板调节（持久生效）</strong><br>
+                    1. 页面左侧边栏最下方有一个 <strong>齿轮图标 (Settings / Control Center)</strong>，点击打开设置。<br>
+                    2. 找到 <strong>Font Size</strong> 选项，从 <code>default</code> 改为 <strong>`large`</strong> (基础 16px) 或 <strong>`xlarge`</strong> (基础 18px)。<br>
+                    3. 界面将会立刻自适应放大，设置信息会自动缓存，下次换盘符或设备依然生效。
+                </div>
+
+                <div class="card" style="background:#e3f2fd;border-left-color:#2196f3;color:#0d47a1">
+                    <strong>📌 方案 B：浏览器缩放机制（最灵活）</strong><br>
+                    - 直接在浏览器中按住键盘 <strong>`Ctrl` 键并向上滚动鼠标滚轮</strong>，或者按 <strong>`Ctrl` + `+`</strong>。<br>
+                    - 将缩放比例调整为 <code>110%</code> 或 <code>125%</code>。此缩放由 Chrome 内核渲染，排版绝不会出现任何错位，视觉体验最为柔和。
+                </div>
+
+                <div class="card warning">
+                    <strong>📌 方案 C：Console 控制台强制注入（调试必备）</strong><br>
+                    - 在页面上按 <code>F12</code> 键，进入 <strong>Console (控制台)</strong>。<br>
+                    - 粘贴以下代码并回车，页面会自动刷新并强制应用超大字体：
+                    <div class="code-block" style="margin-top:10px">
+                        <code>localStorage.setItem('hermes-font-size', 'large'); location.reload();</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 故障排除 ========== -->
+            <div class="section" id="troubleshoot">
+                <h2>十、 🔧 故障排除速查</h2>
+
+            <div class="callout warning">
+                <strong>MCP 经验教训：</strong>
+                <ul>
+                    <li>Hermes 原生 MCP 配置键是 <code>mcp_servers</code>，不是 Windsurf / Claude Desktop 常见的 <code>mcpServers</code>。</li>
+                    <li><code>mcp</code> Python SDK 必须安装到 WebUI 实际运行的虚拟环境，例如 <code>F:\rely\venv\Scripts\python.exe -m pip install mcp</code>。装到系统 Python 不会被 WebUI 进程看到。</li>
+                    <li>如果 WebUI 启动时还没有安装 <code>mcp</code>，<code>tools.mcp_tool</code> 会在导入期缓存 MCP 不可用状态；运行中补装 SDK 后，仅执行 <code>/reload-mcp</code> 可能仍显示 <code>No MCP servers connected</code>，需要重启 WebUI/Hermes 后端进程。</li>
+                    <li>stdio MCP server 只会继承 Hermes 允许的基础环境变量；API key、输出目录等必须写在对应 server 的 <code>env</code> 字段里，Hermes 才会注入给 Node 子进程。</li>
+                    <li>MCP server 入口脚本已便携化到 <code>F:\hermes_ui\mcp\</code> 目录，<code>start.bat</code> 启动时调用 <code>inject_mcp_config.py</code> 动态注入配置。如仍报路径错误，手动运行 <code>python inject_mcp_config.py</code> 确认输出 <code>OK - mcp_servers injected</code>，再检查 <code>mcp\&lt;server&gt;\build\index.js</code> 是否存在。</li>
+                    <li><strong>Node.js 必须便携化：</strong>MCP 配置为 <code>command: node</code>，hermes 在 <code>PATH</code> 中查找 <code>node</code>。新电脑如果没装 Node.js，所有 MCP 直接启动失败。便携化到 <code>F:\rely\node\</code> 后 <code>start.bat</code> 自动加入 <code>PATH</code>，换任何电脑都能用。验证：<code>start.bat</code> 启动后 <code>where node</code> 应显示 <code>F:\rely\node\node.exe</code>。</li>
+                    <li><strong>Git for Windows 已便携化：</strong>Hermes 的 terminal、read_file、write_file、search_files、patch 等核心工具全部依赖 <code>bash.exe</code>。便携化到 <code>F:\rely\git\</code> 后 <code>start.bat</code> 通过 <code>HERMES_GIT_BASH_PATH</code> 环境变量动态指向，换任何电脑都不依赖目标机器是否安装 Git。<strong>不要在 config.yaml 中写 <code>bash_path</code></strong>——config.yaml 里的路径含盘符，换盘后会失效；环境变量由 start.bat 动态设置，始终正确。</li>
+                    <li><strong>Python + venv 便携化 + pyvenv.cfg 动态修复：</strong>venv 的 <code>pyvenv.cfg</code> 会写死创建时的 host Python 路径，换电脑后 venv 找不到解释器。便携化到 <code>F:\rely\python\</code> 和 <code>F:\rely\venv\</code> 后，<code>start.bat</code> 每次启动时通过 <code>fix_pyvenv.py</code> 自动重写 <code>home=</code> 为 <code>%RELY_DIR%python</code>，确保 venv 始终找到便携 Python。</li>
+                    <li><strong>editable-install finder 路径动态修复：</strong>使用 <code>uv pip install -e</code> 可编辑安装 hermes-agent 后，venv <code>site-packages</code> 中的 <code>__editable___hermes_agent_*_finder.py</code> 固化了旧盘符路径。换盘后 <code>import hermes_cli</code> 报 <code>ModuleNotFoundError</code>。<code>start.bat</code> 每次启动时通过 <code>fix_editable_finder.py</code> 自动将 finder 路径重写为当前 <code>%ROOT_DIR%hermes-agent</code>。验证：<code>start.bat</code> 启动时看 <code>[fix_editable_finder] OK</code> 输出；手动修复：<code>F:\rely\python\python.exe F:\hermes_ui\fix_editable_finder.py "F:\rely" "F:\hermes_ui"</code>。</li>
+                    <li>验证顺序建议为：检查 <code>config.yaml</code> 的 <code>mcp_servers</code>；检查 <code>python -c "import mcp"</code> 使用的是 WebUI venv；检查便携目录 <code>mcp\</code> 下 Node 入口脚本存在；重启后执行 <code>/reload-mcp</code>。</li>
+                </ul>
+                <strong>MCP Node 子进程连接失败排查（<code>Connection closed</code> / <code>initial connection failed</code>）：</strong>
+                <ul>
+                    <li>Hermes 日志报 <code>MCP server 'xxx' initial connection failed ... Connection closed</code>，本质是 Node 子进程在启动瞬间崩溃（stdio 通道随之关闭），不是 Hermes 本身或网络问题。必须手动运行 <code>node build\index.js</code> 复现真实错误。</li>
+                    <li><strong>PowerShell 陷阱：</strong>直接 <code>node build\index.js</code> 时，PowerShell 会把 Node 写到 stderr 的正常日志（如 <code>OpenAI Integration MCP server running on stdio</code>）包装成 <code>NativeCommandError</code>，看起来像报错。判断标准是看 Node 是否真的抛出 <code>Error:</code> 堆栈，而非 PowerShell 的红色包装。建议用 <code>$output = node build\index.js 2>&1 | Out-String; $output | Out-File out.txt</code> 重定向后再读文件，避免误判。</li>
+                    <li><strong>node_modules 损坏是高频根因：</strong><code>@modelcontextprotocol/sdk</code> 1.29+ 的 <code>zod-compat.js</code> 强依赖 <code>zod</code>，但 <code>kuaipao-img</code> 的 <code>package.json</code> 未显式声明 <code>zod</code>，npm 安装时若 peer 解析失败就会整体缺失，导致 <code>ERR_MODULE_NOT_FOUND: Cannot find package 'zod'</code>。</li>
+                    <li><strong>部分安装的传递依赖：</strong><code>es-abstract</code> 这类深层依赖可能出现"有 <code>2024.js</code> 但缺 <code>2024\Call.js</code> 目录"的半损坏状态（<code>npm install</code> 报 <code>up to date</code> 但实际文件不全）。此时必须 <code>Remove-Item -Recurse -Force node_modules; Remove-Item package-lock.json</code> 后重装，不能只跑 <code>npm install</code>。</li>
+                    <li><strong>重装必须加 <code>--ignore-scripts</code>：</strong><code>kuaipao-image</code> 和 AtlasCloud MCP 的 <code>package.json</code> 有 <code>prepare -> npm run build -> tsc</code> 钩子，但便携目录已无 <code>tsconfig.json</code>，<code>npm install</code> 会在 prepare 阶段报 <code>tsc</code> 用法帮助并退出码 1。<code>--ignore-scripts</code> 跳过该钩子，直接补齐 <code>node_modules</code>，复用现成的 <code>build\</code> 产物即可。</li>
+                    <li><strong>目录命名应与 inject_mcp_config.py 一致：</strong>排查时容易混淆，务必确保 <code>inject_mcp_config.py</code> 的 server 名、<code>args</code> 路径、物理目录三者统一。当前便携版使用 <code>kuaipao-image</code>（快跑 grok-image 文生图）、<code>atlascloud-seedream-v5-pro</code>（AtlasCloud 文生图，模型 bytedance/seedream-v5.0-pro/text-to-image）、4 个 AtlasCloud 编辑 MCP。</li>
+                    <li><strong>Windows Job Object 拒绝访问告警可忽略：</strong>日志中 <code>Failed to assign process ... to Job Object: (5, 'AssignProcessToJobObject', '拒绝访问。')</code> 是 Windows 进程组权限限制的告警，不影响 MCP stdio 通信，无需处理。</li>
+                    <li><strong>修复后验证流程：</strong>① <code>node build\index.js</code> 看到 <code>running on stdio</code>；② 在 Hermes 中 <code>/reload-mcp</code> 或重启 Gateway；③ 调用 <code>mcp_list_tools</code> 确认工具列表返回；④ 实际调用 <code>generate_image</code> 生成一张测试图确认端到端可用。</li>
+                </ul>
+            </div>
+
+            <div class="callout danger">
+                <strong>AtlasCloud Seedream MCP 经验教训（新增 2026-07-07）：</strong>
+                <ul>
+                    <li><strong>AtlasCloud 图片 API ≠ OpenAI 兼容格式：</strong>直接复用 <code>kuaipao-img</code> 的 OpenAI 端点（<code>/v1/images/generations</code>、<code>/v1/images/edits</code>）调用 AtlasCloud 会持续报 <code>ECONNRESET</code> 和 <code>unreachable</code>。AtlasCloud 使用原生端点 <code>POST /api/v1/model/generateImage</code>，请求体为 JSON（非 FormData），图片以 URL 数组传入 <code>images</code> 字段，而非 multipart 上传。</li>
+                    <li><strong>异步轮询模式：</strong>AtlasCloud 图片 API 是异步的——<code>generateImage</code> 返回 <code>prediction_id</code>，需轮询 <code>GET /api/v1/model/prediction/{id}</code> 直到 <code>status</code> 为 <code>completed</code> 或 <code>succeeded</code>，再从 <code>outputs</code> 数组取结果 URL。不能像 OpenAI 那样同步等返回。</li>
+                    <li><strong>本地图片需先上传：</strong>AtlasCloud 编辑 API 不接受 FormData 直传图片。本地文件必须先 <code>POST /api/v1/model/uploadMedia</code>（multipart）上传到 AtlasCloud 存储，获取 <code>download_url</code> 后再作为 <code>images</code> 数组元素传入。URL 图片可直接使用。</li>
+                    <li><strong>API_URL 必须是裸域名：</strong><code>config.yaml</code> 中的 <code>API_URL</code> 应设为 <code>https://api.atlascloud.ai</code>（不含 <code>/api</code> 或 <code>/v1</code> 后缀），因为 handler 代码会自行拼接 <code>${apiUrl}/api/v1/model/generateImage</code>。若填 <code>https://api.atlascloud.ai/api</code> 会导致路径变成 <code>/api/api/v1/model/...</code> 返回 404。</li>
+                    <li><strong>尺寸格式不同：</strong>AtlasCloud 用 <code>WIDTH*HEIGHT</code> 格式（如 <code>2048*2048</code>、<code>1280*720</code>），用星号 <code>*</code> 分隔，而非 OpenAI 的 <code>1024x1024</code> 用字母 <code>x</code> 分隔。</li>
+                    <li><strong>0 审查实现方式：</strong>AtlasCloud Seedream 模型（<code>bytedance/seedream-v5.0-lite/edit</code> 和 <code>edit-sequential</code>）在 handler 代码中不发送任何 <code>moderation</code> 参数，不触发内容过滤。注意 AtlasCloud 服务端本身是否审查不在 MCP 代码控制范围内。</li>
+                    <li><strong>独立目录隔离：</strong>新增的 AtlasCloud MCP 服务器应放在独立目录（<code>mcp\atlascloud-seedream-edit\</code> 等），从 <code>atlascloud-seedream-v5-pro</code> 复制后重写 <code>handlers.js</code>、<code>definitions.js</code>（改为图生图编辑），不要修改原文生图 MCP 代码，避免影响已有功能。</li>
+                    <li><strong>ESM 写文件陷阱：</strong>这些 MCP 服务器 <code>package.json</code> 含 <code>"type": "module"</code>，直接用 Node.js 脚本写文件时 <code>require()</code> 会报 <code>ReferenceError: require is not defined in ES module scope</code>。必须将脚本后缀改为 <code>.cjs</code> 才能用 CommonJS 语法。PowerShell 的 <code>cat &gt; file &lt;&lt; 'EOF'</code> heredoc 也无法使用，因 PowerShell 不支持 bash heredoc 语法。</li>
+                    <li><strong>Sequential 模型额外参数：</strong><code>bytedance/seedream-v5.0-lite/edit-sequential</code> 支持 <code>max_images</code> 参数（1-15），可在一次请求中生成多张关联图片。普通 <code>edit</code> 模型不支持此参数。</li>
+                    <li><strong>inject_mcp_config.py 已覆盖全部 MCP：</strong>独立脚本 <code>inject_mcp_config.py</code> 在每次启动时生成完整的 <code>mcp_servers</code> 配置段，新增的 4 个 AtlasCloud MCP 已包含在 <code>generate_mcp_yaml()</code> 函数中。早期 <code>fix_mcp_paths.py</code> 正则修复方案已废弃，改为动态注入彻底解决盘符漂移和密钥暴露问题。</li>
+                </ul>
+            </div>
+
+            <div class="callout danger">
+                <strong>AtlasCloud Wan 2.7 MCP 经验教训（新增 2026-07-07）：</strong>
+                <ul>
+                    <li><strong>Wan 2.7 与 Seedream 共用同一 API 端点但参数格式不同：</strong>两者都走 <code>POST /api/v1/model/generateImage</code> + 异步轮询 <code>GET /api/v1/model/prediction/{id}</code>，但 <code>size</code> 参数格式完全不同——Seedream 用 <code>WIDTH*HEIGHT</code>（如 <code>2048*2048</code>），Wan 2.7 用预设档位 <code>1K</code>/<code>2K</code>。混用会导致 API 报错。</li>
+                    <li><strong>Wan 2.7 独有参数：</strong><code>n</code>（1-4，一次生成多张独立结果）、<code>thinking_mode</code>（布尔值，启用思考模式提升质量，默认 true）。Seedream 不支持这两个参数。Seedream Sequential 独有 <code>max_images</code>（1-15，生成关联序列图），Wan 2.7 不支持。</li>
+                    <li><strong>Wan 2.7 不支持 <code>output_format</code>：</strong>Seedream 系列可选 <code>jpeg</code>/<code>png</code> 输出格式，Wan 2.7 系列不支持此参数，输出格式由模型决定。</li>
+                    <li><strong>多图引用合成：</strong>Wan 2.7 支持 <code>images</code> 数组传入最多 9 张图片（第一张为主图，后续为参考图），可实现"把图 2 的涂鸦喷到图 1 的车上"这类跨图合成。Seedream 系列仅支持单图编辑。在 MCP 的 <code>image</code> 参数中可用逗号分隔多个 URL/路径来传入多图。</li>
+                    <li><strong>模型名称不含 <code>+</code> 后缀：</strong>AtlasCloud 页面显示名为 "Wan 2.7 Image-to-Image+"，但 API 模型 ID 是 <code>alibaba/wan-2.7/image-edit</code>（无 <code>+</code>）。误传 <code>alibaba/wan-2.7/image-edit+</code> 会返回 <code>{"code":400,"msg":"not found"}</code>。Pro 版模型名 <code>alibaba/wan-2.7-pro/image-edit</code> 同样不含特殊字符。</li>
+                    <li><strong>Pro 版与普通版区别：</strong><code>wan-2.7-pro</code> 输出质量更高但速度更慢，适合精细编辑；普通版 <code>wan-2.7</code> 速度更快，适合快速迭代。两者 API 参数完全相同，仅模型 ID 不同。</li>
+                    <li><strong>目录复制策略：</strong>从 <code>atlascloud-seedream-edit</code> 复制目录后重写 <code>definitions.js</code> 和 <code>handlers.js</code> 即可，<code>config/index.js</code>、<code>utils/index.js</code>、<code>index.js</code> 无需修改——配置通过环境变量注入，与模型无关。</li>
+                </ul>
+            </div>
+
+            <div class="callout danger">
+                <strong>OpenAI 兼容 MCP 经验教训（kuaipao-image，新增 2026-07-07）：</strong>
+                <ul>
+                    <li><strong>API_URL 拼接陷阱：</strong>当 <code>config.yaml</code> 中的 <code>API_URL</code> 已包含 <code>/v1</code>（如 <code>https://kuaipao.ai/v1</code>）时，handler 代码若直接 <code>${apiUrl}/v1/images/generations</code> 拼接会导致路径变成 <code>/v1/v1/images/generations</code> 返回 404。正确做法：<code>const baseUrl = apiUrl.endsWith('/v1') ? apiUrl : `${apiUrl}/v1`;</code> 智能检测 base URL 后再拼接端点。</li>
+                    <li><strong>快速默认参数避免 524：</strong>快跑同步生图端点前面的 Cloudflare 代理约 120 秒读超时。handler 应将 <code>1024x1024</code> 归一化为 <code>auto</code>，默认 <code>quality: low</code>、<code>output_format: jpeg</code>、<code>n: 1</code>，降低触发 524 概率。高耗时参数应由模型明确要求时才传递。</li>
+                    <li><strong>524 降档重试策略：</strong>catch 到 <code>err?.response?.status === 524</code> 后，自动用 <code>size: auto, quality: low, output_format: jpeg</code> 重试一次，避免用户等几分钟后直接失败。这个策略不能绕过服务端代理超时，但可以降低触发概率。</li>
+                    <li><strong>本地保存失败不影响核心功能：</strong>MCP 返回的在线 URL 可直接在界面查看和使用。本地下载到 <code>DEFAULT_OUTPUT_PATH/images/</code> 失败（CDN 慢/速率限制）只是次要功能，不应报错中断；应在 result 中标记 <code>error</code> 但保留 <code>output_url</code>。</li>
+                    <li><strong>OpenAI 标准参数与非标准参数：</strong>OpenAI <code>/v1/images/generations</code> 标准参数包括 <code>model</code>、<code>prompt</code>、<code>n</code>、<code>size</code>、<code>quality</code>、<code>response_format</code>。快跑扩展支持非标准参数（<code>width</code>、<code>height</code>、<code>steps</code>、<code>background</code>、<code>output_compression</code>），仅在用户明确传递时发送，避免不支持的后端报错。</li>
+                    <li><strong>工具描述应引导快速参数：</strong><code>definitions.js</code> 中对 <code>size</code>/<code>quality</code> 的描述应写明"prefer auto/low for faster responses"，减少模型主动传递慢参数的概率。</li>
+                    <li><strong>无审查 vs 无 moderation 参数：</strong>"无审查"指 MCP 代码不发送 <code>moderation</code> 参数，不在客户端层触发过滤。但快跑服务端本身是否审查不在 MCP 代码控制范围内，属于上游 API 策略。</li>
+                </ul>
+            </div>
+
+                <table>
+                    <tr>
+                        <th style="width:30%">异常现象</th>
+                        <th style="width:30%">根本原因</th>
+                        <th style="width:40%">处理方法</th>
+                    </tr>
+                    <tr>
+                        <td><strong>启动时报 <code>configure_failover.py not found</code></strong></td>
+                        <td>迁移时只复制了 <code>start.bat</code>，遗漏同级回退配置器</td>
+                        <td>把部署包中的 <code>F:\hermes_ui\configure_failover.py</code> 恢复到 <code>start.bat</code> 同级目录。不要删除预检或绕过 <code>failover_config_error</code>，否则会在无回退保护状态启动。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>启动时报 <code>fallback_providers verification failed</code></strong></td>
+                        <td><code>config.yaml</code> 语法损坏，或存在无法识别的旧回退段结构</td>
+                        <td>先备份 <code>data\config.yaml</code>，用 YAML 解析器检查缩进；保留现有 <code>providers</code> 和模型定义，删除损坏的顶层 <code>fallback_providers</code> 段后重新运行 <code>configure_failover.py</code>。不要手工新增模型。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>控制台显示 <code>fallback: (none)</code></strong></td>
+                        <td>配置中只有当前主 provider，或已有 provider 无法解析出安全的模型 ID</td>
+                        <td>检查 <code>data\config.yaml</code> 的 <code>providers</code> 是否仍包含本机原有渠道。配置器不会为了凑回退链而创建 provider/model；恢复原部署配置后重新运行，不要填入未经验证的模型名。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>WebUI 有模型但不显示 Primary / Fallback badge</strong></td>
+                        <td>浏览器静态资源缓存未刷新，WebUI 进程尚未重启，或 WebUI 源码缺少最小目录 badge 修复</td>
+                        <td>先停止并重新运行 <code>start.bat</code> 菜单 <code>3</code>，浏览器执行硬刷新（<code>Ctrl+F5</code>）。确认 <code>data\config.yaml</code> 有 <code>fallback_providers</code>，并确认 <code>hermes-webui\api\config.py</code> 的最小目录返回值通过 <code>_configured_model_badges_from_static_catalog</code> 生成 badge。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>模型切换后回退链仍包含当前主 provider</strong></td>
+                        <td>使用了旧版菜单脚本，切换后没有调用 <code>:configure_failover</code></td>
+                        <td>确认每个 <code>:switch_*</code> 分支写入主模型后都有 <code>call :configure_failover</code>；手动运行配置器并重启 Gateway。配置器会自动排除当前主 provider。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>API 报错 401 / Invalid token</strong></td>
+                        <td>快跑或 AtlasCloud 的 API 密钥被误改或失效</td>
+                        <td>打开 <code>data\.env</code> 核对密钥，运行 <code>start.bat</code> 菜单 `5` 测试连通性。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>换盘后提示 Python.exe 找不到</strong></td>
+                        <td>便携 Python 或 venv 未完整复制，或 <code>pyvenv.cfg</code> 仍指向旧盘符</td>
+                        <td>确认 <code>rely\python\python.exe</code> 与 <code>rely\venv\Scripts\python.exe</code> 都存在；运行 <code>fix_pyvenv.py</code> 修复底座路径。本部署不依赖目标电脑预装 Python 或 uv。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>wmic 无法终止进程</strong></td>
+                        <td>不同 Windows 版本的 wmic 环境变量或系统权限限制</td>
+                        <td>选择菜单 `4` 执行。如清理失败，可直接手动关闭所有弹出的 Gateway 黑窗口，或在任务管理器中干掉所有 <code>python.exe</code> 进程。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>页面一直显示 Connecting ...</strong></td>
+                        <td>Hermes Gateway (50001) 服务未启动或崩溃了</td>
+                        <td>确保在运行 WebUI 之前先选择菜单 `1` 或 `3` 成功拉起了网关后台。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>左侧显示历史会话但点击打不开 / 新会话不保存</strong></td>
+                        <td>WebUI 和 Gateway 读取的 HERMES_HOME 不一致，或 HERMES_HOME 末尾存在空格导致路径解析错误</td>
+                        <td>始终使用 <code>start.bat</code> 启动；确认系统环境变量 <code>HERMES_HOME</code> 没有尾部空格；脚本已显式设置 <code>HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui</code>。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>左侧显示 claude_code 会话且无法交互</strong></td>
+                        <td>Claude Code 的历史会话是只读的导入项，需要连接 Gateway 才能渲染，且默认允许显示</td>
+                        <td>若不想要这些外部会话，可在 <code>data\webui\settings.json</code> 中将 <code>show_claude_code_sessions</code> 和 <code>show_cli_sessions</code> 设为 <code>false</code>。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MCP server 连接失败 <code>Connection closed</code> / 生图工具不可用</strong></td>
+                        <td>Node 子进程启动即崩溃：缺 <code>zod</code> 或 <code>es-abstract</code> 等依赖，<code>node_modules</code> 半损坏</td>
+                        <td>进 <code>mcp\kuaipao-image\</code> 手动 <code>node build\index.js</code> 复现错误；删 <code>node_modules</code> + <code>package-lock.json</code> 后 <code>npm install --ignore-scripts</code> 重装；验证 <code>running on stdio</code> 后重启 Gateway。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>快跑 <code>kuaipao-image</code> 生图长时间无结果 / 返回 <code>524 Proxy Read Timeout</code></strong></td>
+                        <td>快跑同步生图端点 <code>/v1/images/generations</code> 前面的代理有约 120 秒读超时；若上游生成慢，会返回 524。此时本地 Hermes、MCP、Node、路径和输出目录通常都是正常的。可用 AtlasCloud Seedream/Wan MCP 成功出图作为本地链路健康的反证。</td>
+                        <td>优先改用 AtlasCloud 图片 MCP（原生异步轮询端点）；或降低快跑请求复杂度（<code>size=auto</code>、<code>quality=low</code>、<code>output_format=jpeg</code>、<code>n=1</code>）。单纯把本地 <code>REQUEST_TIMEOUT</code> 加大不能绕过服务端代理 524。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>OpenAI 兼容 MCP 调用失败 <code>404</code> / 日志显示 <code>/v1/v1/images/generations</code></strong></td>
+                        <td><code>config.yaml</code> 中 <code>API_URL</code> 已包含 <code>/v1</code>（如 <code>https://kuaipao.ai/v1</code>），但 handler 代码直接拼接 <code>/v1/images/generations</code> 导致路径重复</td>
+                        <td>修改 <code>mcp/xxx/build/tools/handlers.js</code>：在拼接端点前智能检测 base URL，<code>const baseUrl = apiUrl.endsWith('/v1') ? apiUrl : `${apiUrl}/v1`; const generateUrl = `${baseUrl}/images/generations`;</code>。确认日志显示正确路径后重启 Gateway 或 <code>/reload-mcp</code>。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>换盘后全部 MCP 不可用 / 工具列表为空</strong></td>
+                        <td><code>config.yaml</code> 中 MCP 路径仍指向旧盘符（如 <code>D:\hermes_ui\mcp\...</code>），Node 子进程找不到 <code>index.js</code></td>
+                        <td>手动运行 <code>F:\rely\venv\Scripts\python.exe F:\hermes_ui\inject_mcp_config.py</code>，确认输出 <code>OK - mcp_servers injected</code>；或重新双击 <code>start.bat</code>（启动时自动注入）；修复后重启 Gateway 或执行 <code>/reload-mcp</code>。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MCP 启动报 <code>ENOENT</code> / 找不到 <code>node</code> 命令</strong></td>
+                        <td>目标电脑未安装 Node.js，或 Node.js 不在 <code>PATH</code> 中</td>
+                        <td>确认 <code>F:\rely\node\node.exe</code> 存在（便携化 Node.js）；确认 <code>start.bat</code> 中 <code>PATH</code> 行包含 <code>%RELY_DIR%node</code>；始终通过 <code>start.bat</code> 启动而非直接运行 <code>python -m hermes_cli.main</code>。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>报 <code>Git Bash not found</code> / terminal 和文件工具全部失效</strong></td>
+                        <td>目标电脑未安装 Git for Windows，或 <code>HERMES_GIT_BASH_PATH</code> 未设置 / 路径不对</td>
+                        <td>确认 <code>F:\rely\git\bin\bash.exe</code> 存在（便携化 Git）；确认 <code>start.bat</code> 中设置了 <code>HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe</code>；始终通过 <code>start.bat</code> 启动；<strong>不要在 config.yaml 中写 <code>bash_path</code></strong>（换盘后会失效）。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>venv Python 报 <code>No Python at ...</code> / import 失败</strong></td>
+                        <td><code>pyvenv.cfg</code> 中 <code>home=</code> 指向旧电脑的 Python 路径（如 <code>C:\Users\...\uv\python\...</code>），换电脑后找不到</td>
+                        <td>确认 <code>F:\rely\python\python.exe</code> 存在；确认 <code>start.bat</code> 中 <code>call :fix_pyvenv</code> 在 <code>call :fix_editable_finder</code> 和 <code>call :inject_mcp_config</code> 之前执行；确认 <code>fix_pyvenv.py</code> 存在于 <code>hermes_ui\</code> 中；手动修复：<code>F:\rely\python\python.exe F:\hermes_ui\fix_pyvenv.py "F:\rely"</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>换盘后 <code>python -m hermes_cli.main</code> 报 <code>ModuleNotFoundError: No module named 'hermes_cli'</code></strong></td>
+                        <td>使用 <code>uv pip install -e</code> 可编辑安装后，venv <code>site-packages</code> 中的 <code>__editable___hermes_agent_*_finder.py</code> 固化了旧盘符路径（如 <code>F:\hermes_ui\hermes-agent\...</code>），换盘后 Python 找不到源码目录</td>
+                        <td>确认 <code>start.bat</code> 中 <code>call :fix_editable_finder</code> 在 <code>call :fix_pyvenv</code> 之后、<code>call :inject_mcp_config</code> 之前执行；确认 <code>fix_editable_finder.py</code> 存在于 <code>hermes_ui\</code> 中；手动修复：<code>F:\rely\python\python.exe F:\hermes_ui\fix_editable_finder.py "F:\rely" "F:\hermes_ui"</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hermes 报 <code>No LLM provider configured</code> / MCP 工具不能选用</strong></td>
+                        <td>两种可能：(1) <code>start.bat</code> 用 LF 换行符（非 CRLF），导致 cmd 解析错乱、<code>%~dp0</code> 返回空、<code>HERMES_HOME</code> 未设置，Hermes 读不到 <code>config.yaml</code>；(2) Gateway 启动命令用 <code>cmd /c "set ...&amp;&amp; python ..."</code> 引号嵌套，在不同 cmd 环境下环境变量未传递给子进程</td>
+                        <td>(1) 确保 <code>start.bat</code> 为 <strong>CRLF 换行符</strong>（用记事本/VS Code 保存为 Windows 格式；用 <code>python -c "t=open('start.bat','r').read(); open('start.bat','w',newline='').write(t.replace('\n','\r\n'))"</code> 转换）；(2) 已修复为在 <code>start</code> 前直接 <code>set</code> 环境变量，子进程自动继承；(3) 启动时看 Pre-flight Dependency Check 是否所有路径都 <code>[ OK ]</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>换电脑后 Hermes 只有 MCP 工具，没有文件/终端工具（<code>Tool 'search_files' does not exist</code>）</strong></td>
+                        <td><code>start.bat</code> 用 LF 换行符导致 <code>%~dp0</code> 返回空，<code>HERMES_HOME</code> 变成相对路径 <code>data</code>。Gateway 的 CWD 是 <code>hermes_ui\</code> 能找到 <code>data\config.yaml</code>（MCP 服务器正常启动），但 WebUI 执行 <code>cd hermes-webui</code> 后 CWD 变成 <code>hermes_ui\hermes-webui\</code>，<code>data\config.yaml</code> 解析到错误位置找不到 → 空配置 → 核心工具集不加载 → 只有 Gateway 注册的 MCP 工具可用</td>
+                        <td>确保 <code>start.bat</code> 为 <strong>CRLF 换行符</strong>（这是跨机器失败的最常见原因）；已新增 HERMES_HOME 绝对路径安全检查——如果 <code>%~dp0</code> 失败导致 HERMES_HOME 不是绝对路径，start.bat 会立即报 <code>FATAL: HERMES_HOME is not an absolute path</code> 并中止，不会静默继续</td>
+                    </tr>
+                    <tr>
+                        <td><strong>双击 <code>start.bat</code> 窗口一闪就消失（闪退）</strong></td>
+                        <td>批处理语法错误导致 cmd.exe 立即以错误退出。常见原因：<code>echo</code> 输出的文本行尾恰好是反斜杠 <code>\</code>（例如 <code>echo Expected at: ...\rely\</code>），当这一行处于 <code>if (...)</code> 括号内时，行尾的 <code>\</code> 会转义掉换行，导致下一行的右括号 <code>)</code> 被吞掉，整个 <code>if</code> 块括号不再配对，cmd 解析报 <code>. was unexpected at this time.</code> 并退出</td>
+                        <td>检查 <code>if (...)</code> 括号内的每个 <code>echo</code> 语句，确保没有任何一行以单个反斜杠 <code>\</code> 结尾；如需在括号内展示路径，去掉路径末尾多余的反斜杠（如把 <code>...\rely\</code> 改成 <code>...\rely</code>）；也可以在命令行用 <code>cmd /c start.bat</code>（而不是双击）运行以看到具体报错信息再排查</td>
+                    </tr>
+                    <tr>
+                        <td><strong>换电脑后 WebUI 对话卡住半天无响应</strong></td>
+                        <td>WebUI 的 <code>_discover_python()</code> 回退到 <code>shutil.which("python")</code>，命中 Windows Store 的 0 字节 <code>python.exe</code> stub（<code>C:\Users\...\WindowsApps\python.exe</code>），调用后弹出应用商店页面而非执行 Python，子进程无限等待</td>
+                        <td>在 <code>start.bat</code> 中添加 <code>set "HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe"</code>，让 <code>_discover_python()</code> 第①步直接命中便携 venv Python；同时添加 <code>set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"</code> 确保 Agent 目录正确发现。验证：<code>where python</code> 不应返回 WindowsApps 路径</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MCP 服务报 <code>CancelledError</code> 连接失败</strong></td>
+                        <td>MCP 子进程（<code>node</code>）启动超时或立即退出。可能原因：① <code>node</code> 不在 PATH 中；② <code>config.yaml</code> 中 MCP 入口脚本路径含旧盘符；③ <code>node_modules</code> 损坏缺失；④ <code>API_KEY</code> 错误导致服务启动后立即退出</td>
+                        <td>① 确认 <code>start.bat</code> 将 <code>%RELY_DIR%node</code> 加入 PATH，<code>where node</code> 返回便携 Node；② 确认 <code>inject_mcp_config.py</code> 已运行并注入路径；③ 手动运行 <code>node build\index.js</code> 复现错误；④ 检查 <code>data\logs\mcp-stderr.log</code> 中的 Node 子进程输出；⑤ 必要时增加 <code>connect_timeout: 120</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>AtlasCloud Seedream MCP 调用报 <code>ECONNRESET</code> / <code>unreachable</code></strong></td>
+                        <td>复用 <code>kuaipao-img</code> 的 OpenAI 端点（<code>/v1/images/edits</code>）调用 AtlasCloud，API 格式不兼容</td>
+                        <td>使用独立目录 <code>mcp\atlascloud-seedream-edit\</code> 的重写版 handler，走 AtlasCloud 原生端点 <code>/api/v1/model/generateImage</code> + 异步轮询 <code>/api/v1/model/prediction/{id}</code>；确认 <code>config.yaml</code> 中 <code>API_URL</code> 为裸域名 <code>https://api.atlascloud.ai</code>（不含 <code>/api</code> 后缀）。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wan 2.7 MCP 调用报参数错误 / <code>size</code> 无效</strong></td>
+                        <td>Wan 2.7 的 <code>size</code> 参数用预设档位 <code>1K</code>/<code>2K</code>，而非 Seedream 的 <code>WIDTH*HEIGHT</code> 格式；误传 <code>output_format</code> 也会报错</td>
+                        <td>确认使用 <code>mcp\atlascloud-wan-edit\</code> 或 <code>mcp\atlascloud-wan-edit-pro\</code> 的专用 handler（非 Seedream 版）；<code>size</code> 传 <code>1K</code> 或 <code>2K</code>；不要传 <code>output_format</code> 参数。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wan 2.7 MCP 返回 <code>{"code":400,"msg":"not found"}</code></strong></td>
+                        <td>模型名误含 <code>+</code> 后缀：<code>alibaba/wan-2.7/image-edit+</code> 是显示名，API 模型 ID 为 <code>alibaba/wan-2.7/image-edit</code>（无 <code>+</code>）</td>
+                        <td>修改 <code>inject_mcp_config.py</code> 中 <code>generate_mcp_yaml()</code> 函数里 <code>atlascloud-wan-edit</code> 的 <code>DEFAULT_EDIT_IMAGE_MODEL</code>，去掉末尾 <code>+</code> 号，改为 <code>alibaba/wan-2.7/image-edit</code>。Pro 版 <code>alibaba/wan-2.7-pro/image-edit</code> 无此问题。</td>
+                    </tr>
+                </table>
+            
+    <div class="section">
+      <h2>⚠️ 常见问题：对话卡住无响应 &amp; MCP CancelledError</h2>
+
+      <div class="card danger">
+        <strong>问题描述：</strong> 换到新电脑启动后，WebUI 对话发送消息后长时间无反应（卡住半天没响应），或日志中出现 <code>WARNING tools.mcp_tool: Failed to connect to MCP server 'xxx' (command=node): CancelledError</code>，所有 MCP 服务连接失败。
+      </div>
+
+      <h3>根因分析：Windows Store Python Stub 陷阱</h3>
+      <p>WebUI 的 <code>config.py</code> 中 <code>_discover_python()</code> 函数按优先级查找 Python 解释器：</p>
+      <ol style="margin-left: 20px;">
+        <li><code>HERMES_WEBUI_PYTHON</code> 环境变量（最高优先级）</li>
+        <li>Agent venv 中的 Python（<code>&lt;agent_dir&gt;/venv/Scripts/python.exe</code>）</li>
+        <li>本地 .venv 中的 Python</li>
+        <li><code>shutil.which("python3")</code> 或 <code>shutil.which("python")</code>（最低优先级，从 PATH 查找）</li>
+      </ol>
+      <p>在新电脑上，如果 <code>HERMES_WEBUI_PYTHON</code> 未设置，且 agent venv 路径不在预期位置，函数会回退到第④步从 <code>PATH</code> 查找 <code>python</code>。Windows 10/11 系统自带一个 <code>C:\Users\&lt;user&gt;\AppData\Local\Microsoft\WindowsApps\python.exe</code>，这是一个 <strong>0 字节的 Windows Store 重定向 stub</strong>——调用它不会执行 Python，而是弹出应用商店页面。WebUI 的子进程（如 <code>providers.py</code> 中的 account usage worker）调用此 stub 后会无限等待，导致对话卡死。</p>
+
+      <div class="card warning">
+        <strong>⚠️ 诊断方法：</strong>在 CMD 中执行 <code>where python</code>，如果第一个结果是 <code>C:\Users\&lt;user&gt;\AppData\Local\Microsoft\WindowsApps\python.exe</code> 且文件大小为 0 字节，即为 Windows Store stub。执行 <code>python --version</code> 如果弹出应用商店页面而非输出版本号，确认是 stub。
+      </div>
+
+      <h3>解决方案</h3>
+      <div class="card success">
+        <strong>✅ 已修复：</strong>在 <code>start.bat</code> 中添加以下两行环境变量，确保 WebUI 始终使用便携 venv Python：
+        <div class="code-block" style="margin: 10px 0;">
+          <code>set "HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe"
+set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"</code>
+        </div>
+        <p><code>HERMES_WEBUI_PYTHON</code> 让 <code>_discover_python()</code> 在第①步直接命中便携 venv Python，彻底绕开 Windows Store stub。<br>
+        <code>HERMES_WEBUI_AGENT_DIR</code> 确保 Agent 目录始终被正确发现，避免 <code>_HERMES_FOUND=False</code>。</p>
+      </div>
+
+      <h3>MCP CancelledError 诊断</h3>
+      <p>MCP 服务连接失败报 <code>CancelledError</code> 时，需排查以下环节：</p>
+      <ul style="margin-left: 20px;">
+        <li><strong>Node.js 是否在 PATH 中：</strong><code>start.bat</code> 已将 <code>%RELY_DIR%node</code> 加入 <code>PATH</code>，MCP 子进程通过 <code>_resolve_stdio_command()</code> 解析 <code>node</code> 命令。验证：<code>where node</code> 应返回 <code>D:\rely\node\node.EXE</code>（或当前盘符对应路径）。</li>
+        <li><strong>MCP 入口脚本是否存在：</strong><code>inject_mcp_config.py</code> 已将 <code>config.yaml</code> 中的 MCP 路径注入为当前盘符。验证：<code>dir D:\hermes_ui\mcp\kuaopao-image\build\index.js</code> 应存在。</li>
+        <li><strong>Node 子进程是否能正常启动：</strong>手动运行 <code>node D:\hermes_ui\mcp\kuaopao-image\build\index.js</code>，应看到 <code>OpenAI Integration MCP server running on stdio</code>。如果报 <code>Cannot find module</code>，检查 <code>node_modules</code> 是否完整。</li>
+        <li><strong>MCP stderr 日志：</strong>Hermes 将所有 MCP 子进程的 stderr 重定向到 <code>data\logs\mcp-stderr.log</code>，检查此文件可看到 Node 子进程的真实启动输出和错误。</li>
+        <li><strong>连接超时：</strong>默认 <code>connect_timeout=60</code> 秒。如果 Node 子进程启动慢（如首次加载大模块），可能超时。可在 <code>config.yaml</code> 中为特定 MCP 服务增加 <code>connect_timeout: 120</code>。</li>
+        <li><strong>API_KEY 是否正确：</strong>MCP 服务启动时需要 <code>API_KEY</code> 环境变量。如果 key 过期或错误，MCP 服务可能启动后立即退出。检查 <code>inject_mcp_config.py</code> 中 <code>generate_mcp_yaml()</code> 函数读取的环境变量（<code>HERMES_KUAIPAO_GPT_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>）是否在 <code>start.bat</code> 中正确设置。</li>
+      </ul>
+
+      <div class="card">
+        <strong>📋 验证流程：</strong>
+        <ol style="margin-left: 20px;">
+          <li>确认 <code>start.bat</code> 中已设置 <code>HERMES_WEBUI_PYTHON</code> 和 <code>HERMES_WEBUI_AGENT_DIR</code></li>
+          <li>启动后查看 WebUI 控制台输出的 <code>python:</code> 行，确认指向 <code>%RELY_DIR%venv\Scripts\python.exe</code> 而非 <code>C:\Users\...\WindowsApps\python.exe</code></li>
+          <li>查看 <code>data\logs\mcp-stderr.log</code>，确认每个 MCP 服务都输出了 <code>running on stdio</code></li>
+          <li>在 WebUI 中发送测试消息，确认不再卡住</li>
+          <li>调用 MCP 工具（如 <code>generate_image</code>）确认端到端可用</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⚠️ 常见问题：工具选择器不显示</h2>
+      
+      <div class="card warning">
+        <strong>问题描述：</strong> WebUI 对话框底部的 MCP 工具选择器和默认工具选择器不可见。
+      </div>
+
+      <h3>原因分析</h3>
+      <p>Hermes WebUI 使用了 <strong>CSS 容器查询（Container Query）</strong>，只有当界面宽度 ≥ 1100px 时才显示工具选择器。这是为了在小屏幕上保持界面整洁。</p>
+
+      <div class="code-block">
+        <pre>触发条件：
+@container composer-footer (min-width: 1100px) {
+    .composer-toolsets-wrap { display: block; }
+}</pre>
+      </div>
+
+      <h3>解决方案</h3>
+      
+      <div class="card success">
+        <h4>方法 1: 直接修改 style.css（推荐）</h4>
+        <p><strong>文件位置：</strong> <code>F:\hermes_ui\hermes-webui\static\style.css</code></p>
+        
+        <p><strong>步骤：</strong></p>
+        <ol style="margin-left: 20px;">
+          <li>备份原文件：<code>copy style.css style.css.backup</code></li>
+          <li>用文本编辑器打开 <code>style.css</code></li>
+          <li>查找并修改以下规则：</li>
+        </ol>
+
+        <div class="code-block" style="margin: 10px 0;">
+          <strong>修改 1 - 默认隐藏规则：</strong>
+          <pre>/* 原来的 */
+.composer-toolsets-wrap{display:none;}
+
+/* 改为 */
+.composer-toolsets-wrap{display:block!important;}</pre>
+        </div>
+
+        <div class="code-block" style="margin: 10px 0;">
+          <strong>修改 2 - 容器查询阈值：</strong>
+          <pre>/* 原来的 */
+@container composer-footer (min-width: 1100px)
+
+/* 改为 */
+@container composer-footer (min-width: 0px)</pre>
+        </div>
+
+        <div class="code-block" style="margin: 10px 0;">
+          <strong>修改 3 - 禁用响应式隐藏：</strong>
+          <pre>/* 注释掉以下规则 */
+/* .composer-footer.cf-burger .composer-toolsets-wrap{display:none!important;} */
+/* .composer-left > .composer-toolsets-wrap{display:none!important;} */</pre>
+        </div>
+
+        <p style="margin-top: 15px;"><strong>4. 保存文件，按 Ctrl+Shift+R 强制刷新浏览器</strong></p>
+      </div>
+
+      <div class="card">
+        <h4>方法 2: 使用浏览器控制台临时显示</h4>
+        <p>按 F12 打开开发者工具，在 Console 中粘贴：</p>
+        
+        <div class="code-block">
+          <pre>const wrap = document.getElementById('composerToolsetsWrap');
+if (wrap) {
+    wrap.style.setProperty('display', 'block', 'important');
+    console.log('✅ 工具选择器已显示');
+}</pre>
+        </div>
+      </div>
+
+      <h3>验证修复</h3>
+      <p>修复成功后，在输入框上方（模型选择器旁边）会显示一个工具按钮：</p>
+      <ul style="margin-left: 20px;">
+        <li>🔧 <strong>Global</strong> - 默认全局工具集</li>
+        <li>点击可选择不同的 MCP 服务器和工具集</li>
+        <li>位置：当前模型选择器（如 gpt-5.6-sol）右侧，Reasoning 设置附近</li>
+      </ul>
+
+      <div class="card warning">
+        <h4>⚠️ 注意事项</h4>
+        <ul style="margin: 10px 0 0 20px;">
+          <li>修改后需要<strong>强制刷新</strong>浏览器（Ctrl+Shift+R）清除缓存</li>
+          <li>备份原文件以便恢复</li>
+          <li>升级 Hermes 时可能需要重新应用修改</li>
+        </ul>
+      </div>
+    </div>
+
+</div>
+
+        </div>
+
+        <footer>
+            <p>Hermes Agent &copy; 2026 Nous Research. Compiled for Windows Portability.</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyCode(btn) {
+            var code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code).then(function() {
+                btn.innerText = "已复制";
+                btn.classList.add("copied");
+                setTimeout(function() {
+                    btn.innerText = "复制";
+                    btn.classList.remove("copied");
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+================= 🚀 部署完成 🚀 =================
+NPM:            http://66.154.118.22:40002
+OpenWebUI:      http://66.154.118.22:40001
+Gemini-Balance: http://66.154.118.22:40003
+模型目录(宿主)： /etc/models
+==================================================
+NAME                    IMAGE                                   COMMAND                  SERVICE          CREATED              STATUS                        PORTS
+npm_-gemini-balance-1   ghcr.io/snailyp/gemini-balance:latest   "uvicorn app.main:ap…"   gemini-balance   About a minute ago   Up About a minute             0.0.0.0:40003->8000/tcp, [::]:40003->8000/tcp
+npm_-npm-app-1          jc21/nginx-proxy-manager:latest         "/init"                  npm-app          About a minute ago   Up About a minute             0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 0.0.0.0:40002->81/tcp, [::]:40002->81/tcp
+npm_-npm-db-1           mariadb:10.11                           "docker-entrypoint.s…"   npm-db           About a minute ago   Up About a minute (healthy)   3306/tcp
+npm_-ollama-1           ollama/ollama:latest                    "/bin/ollama serve"      ollama           About a minute ago   Up About a minute             0.0.0.0:11434->11434/tcp, [::]:11434->11434/tcp
+npm_-open-webui-1       ghcr.io/open-webui/open-webui:main      "bash start.sh"          open-webui       About a minute ago   Up About a minute (healthy)   0.0.0.0:40001->8080/tcp, [::]:40001->8080/tcp
