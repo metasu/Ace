@@ -13,10 +13,13 @@ for %%I in ("%ROOT_DIR%..\rely") do set "RELY_DIR=%%~fI\"
 for %%I in ("%ROOT_DIR%..\rely") do set "RELY_DIR_NO_SLASH=%%~fI"
 
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
 set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
 set "HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe"
 set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"
+set "HERMES_WEBUI_PRESERVE_ENV=1"
 
 :: Only prepend to PATH once per window session. `:top` re-runs on every
 :: "goto menu" round-trip (after each menu action), and unconditionally
@@ -51,12 +54,31 @@ exit /b 1
 
 :home_ok
 
-:: ===== Inject API keys as environment variables (key_env references in config.yaml) =====
-:: Keys live here (start.bat), NOT in config.yaml — so config.yaml leaking alone exposes no key.
-set "HERMES_ATLASCLOUD_KEY=apikey-YOUR_ATLASCLOUD_KEY"
-set "HERMES_CCVIBE_GPT_KEY=sk-YOUR_CCVIBE_KEY"
-set "HERMES_KUAIPAO_GPT_KEY=sk-YOUR_KUAIPAO_KEY"
-set "MCP_ATLASCLOUD_KEY=apikey-YOUR_MCP_ATLASCLOUD_KEY"
+:: ===== 对话渠道密钥（config.yaml 的 key_env 引用）=====
+set "HERMES_ATLASCLOUD_GROK_43_KEY=your-atlascloud-grok-43-key"
+set "HERMES_ATLASCLOUD_GROK_45_KEY=your-atlascloud-grok-45-key"
+set "HERMES_XIAOYI_KEY=your-xiaoyi-key"
+
+:: ===== MCP 服务配置（inject_mcp_config.py 读取，不写入 config.yaml）=====
+set "XIAOYI_GROK_IMAGE_KEY=your-xiaoyi-image-key"
+set "MCP_ATLASCLOUD_KEY=your-atlascloud-mcp-key"
+set "MCP_ATLASCLOUD_API_URL=https://api.atlascloud.ai"
+
+:: ===== GitHub MCP（npx @modelcontextprotocol/server-github）=====
+:: 前往 https://github.com/settings/tokens 生成 Personal Access Token（classic），至少勾选 repo / read:org / read:user / gist
+set "GITHUB_PERSONAL_ACCESS_TOKEN=your-github-pat"
+:: Xiaoyi's SSE path is unreliable; use completed Chat Completions responses.
+set "HERMES_NON_STREAMING_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Xiaoyi is healthy for compact Chat Completions payloads; avoid sending the
+:: full Hermes tool schema/system prompt to this provider only.
+set "HERMES_COMPACT_REQUEST_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Xiaoyi GPT-5.6 expects max_tokens on Chat Completions.
+set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Use the SDK default transport; Xiaoyi is incompatible with Hermes' custom
+:: keepalive httpx client. Other providers keep the custom transport.
+set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Let Xiaoyi finish normal slow generations before fallback is considered.
+:: The provider remains primary; fallback is used only after a real failure.
 :: Bound each upstream request so provider fallback cannot be held indefinitely.
 set "HERMES_API_TIMEOUT=60"
 
@@ -91,13 +113,14 @@ echo  [4] Stop all Hermes processes
 echo  [5] Test API connection
 echo  [6] Exit
 echo  [7] Test CURRENT configured channel API
-echo  [8] Switch to kuaipao (gpt-5.6-sol)
-echo  [9] Switch to atlascloud (zai-org/glm-5.2)
-echo  [10] Switch to atlascloud (xai/grok-4.3)
-echo  [11] Switch to cc-vibe-gpt (gpt-5.6-sol)
+echo  [8] Switch to Xiaoyi (gpt-5.6-sol) [DEFAULT]
+echo  [9] Switch to atlascloud (xai/grok-4.3)
+echo  [10] Switch to atlascloud (xai/grok-4.5)
+echo  [11] Apply WebUI mobile Toolsets/MCP patch
+echo  [12] Refresh auth.json from .env
 echo.
 set "choice="
-set /p choice="Select [1-11]: "
+set /p choice="Select [1-12]: "
 if not defined choice goto no_choice
 
 if "%choice%"=="1" goto start_gateway
@@ -107,17 +130,21 @@ if "%choice%"=="4" goto stop_all
 if "%choice%"=="5" goto test_api
 if "%choice%"=="6" exit
 if "%choice%"=="7" goto test_current_api
-if "%choice%"=="8" goto switch_kuaipao
-if "%choice%"=="9" goto switch_atlascloud
-if "%choice%"=="10" goto switch_atlascloud_grok
-if "%choice%"=="11" goto switch_ccvibe_gpt
+if "%choice%"=="8" goto switch_xiaoyi_sol
+if "%choice%"=="9" goto switch_atlascloud_grok
+if "%choice%"=="10" goto switch_atlascloud
+if "%choice%"=="11" goto apply_webui_patch
+if "%choice%"=="12" goto refresh_auth
 goto invalid_choice
 
 :start_gateway
 echo Starting Hermes Gateway...
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
 set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
+set "HERMES_WEBUI_PRESERVE_ENV=1"
 :: Re-verify the venv right before launch (defensive: pyvenv.cfg can get
 :: re-poisoned if this same rely\ folder was just used on another drive
 :: letter). Cheap check, avoids a silent crash in the new window below.
@@ -140,7 +167,10 @@ goto menu
 echo Starting Hermes WebUI on port 8787...
 cd /d "%ROOT_DIR%hermes-webui"
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+set "HERMES_WEBUI_PRESERVE_ENV=1"
 call :fix_pyvenv
 "%RELY_DIR%venv\Scripts\python.exe" server.py
 pause
@@ -149,15 +179,21 @@ goto menu
 :start_both
 echo Starting Hermes Gateway (background)...
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
 set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
+set "HERMES_WEBUI_PRESERVE_ENV=1"
 call :fix_pyvenv
 start "Hermes Gateway" cmd /k ""%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main gateway run --replace"
 timeout /t 3 /nobreak >nul
 echo Starting Hermes WebUI on port 8787...
 cd /d "%ROOT_DIR%hermes-webui"
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
+set "HERMES_WEBUI_PRESERVE_ENV=1"
 "%RELY_DIR%venv\Scripts\python.exe" server.py
 pause
 goto menu
@@ -186,10 +222,13 @@ goto menu
 :test_api
 echo Testing API connection...
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
+set "HERMES_WEBUI_PRESERVE_ENV=1"
 "%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main doctor
 echo.
-echo Testing kuaipao API...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import urllib.request,json; req=urllib.request.Request('https://kuaipao.ai/v1/models',headers={'Authorization':'Bearer sk-YOUR_KUAIPAO_KEY'}); r=urllib.request.urlopen(req); print('kuaipao OK:',[m['id'] for m in json.loads(r.read())['data'][:5]])"
+echo Checking xiaoyi-grok-image MCP local config...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import os; key=os.environ.get('XIAOYI_GROK_IMAGE_KEY',''); assert key.startswith('sk-'), 'XIAOYI_GROK_IMAGE_KEY missing'; print('xiaoyi-grok-image MCP configured: https://xiaoyiapi.xyz/v1 / grok-imagine-image / 2048x2048')"
 echo.
 pause
 goto menu
@@ -198,7 +237,7 @@ goto menu
 echo ===================================================
 echo  Testing CURRENT configured API channel in config.yaml
 echo ===================================================
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib, yaml, urllib.request, json, os; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); cfg=yaml.safe_load(p.read_text(encoding='utf-8')); m_cfg=cfg.get('model',{}); prov=m_cfg.get('provider'); url=m_cfg.get('base_url','').rstrip('/')+'/models'; key_var=cfg.get('providers',{}).get(prov,{}).get('key_env'); key=os.environ.get(key_var) if key_var else None; print('Provider:', prov); print('URL:', url); print('Key Env:', key_var); print('Key Value:', (key[:15]+'...') if key else 'None'); req=urllib.request.Request(url,headers={'Authorization':f'Bearer {key}'} if key else {}); r=urllib.request.urlopen(req, timeout=10); print('HTTP Status:', r.status); print('Models List:', [m['id'] for m in json.loads(r.read().decode('utf-8'))['data']][:8])"
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib, yaml, urllib.request, json, os; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); cfg=yaml.safe_load(p.read_text(encoding='utf-8')); m_cfg=cfg.get('model',{}); prov=m_cfg.get('provider'); url=m_cfg.get('base_url','').rstrip('/')+'/models'; key_var=cfg.get('providers',{}).get(prov,{}).get('key_env'); key=os.environ.get(key_var) if key_var else None; print('Provider:', prov); print('URL:', url); print('Key Env:', key_var); print('Key Value:', (key[:15]+'...') if key else 'None'); req=urllib.request.Request(url,headers={'Authorization':f'Bearer {key}' if key else '', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'}); r=urllib.request.urlopen(req, timeout=10); print('HTTP Status:', r.status); print('Models List:', [m['id'] for m in json.loads(r.read().decode('utf-8'))['data']][:8])"
 if errorlevel 1 (
     echo.
     echo [FAIL] API Test failed! Please verify base_url and API key.
@@ -209,31 +248,37 @@ if errorlevel 1 (
 pause
 goto menu
 
-:switch_kuaipao
-echo Switching to kuaipao (gpt-5.6-sol)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"kuaipao\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://kuaipao.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to kuaipao gpt-5.6-sol')"
+:switch_atlascloud_grok
+echo Switching to atlascloud (xai/grok-4.3)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.3\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
 call :configure_failover
 pause
 goto menu
 
 :switch_atlascloud
-echo Switching to atlascloud (zai-org/glm-5.2)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"zai-org/glm-5.2\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud zai-org/glm-5.2')"
+echo Switching to atlascloud (xai/grok-4.5)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.5\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.5\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.5')"
 call :configure_failover
 pause
 goto menu
 
-:switch_atlascloud_grok
-echo Switching to atlascloud (xai/grok-4.3)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
+:switch_xiaoyi_sol
+echo Switching to Xiaoyi (gpt-5.6-sol)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"Xiaoyi-gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to Xiaoyi gpt-5.6-sol')"
 call :configure_failover
 pause
 goto menu
 
-:switch_ccvibe_gpt
-echo Switching to cc-vibe-gpt (gpt-5.6-sol)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"cc-vibe-gpt\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://cc-vibe.com/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to cc-vibe-gpt gpt-5.6-sol')"
-call :configure_failover
+:apply_webui_patch
+echo Applying WebUI mobile Toolsets/MCP patch...
+"%RELY_DIR%venv\Scripts\python.exe" "%ROOT_DIR%patches\apply_webui_mobile_toolsets.py" "%ROOT_DIR%hermes-webui"
+echo Done. Restart Hermes WebUI to take effect.
+pause
+goto menu
+
+:refresh_auth
+echo Refreshing auth.json from .env and config.yaml...
+"%RELY_DIR%venv\Scripts\python.exe" "%ROOT_DIR%refresh_auth_json.py" "%ROOT_DIR_NO_SLASH%"
 pause
 goto menu
 

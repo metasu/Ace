@@ -1,0 +1,70 @@
+# 本文件不保存明文 API Key，所有 key 通过 key_env 引用 .env 中的环境变量。
+# 部署时 start.bat 会自动设置环境变量；此处为参考模板。
+# mcp_servers 段由 inject_mcp_config.py 在启动时从环境变量动态注入，不在此模板中硬编码。
+model:
+  default: "gpt-5.6-sol"
+  provider: "Xiaoyi-gpt-5.6-sol"
+  base_url: "https://xiaoyiapi.xyz/v1"
+  max_tokens: 2048
+  default_headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+      like Gecko) Chrome/124.0.0.0 Safari/537.36
+  context_length: 1000000
+providers:
+  Xiaoyi-gpt-5.6-sol:
+    base_url: https://xiaoyiapi.xyz/v1
+    key_env: HERMES_XIAOYI_KEY
+    api_mode: chat_completions
+    model: gpt-5.6-sol
+    models:
+      gpt-5.6-sol:
+        timeout_seconds: 60
+    request_timeout_seconds: 300
+    stale_timeout_seconds: 300
+  atlascloud-grok-4.3:
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_GROK_43_KEY
+    api_mode: chat_completions
+    model: xai/grok-4.3
+    models:
+      xai/grok-4.3:
+        timeout_seconds: 60
+  atlascloud-grok-4.5:
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_GROK_45_KEY
+    api_mode: chat_completions
+    model: xai/grok-4.5
+    models:
+      xai/grok-4.5:
+        timeout_seconds: 60
+fallback_providers:
+- provider: atlascloud-grok-4.3
+  model: xai/grok-4.3
+  key_env: HERMES_ATLASCLOUD_GROK_43_KEY
+  base_url: https://api.atlascloud.ai/v1
+- provider: atlascloud-grok-4.5
+  model: xai/grok-4.5
+  key_env: HERMES_ATLASCLOUD_GROK_45_KEY
+  base_url: https://api.atlascloud.ai/v1
+
+agent:
+  api_max_retries: 1
+  reasoning_effort: none
+terminal:
+  backend: local
+  cwd: .
+  timeout: 180
+compression:
+  enabled: true
+  threshold: 0.8
+  target_ratio: 0.2
+  protect_last_n: 20
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+command_allowlist:
+  - recursive delete
+  - git force push (rewrites remote history)
+  - execute_code
+streaming: true
+_config_version: 33

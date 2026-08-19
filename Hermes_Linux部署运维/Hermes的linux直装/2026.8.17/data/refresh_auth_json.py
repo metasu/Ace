@@ -1,0 +1,98 @@
+import json
+import pathlib
+import re
+from datetime import datetime, timezone
+
+env_path = pathlib.Path('/opt/hermes/data/.env')
+auth_path = pathlib.Path('/opt/hermes/data/auth.json')
+
+env = {}
+if env_path.exists():
+    for line in env_path.read_text().splitlines():
+        m = re.match(r'^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$', line)
+        if m:
+            env[m.group(1)] = m.group(2).strip().strip('"').strip("'")
+
+def resolve(val):
+    # 支持 ${VAR} 或 $VAR 形式的 .env 变量引用
+    if not val:
+        return val
+    def _repl(m):
+        name = m.group(1) or m.group(2)
+        return env.get(name, '')
+    return re.sub(r'\$\{([A-Z0-9_]+)\}|\$([A-Z0-9_]+)', _repl, val)
+
+def cred(provider, label, key_var, base_url_var, default_base_url):
+    access_token = env.get(key_var, '') if key_var else ''
+    # 兼容 key_env 命名：HERMES_ATLASCLOUD_KEY 也允许读 ATLASCLOUD_API_KEY
+    if not access_token and key_var and key_var.startswith('HERMES_'):
+        alt = key_var.replace('HERMES_', '').replace('_KEY', '_API_KEY')
+        access_token = env.get(alt, '')
+    return {
+        'id': provider,
+        'label': label,
+        'auth_type': 'api_key',
+        'priority': 0,
+        'source': f'env:{key_var}' if key_var else 'config',
+        'access_token': access_token,
+        'base_url': resolve(env.get(base_url_var, default_base_url)),
+        'request_count': 0,
+        'last_status': None, 'last_status_at': None,
+        'last_error_code': None, 'last_error_reason': None,
+        'last_error_message': None, 'last_error_reset_at': None,
+    }
+
+# 从 config.yaml 读取 providers 并自动解析 key_env / base_url
+cfg_providers = {}
+try:
+    import yaml
+    cfg = yaml.safe_load(pathlib.Path('/opt/hermes/data/config.yaml').read_text())
+    cfg_providers = cfg.get('providers', {}) if cfg else {}
+except Exception as e:
+    print(f'[warn] 读取 config.yaml 失败: {e}', file=__import__('sys').stderr)
+
+def provider_cred(name, info):
+    if not isinstance(info, dict):
+        return None
+    key_var = str(info.get('key_env') or '').strip()
+    raw_key = str(info.get('api_key') or '').strip()
+    # 如果 config.yaml 里直接写 api_key（不推荐），优先解析为 key_env 形式
+    if not key_var and raw_key:
+        m = re.match(r'^\$\{([A-Z0-9_]+)\}$', raw_key)
+        if m:
+            key_var = m.group(1)
+    base_url = str(info.get('base_url') or '').strip()
+    if not base_url or (not key_var and not raw_key):
+        return None
+    base_var = ''
+    m = re.match(r'^\$\{([A-Z0-9_]+)\}$', base_url)
+    if m:
+        base_var = m.group(1)
+    result = cred(name, name, key_var, base_var, resolve(base_url))
+    if not key_var and raw_key:
+        result['access_token'] = raw_key
+    return result if result.get('access_token') else None
+
+credential_pool = {
+    'anthropic': [cred('newapi-anthropic', 'ANTHROPIC_API_KEY', 'ANTHROPIC_API_KEY', 'ANTHROPIC_BASE_URL', 'http://127.0.0.1:50006')],
+    'gemini':    [cred('newapi-gemini', 'GOOGLE_API_KEY', 'GOOGLE_API_KEY', 'GEMINI_BASE_URL', 'http://127.0.0.1:50006/v1')],
+    'openai':    [cred('openai-compatible', 'OPENAI_API_KEY', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', '')],
+    'openrouter': [],
+}
+
+# 自动加入 config.yaml 中所有 custom provider
+for name, info in cfg_providers.items():
+    cred_info = provider_cred(name, info)
+    if cred_info:
+        credential_pool.setdefault(f'custom:{name}', []).append(cred_info)
+
+data = {
+    'version': 1,
+    'providers': {},
+    'credential_pool': credential_pool,
+    'updated_at': datetime.now(timezone.utc).isoformat(),
+}
+
+auth_path.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+auth_path.chmod(0o600)
+print('✅ auth.json 已从 .env 刷新')

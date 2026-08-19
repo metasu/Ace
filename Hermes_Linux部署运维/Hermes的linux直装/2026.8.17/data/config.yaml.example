@@ -1,0 +1,85 @@
+# 本文件不保存明文 API Key，所有 key 通过 key_env 引用 .env 中的环境变量。
+# 部署时 hermes-deploy.sh 会自动生成此文件；此处为参考模板。
+# mcp_servers 段由 hermesctl.sh / hermes-deploy.sh 在启动时从 .env 动态注入，不在此模板中硬编码。
+model:
+  default: "gpt-5.6-sol"
+  provider: "xiaoyi"
+  default_headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+      like Gecko) Chrome/124.0.0.0 Safari/537.36
+
+providers:
+  atlascloud:
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_KEY
+  atlascloud-grok-4.3:
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_KEY
+    model: xai/grok-4.3
+  kuaipao-gpt:
+    base_url: https://kuaipao.ai/v1
+    key_env: HERMES_KUAIPAO_GPT_KEY
+    model: gpt-5.6-sol
+    models:
+      gpt-5.6-sol:
+        timeout_seconds: 60
+    discover_models: true
+  xiaoyi:
+    base_url: https://xiaoyiapi.xyz/v1
+    key_env: HERMES_XIAOYI_KEY
+    model: gpt-5.6-sol
+    models:
+      gpt-5.6-sol:
+        timeout_seconds: 60
+
+agent:
+  api_max_retries: 1
+
+fallback_providers:
+  - provider: kuaipao-gpt
+    model: gpt-5.6-sol
+    key_env: HERMES_KUAIPAO_GPT_KEY
+  - provider: atlascloud-grok-4.3
+    model: xai/grok-4.3
+    key_env: HERMES_ATLASCLOUD_KEY
+  - provider: atlascloud
+    model: xai/grok-4.5
+    key_env: HERMES_ATLASCLOUD_KEY
+
+terminal:
+  backend: local
+  cwd: .
+  timeout: 180
+
+compression:
+  enabled: true
+  threshold: 0.5
+  target_ratio: 0.2
+  protect_last_n: 20
+
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+
+command_allowlist:
+- stop/restart system service
+- execute_code
+- recursive delete
+
+streaming: true
+
+_config_version: 33
+
+platform_toolsets:
+  cli:
+    - hermes-cli
+    - xiaoyi-grok-image
+    - atlascloud-seedream-v5.0-pro
+    - atlascloud-seedream-v5.0-pro-edit
+    - atlascloud-seedream-v5.0-lite-sequential
+    - atlascloud-wan-edit
+    - atlascloud-wan-edit-pro
+    - github
+
+# mcp_servers: 由 hermesctl.sh / hermes-deploy.sh 在启动时从 .env（密钥 + API_URL）+ 动态路径生成，不在此文件中硬编码。
+# 如需修改 MCP 配置，编辑 .env 中的 XIAOYI_GROK_IMAGE_KEY / XIAOYI_GROK_IMAGE_API_URL / MCP_ATLASCLOUD_KEY / MCP_ATLASCLOUD_API_URL。

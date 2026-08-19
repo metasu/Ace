@@ -46,7 +46,7 @@
     <div class="container">
         <header>
             <h1>Hermes Agent Windows 本地便携部署教程</h1>
-            <p>100% 动态盘符自适应 · 移动硬盘/U盘即插即用 · 现有模型一键切换 · 自动回退保护 · WebUI 模型高亮</p>
+            <p>100% 动态盘符自适应 · 移动硬盘/U盘即插即用 · 现有模型一键切换 · Xiaoyi 双渠道 · 自动回退保护 · WebUI 模型高亮</p>
             <div class="badges">
                 <span class="badge">Windows 10/11</span>
                 <span class="badge">Python 3.12.13 (Portable)</span>
@@ -58,7 +58,8 @@
                 <span class="badge">现有模型零增删</span>
                 <span class="badge">Provider 自动回退</span>
                 <span class="badge">模型名称角色高亮</span>
-                <span class="badge">6 MCP 服务 (kuaipao grok-image + AtlasCloud Seedream v5.0 Pro 文生图 + Seedream v5.0 Pro 编辑 + Seedream v5.0 Lite 连续编辑 + Wan 2.7 × 2)</span>
+                <span class="badge">6 MCP 服务 (Xiaoyi grok-imagine-image 2K + AtlasCloud Seedream v5.0 Pro 文生图 + Seedream v5.0 Pro 编辑 + Seedream v5.0 Lite 连续编辑 + Wan 2.7 × 2)</span>
+                <span class="badge">GitHub MCP 仓库管理</span>
             </div>
         </header>
 
@@ -90,18 +91,17 @@
 Hermes WebUI (静态前端 + Python 极简 BFF 接口)
 ↓ 转发请求到 http://127.0.0.1:50001/v1
 Hermes Agent CLI (Gateway 模式，后台静默运行)
-↓ 根据 start.bat 一键切换的配置
-├── 1. 快跑 GPT 渠道 (kuaipao.ai -> gpt-5.6-sol)
-├── 2. AtlasCloud GLM 渠道 (api.atlascloud.ai -> zai-org/glm-5.2)
-├── 3. AtlasCloud Grok 渠道 (api.atlascloud.ai -> xai/grok-4.3)
-└── 4. cc-vibe-gpt 渠道 (cc-vibe.com -> gpt-5.6-sol，默认)
+↓ 根据 start.bat 一键切换的配置（仅保留四个对话渠道）
+├── 1. Xiaoyi 主渠道 (xiaoyiapi.xyz -> gpt-5.6-sol，当前默认)
+├── 2. AtlasCloud Grok 渠道 (api.atlascloud.ai -> xai/grok-4.3)
+└── 3. AtlasCloud Grok 渠道 (api.atlascloud.ai -> xai/grok-4.5)
 
-故障保护（按当前已有 provider 动态生成，不增删模型）：
-主渠道 cc-vibe-gpt/gpt-5.6-sol
- ↓ 失败、超时、限流或服务错误
-Fallback 1 kuaipao/gpt-5.6-sol
- ↓ 仍失败
-Fallback 2 atlascloud/xai/grok-4.3</code>
+故障保护（顺序与渠道列表一致，并自动排除当前主 provider/model）：
+主渠道 Xiaoyi-gpt-5.6-sol/gpt-5.6-sol
+  ↓ 失败、超时、限流或服务错误
+Fallback 1 atlascloud-grok-4.3/xai/grok-4.3
+  ↓ 仍失败
+Fallback 2 atlascloud-grok-4.5/xai/grok-4.5</code>
                 </div>
             </div>
 
@@ -112,7 +112,7 @@ Fallback 2 atlascloud/xai/grok-4.3</code>
                     <strong>⚠️ 盘符漂移痛点：</strong>移动硬盘接入不同电脑时，盘符可能从 <code>F:</code> 变成 <code>E:</code> 或 <code>G:</code>。<br>
                     1. Python 虚拟环境中的 <code>Scripts\hermes.exe</code> 等包装器内部固化了安装时的绝对路径，一旦换盘符便会失效报“找不到解释器”错误。<br>
                     2. 配置文件 <code>config.yaml</code>、<code>.env</code> 若含绝对路径，换盘后会导致网关或会话崩溃；<code>auth.lock</code> 是运行期互斥锁文件，应保持为空。<br>
-                    3. <strong>MCP server 配置含盘符路径和 API Key：</strong><code>config.yaml</code> 中 <code>mcp_servers</code> 的 <code>args</code>（如 <code>F:\hermes_ui\mcp\kuaipao-image\build\index.js</code>）、<code>env.DEFAULT_OUTPUT_PATH</code>（如 <code>F:\hermes_ui\output</code>）和 <code>env.API_KEY</code> 均为含盘符的绝对路径或明文密钥。换盘后 Node 子进程找不到入口脚本，MCP 服务全部加载失败，表现为 <code>Connection closed</code> 或工具列表为空；config.yaml 泄露也会暴露所有 MCP API Key。<br>
+                    3. <strong>MCP server 配置含盘符路径和 API Key：</strong><code>config.yaml</code> 中 <code>mcp_servers</code> 的 <code>args</code>（如 <code>F:\hermes_ui\mcp\xiaoyi-grok-image\build\index.js</code>）、<code>env.DEFAULT_OUTPUT_PATH</code>（如 <code>F:\hermes_ui\output</code>）和 <code>env.API_KEY</code> 均为含盘符的绝对路径或明文密钥。换盘后 Node 子进程找不到入口脚本，MCP 服务全部加载失败，表现为 <code>Connection closed</code> 或工具列表为空；config.yaml 泄露也会暴露所有 MCP API Key。<br>
                     4. <strong>Node.js 不在目标电脑 PATH 中：</strong>MCP server 配置为 <code>command: node</code>，hermes 在启动 MCP 子进程时会在 <code>PATH</code> 中查找 <code>node</code>。新电脑如果没装 Node.js 或安装路径不同，<code>node</code> 命令找不到，所有 MCP 服务直接启动失败——即使 config.yaml 路径已修复也没用。<br>
                     5. <strong>缺少 Git for Windows：</strong>Hermes 的 terminal、read_file、write_file、search_files 等核心工具依赖 <code>bash.exe</code> 执行。新电脑如果没装 Git for Windows，所有依赖 bash 的功能全部失效，报 <code>Git Bash not found</code> 错误，MCP 工具也无法正常使用。即使装了，不同电脑安装路径不同（<code>C:\Program Files\Git</code> vs <code>C:\soft\Git</code>），config.yaml 里写死的 <code>bash_path</code> 换电脑就失效。<br>
                     6. <strong>editable-install finder 路径固化盘符：</strong>使用 <code>uv pip install -e</code> 以可编辑模式安装 hermes-agent 后，venv 的 <code>site-packages</code> 中会生成 <code>__editable___hermes_agent_*_finder.py</code> 文件，其中写死了安装时的绝对路径（如 <code>F:\hermes_ui\hermes-agent\...</code>）。换盘符后此路径失效，Python 无法定位源码目录，导致 <code>python -m hermes_cli.main</code> 报 <code>ModuleNotFoundError: No module named 'hermes_cli'</code>，Gateway 和 WebUI 全部无法启动。
@@ -121,15 +121,17 @@ Fallback 2 atlascloud/xai/grok-4.3</code>
                     <strong>🚀 盘符自适应解决方案：</strong><br>
                     1. <strong>全相对路径配置文件：</strong> <code>config.yaml</code> 与 <code>.env</code> 中所有路径均使用 <code>"."</code> 或由启动脚本动态注入，确保配置文件 100% 盘符无关。<br>
                     2. <strong>使用模块入口绕过可执行包装：</strong> 在启动脚本中，完全不调用 <code>hermes.exe</code>，而是直接使用当前虚拟环境的 <code>python.exe -m hermes_cli.main</code> 驱动 Gateway 及管理命令，彻底免疫 `venv` 的绝对路径绑定。<br>
-                    3. <strong>MCP 配置动态注入脚本 <code>inject_mcp_config.py</code>：</strong>独立 Python 脚本，在 <code>start.bat</code> 启动 Hermes 之前执行，将完整的 <code>mcp_servers</code> YAML 段落生成并注入到 <code>config.yaml</code> 中。路径使用当前 <code>ROOT_DIR</code>，API Key 从 <code>start.bat</code> 设置的环境变量读取（<code>HERMES_KUAIPAO_GPT_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>）。<strong>config.yaml 中不再保存任何 MCP 配置</strong>——每次启动时由脚本动态生成，彻底免疫盘符漂移，且 config.yaml 泄露不暴露任何 MCP 密钥。<br>
+                    3. <strong>MCP 配置动态注入脚本 <code>inject_mcp_config.py</code>：</strong>独立 Python 脚本，在 <code>start.bat</code> 启动 Hermes 之前执行，将完整的 <code>mcp_servers</code> YAML 段落生成并注入到 <code>config.yaml</code> 中。路径使用当前 <code>ROOT_DIR</code>，密钥从启动环境变量读取。<strong>config.yaml 会在运行时包含注入后的 MCP 段落，因此不要把它提交、分享或上传；</strong>每次启动都会按当前盘符重写路径，避免盘符漂移。<br>
                     4. <strong>Node.js 便携化：</strong>将 Node.js 运行时复制到 <code>F:\rely\node\</code> 目录，<code>start.bat</code> 启动时自动将其加入 <code>PATH</code>。换任何电脑都不依赖目标机器是否安装 Node.js，MCP 子进程始终能找到 <code>node</code> 命令。<br>
                     5. <strong>Git for Windows 便携化 + 环境变量动态注入：</strong>将 Git for Windows 复制到 <code>F:\rely\git\</code> 目录，<code>start.bat</code> 启动时通过 <code>HERMES_GIT_BASH_PATH</code> 环境变量指向便携目录的 <code>bash.exe</code>，同时加入 <code>PATH</code>。换任何电脑都不依赖目标机器是否安装 Git，也不依赖安装路径。<strong>不在 config.yaml 中写 <code>bash_path</code></strong>——因为 config.yaml 里的路径是含盘符的绝对路径，换盘后会失效；环境变量由 <code>start.bat</code> 动态设置，始终正确。<br>
                     6. <strong>Python + venv 便携化 + pyvenv.cfg 动态修复：</strong>将 CPython 3.12 和 venv 都放在 <code>F:\rely\</code> 中。venv 的 <code>pyvenv.cfg</code> 会写死 host Python 路径，<code>start.bat</code> 每次启动时通过 <code>fix_pyvenv.py</code> 自动将 <code>home=</code> 重写为 <code>%RELY_DIR%python</code>，确保 venv 始终找到便携 Python。<br>
                     7. <strong>editable-install finder 路径动态修复：</strong>使用 <code>uv pip install -e</code> 以可编辑模式安装 hermes-agent 后，venv 的 <code>site-packages</code> 中会生成 <code>__editable___hermes_agent_*_finder.py</code> 文件，其中固化了安装时的绝对路径（如 <code>F:\hermes_ui\hermes-agent\...</code>）。换盘符后此路径失效，导致 <code>import hermes_cli</code> 报 <code>ModuleNotFoundError</code>。<code>start.bat</code> 每次启动时通过 <code>fix_editable_finder.py</code> 自动将 finder 文件中的路径重写为当前 <code>%ROOT_DIR%hermes-agent</code>，确保可编辑安装始终指向正确位置。<br>
                     8. <strong>HERMES_WEBUI_PYTHON 环境变量显式注入：</strong>WebUI 的 <code>config.py</code> 中 <code>_discover_python()</code> 函数按优先级查找 Python 解释器：① <code>HERMES_WEBUI_PYTHON</code> 环境变量 → ② agent venv → ③ 本地 .venv → ④ <code>shutil.which("python3")</code> / <code>shutil.which("python")</code>。在 Windows 上，如果前三步都未命中，第④步会从 <code>PATH</code> 中查找 <code>python</code>，而 Windows 系统自带的 <code>C:\Users\&lt;user&gt;\AppData\Local\Microsoft\WindowsApps\python.exe</code> 是一个 0 字节的 Windows Store 重定向 stub——调用它会弹出应用商店页面而非执行 Python，导致 WebUI 对话卡死无响应。<code>start.bat</code> 通过显式设置 <code>HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe</code>，让 <code>_discover_python()</code> 在第①步直接命中便携 venv Python，彻底绕开 Windows Store stub 陷阱。<br>
                     9. <strong>HERMES_WEBUI_AGENT_DIR 环境变量显式注入：</strong>WebUI 的 <code>_discover_agent_dir()</code> 函数用于定位 hermes-agent 源码目录。如果未显式设置 <code>HERMES_WEBUI_AGENT_DIR</code>，函数会尝试多种自动发现逻辑（相对路径推断、<code>HERMES_HOME</code> 下查找等），在某些目录结构或盘符漂移场景下可能失败，导致 <code>_HERMES_FOUND=False</code>，Agent 功能不可用。<code>start.bat</code> 通过显式设置 <code>HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent</code>，确保 Agent 目录始终被正确发现。<br>
-                    10. <strong>模型回退配置器：</strong><code>configure_failover.py</code> 每次启动以及每次菜单切换模型后都会读取现有 <code>providers</code>，排除当前主 provider，再生成有序 <code>fallback_providers</code>。它只维护顶层回退段和 <code>agent.api_max_retries</code>，不会创建、删除或改写任何 provider/model 清单。<br>
-                    11. <strong>有界请求与 WebUI 角色高亮：</strong><code>start.bat</code> 设置 <code>HERMES_API_TIMEOUT=60</code>，避免故障上游无限卡住；WebUI 模型选择器根据同一回退链显示 <code>Primary</code>、<code>Fallback 1</code>、<code>Fallback 2</code>。即使模型目录请求超时进入最小目录模式，角色高亮仍会保留。
+                    10. <strong>模型回退配置器：</strong><code>configure_failover.py</code> 每次启动以及每次菜单切换模型后都会读取现有 <code>providers</code>，按 <code>Xiaoyi → AtlasCloud 4.3 → AtlasCloud 4.5</code> 生成有序 <code>fallback_providers</code>，并只排除完全相同的当前主 provider/model。当前主模型为 <code>Xiaoyi-gpt-5.6-sol/gpt-5.6-sol</code>。<br>
+                    11. <strong>有界请求与 WebUI 角色高亮：</strong><code>start.bat</code> 设置 <code>HERMES_API_TIMEOUT=60</code> 作为全局兜底；Xiaoyi provider 额外设置 <code>request_timeout_seconds: 300</code>，避免完整工具上下文请求在首包较慢时被误杀。默认 Xiaoyi 主渠道下，WebUI 显示 <code>Primary</code>、<code>Fallback 1</code>（AtlasCloud 4.3）、<code>Fallback 2</code>（AtlasCloud 4.5）。<br>
+                    12. <strong>MCP 初始化防抖：</strong>WebUI 按当前 MCP 配置指纹复用已建立的 MCP 连接，配置未变化时不会每条消息重复等待 discovery；配置变化或冷却时间到达后仍会自动重试。<br>
+                    13. <strong>缓存清理边界：</strong>可清理 <code>data\cache\terminal</code> 的终端快照和 <code>data\cache\vision</code> 的临时图像；不要删除会话、日志、数据库、模型缓存、MCP <code>node_modules</code> 或技能目录。
                 </div>
             </div>
 
@@ -204,7 +206,7 @@ F:\rely\uv\uv.exe --version
                         - <code>F:\hermes_ui\data</code>：存放全套本地数据、历史会话数据库及配置文件（<code>.env</code>、<code>config.yaml</code>、空白的 <code>auth.lock</code>）。<br>
                         - <code>F:\hermes_ui\hermes-agent</code>：Hermes 核心引擎源码仓。<br>
                         - <code>F:\hermes_ui\hermes-webui</code>：轻量级 Web 交互面板源码仓。<br>
-                        - <code>F:\hermes_ui\mcp</code>：便携化 MCP 服务目录（含 <code>kuaipao-image</code>、<code>atlascloud-seedream-v5-pro</code>、<code>atlascloud-seedream-edit</code>、<code>atlascloud-seedream-edit-sequential</code>、<code>atlascloud-wan-edit</code>、<code>atlascloud-wan-edit-pro</code> 六个子目录，各含 <code>build/</code> 和 <code>node_modules/</code>）。<br>
+                        - <code>F:\hermes_ui\mcp</code>：便携化 MCP 服务目录（含 <code>xiaoyi-grok-image</code>、<code>atlascloud-seedream-v5-pro</code>、<code>atlascloud-seedream-edit</code>、<code>atlascloud-seedream-edit-sequential</code>、<code>atlascloud-wan-edit</code>、<code>atlascloud-wan-edit-pro</code> 六个子目录，各含 <code>build/</code> 和 <code>node_modules/</code>）。<br>
                         - <code>F:\hermes_ui\output</code>：MCP 媒体生成默认输出目录（图片编辑结果落盘位置，由 <code>inject_mcp_config.py</code> 动态注入的 <code>DEFAULT_OUTPUT_PATH</code> 指向）。<br>
                         - <code>F:\hermes_ui\start.bat</code>：一键启动脚本（控制中枢）。<br>
                         - <code>F:\hermes_ui\inject_mcp_config.py</code>：MCP 配置动态注入脚本。<br>
@@ -235,7 +237,7 @@ F:\rely\uv\uv.exe --version
                         <p>保存路径：<code>F:\hermes_ui\inject_mcp_config.py</code>（与 <code>start.bat</code> 同级）</p>
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">复制</button>
-                            <code>"""Inject MCP server configuration into data/config.yaml.
+                            <code>&quot;&quot;&quot;Inject MCP server configuration into data/config.yaml.
 
 Generates the entire mcp_servers YAML section with paths relative to
 ROOT_DIR and API keys read from environment variables, then replaces
@@ -248,7 +250,7 @@ current drive letter and keys come from start.bat env vars.
 Usage:
     python inject_mcp_config.py             # auto-detect root = script dir
     python inject_mcp_config.py F:\\hermes_ui  # explicit root
-"""
+&quot;&quot;&quot;
 
 from __future__ import annotations
 
@@ -259,124 +261,135 @@ from pathlib import Path
 
 
 def _env(name: str) -&gt; str:
-    return os.environ.get(name, "")
+    return os.environ.get(name, &quot;&quot;)
 
 
 def generate_mcp_yaml(root: str) -&gt; str:
-    kuaipao_key = _env("HERMES_KUAIPAO_GPT_KEY")
-    atlascloud_key = _env("MCP_ATLASCLOUD_KEY")
-    out = f"{root}\\output"
+    xiaoyi_grok_image_key = _env(&quot;XIAOYI_GROK_IMAGE_KEY&quot;)
+    atlascloud_key = _env(&quot;MCP_ATLASCLOUD_KEY&quot;)
+    atlascloud_url = _env(&quot;MCP_ATLASCLOUD_API_URL&quot;) or &quot;https://api.atlascloud.ai&quot;
+    out = f&quot;{root}\\output&quot;
 
     return (
-        "mcp_servers:\n"
-        "  kuaipao-image:\n"
-        "    command: node\n"
-        "    args:\n"
-        f"      - {root}\\mcp\\kuaipao-image\\build\\index.js\n"
-        "    timeout: 660\n"
-        "    env:\n"
-        f"      API_KEY: {kuaipao_key}\n"
-        "      API_URL: https://kuaipao.ai/v1\n"
-        "      DEFAULT_IMAGE_MODEL: grok-image\n"
-        f"      DEFAULT_OUTPUT_PATH: {out}\n"
-        "      REQUEST_TIMEOUT: '600000'\n"
-        "  atlascloud-seedream-v5.0-pro:\n"
-        "    command: node\n"
-        "    args:\n"
-        f"      - {root}\\mcp\\atlascloud-seedream-v5-pro\\build\\index.js\n"
-        "    timeout: 360\n"
-        "    env:\n"
-        f"      API_KEY: {atlascloud_key}\n"
-        "      API_URL: https://api.atlascloud.ai\n"
-        "      DEFAULT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/text-to-image\n"
-        f"      DEFAULT_OUTPUT_PATH: {out}\n"
-        "      REQUEST_TIMEOUT: '600000'\n"
-        "  atlascloud-seedream-v5.0-pro-edit:\n"
-        "    command: node\n"
-        "    args:\n"
-        f"      - {root}\\mcp\\atlascloud-seedream-edit\\build\\index.js\n"
-        "    timeout: 660\n"
-        "    env:\n"
-        f"      API_KEY: {atlascloud_key}\n"
-        "      API_URL: https://api.atlascloud.ai\n"
-        "      DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/edit\n"
-        f"      DEFAULT_OUTPUT_PATH: {out}\n"
-        "      REQUEST_TIMEOUT: '600000'\n"
-        "  atlascloud-seedream-v5.0-lite-sequential:\n"
-        "    command: node\n"
-        "    args:\n"
-        f"      - {root}\\mcp\\atlascloud-seedream-edit-sequential\\build\\index.js\n"
-        "    timeout: 660\n"
-        "    env:\n"
-        f"      API_KEY: {atlascloud_key}\n"
-        "      API_URL: https://api.atlascloud.ai\n"
-        "      DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-lite/edit-sequential\n"
-        f"      DEFAULT_OUTPUT_PATH: {out}\n"
-        "      REQUEST_TIMEOUT: '600000'\n"
-        "  atlascloud-wan-edit:\n"
-        "    command: node\n"
-        "    args:\n"
-        f"      - {root}\\mcp\\atlascloud-wan-edit\\build\\index.js\n"
-        "    timeout: 660\n"
-        "    env:\n"
-        f"      API_KEY: {atlascloud_key}\n"
-        "      API_URL: https://api.atlascloud.ai\n"
-        "      DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7/image-edit\n"
-        f"      DEFAULT_OUTPUT_PATH: {out}\n"
-        "      REQUEST_TIMEOUT: '600000'\n"
-        "  atlascloud-wan-edit-pro:\n"
-        "    command: node\n"
-        "    args:\n"
-        f"      - {root}\\mcp\\atlascloud-wan-edit-pro\\build\\index.js\n"
-        "    timeout: 660\n"
-        "    env:\n"
-        f"      API_KEY: {atlascloud_key}\n"
-        "      API_URL: https://api.atlascloud.ai\n"
-        "      DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7-pro/image-edit\n"
-        f"      DEFAULT_OUTPUT_PATH: {out}\n"
-        "      REQUEST_TIMEOUT: '600000'\n"
-        "\n"
+        &quot;mcp_servers:\n&quot;
+        &quot;  xiaoyi-grok-image:\n&quot;
+        &quot;    command: node\n&quot;
+        &quot;    args:\n&quot;
+        f&quot;      - {root}\\mcp\\xiaoyi-grok-image\\build\\index.js\n&quot;
+        &quot;    timeout: 660\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      API_KEY: {xiaoyi_grok_image_key}\n&quot;
+        &quot;      API_URL: https://xiaoyiapi.xyz/v1\n&quot;
+        &quot;      DEFAULT_IMAGE_MODEL: grok-imagine-image\n&quot;
+        &quot;      DEFAULT_IMAGE_SIZE: 2048x2048\n&quot;
+        f&quot;      DEFAULT_OUTPUT_PATH: {out}\n&quot;
+        &quot;      REQUEST_TIMEOUT: &#x27;600000&#x27;\n&quot;
+        &quot;  atlascloud-seedream-v5.0-pro:\n&quot;
+        &quot;    command: node\n&quot;
+        &quot;    args:\n&quot;
+        f&quot;      - {root}\\mcp\\atlascloud-seedream-v5-pro\\build\\index.js\n&quot;
+        &quot;    timeout: 660\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      API_KEY: {atlascloud_key}\n&quot;
+        f&quot;      API_URL: {atlascloud_url}\n&quot;
+        &quot;      DEFAULT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/text-to-image\n&quot;
+        f&quot;      DEFAULT_OUTPUT_PATH: {out}\n&quot;
+        &quot;      REQUEST_TIMEOUT: &#x27;600000&#x27;\n&quot;
+        &quot;  atlascloud-seedream-v5.0-pro-edit:\n&quot;
+        &quot;    command: node\n&quot;
+        &quot;    args:\n&quot;
+        f&quot;      - {root}\\mcp\\atlascloud-seedream-edit\\build\\index.js\n&quot;
+        &quot;    timeout: 660\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      API_KEY: {atlascloud_key}\n&quot;
+        f&quot;      API_URL: {atlascloud_url}\n&quot;
+        &quot;      DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/edit\n&quot;
+        f&quot;      DEFAULT_OUTPUT_PATH: {out}\n&quot;
+        &quot;      REQUEST_TIMEOUT: &#x27;600000&#x27;\n&quot;
+        &quot;  atlascloud-seedream-v5.0-lite-sequential:\n&quot;
+        &quot;    command: node\n&quot;
+        &quot;    args:\n&quot;
+        f&quot;      - {root}\\mcp\\atlascloud-seedream-edit-sequential\\build\\index.js\n&quot;
+        &quot;    timeout: 660\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      API_KEY: {atlascloud_key}\n&quot;
+        f&quot;      API_URL: {atlascloud_url}\n&quot;
+        &quot;      DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-lite/edit-sequential\n&quot;
+        f&quot;      DEFAULT_OUTPUT_PATH: {out}\n&quot;
+        &quot;      REQUEST_TIMEOUT: &#x27;600000&#x27;\n&quot;
+        &quot;  atlascloud-wan-edit:\n&quot;
+        &quot;    command: node\n&quot;
+        &quot;    args:\n&quot;
+        f&quot;      - {root}\\mcp\\atlascloud-wan-edit\\build\\index.js\n&quot;
+        &quot;    timeout: 660\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      API_KEY: {atlascloud_key}\n&quot;
+        f&quot;      API_URL: {atlascloud_url}\n&quot;
+        &quot;      DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7/image-edit\n&quot;
+        f&quot;      DEFAULT_OUTPUT_PATH: {out}\n&quot;
+        &quot;      REQUEST_TIMEOUT: &#x27;600000&#x27;\n&quot;
+        &quot;  atlascloud-wan-edit-pro:\n&quot;
+        &quot;    command: node\n&quot;
+        &quot;    args:\n&quot;
+        f&quot;      - {root}\\mcp\\atlascloud-wan-edit-pro\\build\\index.js\n&quot;
+        &quot;    timeout: 660\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      API_KEY: {atlascloud_key}\n&quot;
+        f&quot;      API_URL: {atlascloud_url}\n&quot;
+        &quot;      DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7-pro/image-edit\n&quot;
+        f&quot;      DEFAULT_OUTPUT_PATH: {out}\n&quot;
+        &quot;      REQUEST_TIMEOUT: &#x27;600000&#x27;\n&quot;
+        &quot;  github:\n&quot;
+        &quot;    command: npx\n&quot;
+        &quot;    args:\n&quot;
+        &quot;      - -y\n&quot;
+        &quot;      - &#x27;@modelcontextprotocol/server-github&#x27;\n&quot;
+        &quot;    timeout: 60\n&quot;
+        &quot;    env:\n&quot;
+        f&quot;      GITHUB_PERSONAL_ACCESS_TOKEN: {_env(&#x27;GITHUB_PERSONAL_ACCESS_TOKEN&#x27;)}\n&quot;
+        &quot;\n&quot;
     )
 
 
-# Match from "mcp_servers:" at column 0 to the next non-whitespace line at column 0
+# Match from &quot;mcp_servers:&quot; at column 0 to the next non-whitespace line at column 0
 _MCP_BLOCK_RE = re.compile(
-    r"^mcp_servers:\n.*?(?=^[^\s]|\Z)",
+    r&quot;^mcp_servers:\n.*?(?=^[^\s]|\Z)&quot;,
     re.MULTILINE | re.DOTALL,
 )
 
 
 def inject_mcp_config(config_path: Path, root: str) -&gt; bool:
-    text = config_path.read_text(encoding="utf-8")
+    text = config_path.read_text(encoding=&quot;utf-8&quot;)
     new_block = generate_mcp_yaml(root)
 
     if _MCP_BLOCK_RE.search(text):
-        text = _MCP_BLOCK_RE.sub(new_block, text)
+        text = _MCP_BLOCK_RE.sub(lambda m: new_block, text)
     else:
-        text = text.rstrip("\n") + "\n\n" + new_block
+        text = text.rstrip(&quot;\n&quot;) + &quot;\n\n&quot; + new_block
 
-    config_path.write_text(text, encoding="utf-8", newline="\n")
+    config_path.write_text(text, encoding=&quot;utf-8&quot;, newline=&quot;\n&quot;)
     return True
 
 
 def main() -&gt; int:
     if len(sys.argv) &gt; 1:
-        root = str(Path(sys.argv[1]).resolve()).rstrip("\\")
+        root = str(Path(sys.argv[1]).resolve()).rstrip(&quot;\\&quot;)
     else:
-        root = str(Path(__file__).resolve().parent).rstrip("\\")
+        root = str(Path(__file__).resolve().parent).rstrip(&quot;\\&quot;)
 
-    config = Path(root) / "data" / "config.yaml"
+    config = Path(root) / &quot;data&quot; / &quot;config.yaml&quot;
     if not config.is_file():
-        print(f"[inject_mcp_config] config not found: {config}", file=sys.stderr)
+        print(f&quot;[inject_mcp_config] config not found: {config}&quot;, file=sys.stderr)
         return 1
 
     inject_mcp_config(config, root)
-    print(f"[inject_mcp_config] OK - mcp_servers injected into {config}")
+    print(f&quot;[inject_mcp_config] OK - mcp_servers injected into {config}&quot;)
     return 0
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())</code>
+if __name__ == &quot;__main__&quot;:
+    raise SystemExit(main())
+</code>
                         </div>
                         <div class="card warning">
                             <strong>⚠️ 前置化要求：</strong>此脚本必须在 <code>start.bat</code> 中 <strong>先于 Hermes Gateway 启动</strong>执行（在 <code>fix_pyvenv</code> 和 <code>fix_editable_finder</code> 之后）。脚本本身是幂等的——每次启动都会用最新环境变量重新生成 MCP 配置，可安全多次运行。新增或修改 MCP 服务只需编辑此脚本的 <code>generate_mcp_yaml()</code> 函数。<strong>编辑类 MCP 只设置 <code>DEFAULT_EDIT_IMAGE_MODEL</code>，不设置 <code>DEFAULT_IMAGE_MODEL</code></strong>——因为编辑工具的 handler 只读取 <code>defaultEditImageModel</code>。
@@ -551,11 +564,13 @@ F:\rely\uv\uv.exe pip install --python F:\rely\venv\Scripts\python.exe -r F:\her
                         <p>将 Windsurf 安装的 MCP server 复制到便携目录，实现盘符无关：</p>
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">复制</button>
-                            <code># 快跑 grok-image 文生图 MCP（OpenAI 兼容）
-xcopy "C:\Users\Administrator\.codeium\windsurf\mcp-servers\openapi-integrator-mcp" "F:\hermes_ui\mcp\kuaipao-image\" /E /I /Y
+                            <code># Xiaoyi grok-imagine-image 文生图 MCP（OpenAI 兼容，默认 2K）
+# 物理目录也改为 xiaoyi-grok-image
+xcopy "C:\Users\Administrator\.codeium\windsurf\mcp-servers\openapi-integrator-mcp" "F:\hermes_ui\mcp\xiaoyi-grok-image\" /E /I /Y
 
 # AtlasCloud Seedream v5.0 Pro 文生图 MCP（原生异步轮询）
-Copy-Item -Path "F:\hermes_ui\mcp\kuaipao-image" -Destination "F:\hermes_ui\mcp\atlascloud-seedream-v5-pro" -Recurse -Force
+# 复用 OpenAI 兼容的文生图基座，再重写为 AtlasCloud 原生端点
+Copy-Item -Path "F:\hermes_ui\mcp\xiaoyi-grok-image" -Destination "F:\hermes_ui\mcp\atlascloud-seedream-v5-pro" -Recurse -Force
 # 需重写 handlers.js 和 definitions.js 以适配 AtlasCloud 原生 API（/api/v1/model/generateImage + 异步轮询）
 
 # AtlasCloud 图片编辑 MCP（从 seedream-v5-pro 复制并改为图生图）
@@ -571,7 +586,7 @@ Copy-Item -Path "F:\hermes_ui\mcp\atlascloud-seedream-edit" -Destination "F:\her
                         </div>
                         <div class="card warning">
                             <strong>⚠️ 注意：</strong>此步骤仅需执行一次。复制后 <code>F:\hermes_ui\mcp\</code> 包含完整的 <code>build/</code> 和 <code>node_modules/</code>，随移动硬盘一起携带，换机无需重新安装。<br><br>
-                            <strong>⚠️ AtlasCloud MCP 需额外重写代码：</strong>从 <code>kuaipao-img</code> 复制目录后，必须重写 <code>build/tools/handlers.js</code> 和 <code>build/tools/definitions.js</code> 以适配 AtlasCloud 原生 API（<code>/api/v1/model/generateImage</code> + 异步轮询）。直接使用 <code>kuaopao-img</code> 原代码会因 API 格式不兼容导致 <code>ECONNRESET</code> 错误。详见故障排除章节。
+                            <strong>⚠️ AtlasCloud MCP 需额外重写代码：</strong>从 <code>xiaoyi-grok-image</code> 复制目录后，必须重写 <code>build/tools/handlers.js</code> 和 <code>build/tools/definitions.js</code> 以适配 AtlasCloud 原生 API（<code>/api/v1/model/generateImage</code> + 异步轮询）。直接使用 <code>xiaoyi-grok-image</code> 原代码而不做 AtlasCloud 适配会因 API 格式不兼容导致 <code>ECONNRESET</code> 错误。详见故障排除章节。
                         </div>
                     </div>
                 </div>
@@ -594,15 +609,18 @@ API_SERVER_HOST=127.0.0.1
 API_SERVER_PORT=50001
 API_SERVER_KEY=local-dev-key-not-for-production
 
-OPENAI_BASE_URL=https://kuaipao.ai/v1
-OPENAI_API_KEY=sk-YOUR_KUAIPAO_KEY
+# ===== 对话渠道密钥（config.yaml 的 key_env 引用）=====
+HERMES_ATLASCLOUD_KEY=your-atlascloud-key
+HERMES_XIAOYI_KEY=your-xiaoyi-key
 
-ATLASCLOUD_BASE_URL=https://api.atlascloud.ai/v1
-ATLASCLOUD_API_KEY=apikey-YOUR_ATLASCLOUD_KEY
+# ===== MCP 服务配置（inject_mcp_config.py 读取，不写入 config.yaml）=====
+XIAOYI_GROK_IMAGE_KEY=your-xiaoyi-grok-image-key
+MCP_ATLASCLOUD_KEY=your-atlascloud-mcp-key
+MCP_ATLASCLOUD_API_URL=https://api.atlascloud.ai
 
-HERMES_ATLASCLOUD_KEY=apikey-YOUR_ATLASCLOUD_KEY
-HERMES_KUAIPAO_GPT_KEY=sk-YOUR_KUAIPAO_KEY
-HERMES_CCVIBE_GPT_KEY=sk-YOUR_CCVIBE_KEY
+# ===== GitHub MCP（npx @modelcontextprotocol/server-github）=====
+# 前往 https://github.com/settings/tokens 生成 Personal Access Token（classic），至少勾选 repo / read:org / read:user / gist
+GITHUB_PERSONAL_ACCESS_TOKEN=your-github-token
 
 HERMES_USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36
 WEB_TOOLS_DEBUG=false
@@ -618,35 +636,39 @@ HERMES_HUMAN_DELAY_MODE=off</code>
                         <div class="code-block">
                             <code>model:
   default: "gpt-5.6-sol"
-  provider: "cc-vibe-gpt"
-  base_url: "https://cc-vibe.com/v1"
+  provider: "Xiaoyi-gpt-5.6-sol"
+  base_url: "https://xiaoyiapi.xyz/v1"
+  max_tokens: 2048
   default_headers:
     User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
       like Gecko) Chrome/124.0.0.0 Safari/537.36
+  context_length: 1000000
 providers:
-  atlascloud:
-    type: custom
+  Xiaoyi-gpt-5.6-sol:
+    base_url: https://xiaoyiapi.xyz/v1
+    key_env: HERMES_XIAOYI_KEY
+    api_mode: chat_completions
+    request_timeout_seconds: 300
+    stale_timeout_seconds: 300
+  atlascloud-grok-4.3:
     base_url: https://api.atlascloud.ai/v1
     key_env: HERMES_ATLASCLOUD_KEY
-  kuaipao:
-    type: custom
-    base_url: https://kuaipao.ai/v1
-    key_env: HERMES_KUAIPAO_GPT_KEY
-  cc-vibe-gpt:
-    type: custom
-    base_url: https://cc-vibe.com/v1
-    key_env: HERMES_CCVIBE_GPT_KEY
+    api_mode: chat_completions
+  atlascloud-grok-4.5:
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_KEY
+    api_mode: chat_completions
 agent:
   api_max_retries: 1
   reasoning_effort: none
 
 fallback_providers:
-- provider: kuaipao
-  model: gpt-5.6-sol
-  key_env: HERMES_KUAIPAO_GPT_KEY
-  base_url: https://kuaipao.ai/v1
-- provider: atlascloud
+- provider: atlascloud-grok-4.3
   model: xai/grok-4.3
+  key_env: HERMES_ATLASCLOUD_KEY
+  base_url: https://api.atlascloud.ai/v1
+- provider: atlascloud-grok-4.5
+  model: xai/grok-4.5
   key_env: HERMES_ATLASCLOUD_KEY
   base_url: https://api.atlascloud.ai/v1
 
@@ -656,7 +678,7 @@ terminal:
   timeout: 180
 compression:
   enabled: true
-  threshold: 0.5
+  threshold: 0.8
   target_ratio: 0.2
   protect_last_n: 20
 memory:
@@ -688,10 +710,10 @@ _config_version: 33
 # 不要在此手工加入本机不存在的 provider 或 model。</code>
                         </div>
                         <div class="card success">
-                            <strong>💡 注意：</strong><code>mcp_servers</code> 配置段不再写在 <code>config.yaml</code> 中。每次启动时由 <code>start.bat</code> 调用 <code>inject_mcp_config.py</code> 脚本动态注入，路径和 API Key 从环境变量读取，确保盘符自适应且密钥不暴露在配置文件中。
+                            <strong>💡 注意：</strong><code>mcp_servers</code> 配置段由 <code>start.bat</code> 调用 <code>inject_mcp_config.py</code> 动态注入到 <code>config.yaml</code>。运行时配置会包含路径和密钥，因此不要提交、分享或上传运行后的 <code>config.yaml</code>；启动脚本每次按当前盘符重写路径，密钥只应来自本机环境变量。
                         </div>
                         <div class="card success">
-                            <strong>模型零增删原则：</strong><code>configure_failover.py</code> 只从现有 <code>providers</code> 读取可用回退目标，不会修改各 provider 下的 <code>models</code>。当前默认主模型为 <code>cc-vibe-gpt/gpt-5.6-sol</code>；回退顺序为 <code>kuaipao/gpt-5.6-sol</code>、<code>atlascloud/xai/grok-4.3</code>。切换主 provider 后，脚本会自动排除当前主渠道并重建顺序。
+                            <strong>三渠道原则：</strong><code>providers</code> 只保留 <code>Xiaoyi-gpt-5.6-sol</code>、<code>atlascloud-grok-4.3</code>、<code>atlascloud-grok-4.5</code> 三个对话 provider。当前默认主模型为 <code>Xiaoyi-gpt-5.6-sol/gpt-5.6-sol</code>；默认回退顺序为 AtlasCloud 4.3、AtlasCloud 4.5。图像 MCP 已从快跑渠道切换为 <code>xiaoyi-grok-image</code>，使用独立密钥、<code>grok-imagine-image</code> 和默认 2K 分辨率。
                         </div>
                     </div>
                 </div>
@@ -701,9 +723,13 @@ _config_version: 33
 
             <h3>MCP 服务配置说明（由 <code>inject_mcp_config.py</code> 动态注入）</h3>
             <div class="card success">
-                <strong>💡 便携化设计：</strong>MCP server 入口脚本已从 <code>C:\Users\Administrator\.codeium\windsurf\mcp-servers\</code> 复制到便携目录 <code>F:\hermes_ui\mcp\</code> 下。<code>start.bat</code> 启动时会调用 <code>inject_mcp_config.py</code> 脚本，将完整的 <code>mcp_servers</code> 配置段动态注入到 <code>config.yaml</code> 中。路径使用当前 <code>%ROOT_DIR%</code>，API Key 从环境变量读取（<code>HERMES_KUAIPAO_GPT_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>），彻底免疫盘符漂移且密钥不暴露在配置文件中。
+                <strong>💡 便携化设计：</strong>MCP server 入口脚本已复制到便携目录 <code>F:\hermes_ui\mcp\</code> 下。<code>start.bat</code> 启动时会调用 <code>inject_mcp_config.py</code> 脚本，将完整的 <code>mcp_servers</code> 配置段动态注入到 <code>config.yaml</code> 中。当前图像 MCP 使用服务名 <code>xiaoyi-grok-image</code>，地址为 <code>https://xiaoyiapi.xyz/v1</code>，模型为 <code>grok-imagine-image</code>，默认尺寸为 2K（<code>2048x2048</code>）。API Key 从独立环境变量 <code>XIAOYI_GROK_IMAGE_KEY</code> 和 <code>MCP_ATLASCLOUD_KEY</code> 读取，彻底免疫盘符漂移且密钥不暴露在配置文件中。
             </div>
-            <p>六个 MCP 服务（快跑 grok-image 文生图 + AtlasCloud Seedream v5.0 Pro 文生图 + Seedream v5.0 Pro 编辑 + Seedream v5.0 Lite 连续编辑 + Wan 2.7 × 2）均指向便携目录。配置由 <code>inject_mcp_config.py</code> 的 <code>generate_mcp_yaml()</code> 函数生成，无需手动写入 <code>config.yaml</code>。</p>
+            <p>当前配置包含一个 Xiaoyi 图像 MCP、五个 AtlasCloud 图像 MCP 和一个 GitHub MCP。Xiaoyi 图像 MCP 使用 <code>xiaoyi-grok-image</code> 服务名、<code>grok-imagine-image</code> 模型和默认 2K 分辨率；GitHub MCP 使用便携 Node 的 <code>npx</code> 启动官方 GitHub MCP 包。配置由 <code>inject_mcp_config.py</code> 的 <code>generate_mcp_yaml()</code> 函数生成，无需手动写入 <code>config.yaml</code>。</p>
+            <div class="card warning">
+                <strong>🔐 GitHub 密钥粘贴位置：</strong>打开 <code>F:\hermes_ui\start.bat</code>，找到 <code>GITHUB_PERSONAL_ACCESS_TOKEN=your-github-fine-grained-token</code>，把占位符替换为你的 GitHub Fine-grained Personal Access Token。Token 只通过环境变量传给 GitHub MCP，不要粘贴到 <code>config.yaml</code>、<code>inject_mcp_config.py</code>、教程或聊天记录中；使用后不要把 <code>start.bat</code> 上传到 GitHub。<br>
+                建议只授权指定仓库和必要的最小权限；创建 Issue、修改文件、推送代码、合并 Pull Request 等写操作应保留人工确认。
+            </div>
             <div class="card warning">
                 <strong>⚠️ 编辑类 MCP 只设置 <code>DEFAULT_EDIT_IMAGE_MODEL</code>：</strong>图片编辑 MCP 的 <code>handlers.js</code> 中 <code>edit_image</code> 工具使用 <code>args.model || config.defaultEditImageModel</code> 选择模型，不读取 <code>defaultImageModel</code>。因此 <code>inject_mcp_config.py</code> 中编辑类 MCP 只设置 <code>DEFAULT_EDIT_IMAGE_MODEL</code>，不设置 <code>DEFAULT_IMAGE_MODEL</code>，避免冗余配置。
             </div>
@@ -780,7 +806,7 @@ _config_version: 33
                 <h2>六、 Step 4 · 便携一键启动脚本 (`start.bat`)</h2>
                 <p>保存路径：<code>F:\hermes_ui\start.bat</code></p>
                 <div class="card success">
-                    <strong>💡 功能点：</strong>此脚本整合了【自动根路径识别】、【Gateway/WebUI 拉起】、【现有模型一键切换】、【60 秒请求上限】、【有序 provider 回退】、【无保护拒绝启动】、【进程清理】和【API 连通性测试】，是整个便携系统的控制中枢。
+                    <strong>💡 功能点：</strong>此脚本整合了【自动根路径识别】、【Gateway/WebUI 拉起】、【现有模型一键切换】、【全局请求超时兜底】、【Xiaoyi 供应商级 300 秒超时】、【有序 provider 回退】、【无保护拒绝启动】、【进程清理】和【API 连通性测试】，是整个便携系统的控制中枢。
                 </div>
                 <div class="code-block"> <button class="copy-btn" onclick="copyCode(this)">复制</button> <code>@echo off
 chcp 65001 >nul 2>&1
@@ -797,6 +823,8 @@ for %%I in ("%ROOT_DIR%..\rely") do set "RELY_DIR=%%~fI\"
 for %%I in ("%ROOT_DIR%..\rely") do set "RELY_DIR_NO_SLASH=%%~fI"
 
 set "HERMES_HOME=%ROOT_DIR%data"
+set "HERMES_BASE_HOME=%ROOT_DIR%data"
+set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui"
 set "HERMES_GIT_BASH_PATH=%RELY_DIR%git\bin\bash.exe"
 set "HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe"
@@ -836,11 +864,30 @@ exit /b 1
 :home_ok
 
 :: ===== Inject API keys as environment variables (key_env references in config.yaml) =====
-:: Keys live here (start.bat), NOT in config.yaml — so config.yaml leaking alone exposes no key.
+:: ===== 对话渠道密钥（config.yaml 的 key_env 引用）=====
 set "HERMES_ATLASCLOUD_KEY=your-atlascloud-key"
-set "HERMES_CCVIBE_GPT_KEY=your-cc-vibe-key"
-set "HERMES_KUAIPAO_GPT_KEY=your-kuaipao-key"
+set "HERMES_XIAOYI_KEY=your-xiaoyi-key"
+
+:: ===== MCP 服务配置（inject_mcp_config.py 读取，不写入 config.yaml）=====
+set "XIAOYI_GROK_IMAGE_KEY=your-xiaoyi-grok-image-key"
 set "MCP_ATLASCLOUD_KEY=your-atlascloud-mcp-key"
+set "MCP_ATLASCLOUD_API_URL=https://api.atlascloud.ai"
+
+:: ===== GitHub MCP（npx @modelcontextprotocol/server-github）=====
+:: 前往 https://github.com/settings/tokens 生成 Personal Access Token（classic），至少勾选 repo / read:org / read:user / gist
+set "GITHUB_PERSONAL_ACCESS_TOKEN=your-github-token"
+:: Xiaoyi's SSE path is unreliable; use completed Chat Completions responses.
+set "HERMES_NON_STREAMING_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Xiaoyi is healthy for compact Chat Completions payloads; avoid sending the
+:: full Hermes tool schema/system prompt to this provider only.
+set "HERMES_COMPACT_REQUEST_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Xiaoyi GPT-5.6 expects max_tokens on Chat Completions.
+set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Use the SDK default transport; Xiaoyi is incompatible with Hermes' custom
+:: keepalive httpx client. Other providers keep the custom transport.
+set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+:: Let Xiaoyi finish normal slow generations before fallback is considered.
+:: The provider remains primary; fallback is used only after a real failure.
 :: Bound each upstream request so provider fallback cannot be held indefinitely.
 set "HERMES_API_TIMEOUT=60"
 
@@ -875,10 +922,9 @@ echo  [4] Stop all Hermes processes
 echo  [5] Test API connection
 echo  [6] Exit
 echo  [7] Test CURRENT configured channel API
-echo  [8] Switch to kuaipao (gpt-5.6-sol)
-echo  [9] Switch to atlascloud (zai-org/glm-5.2)
-echo  [10] Switch to atlascloud (xai/grok-4.3)
-echo  [11] Switch to cc-vibe-gpt (gpt-5.6-sol)
+echo  [8] Switch to Xiaoyi (gpt-5.6-sol) [DEFAULT]
+echo  [9] Switch to atlascloud (xai/grok-4.3)
+echo  [10] Switch to atlascloud (xai/grok-4.5)
 echo.
 set "choice="
 set /p choice="Select [1-11]: "
@@ -891,10 +937,9 @@ if "%choice%"=="4" goto stop_all
 if "%choice%"=="5" goto test_api
 if "%choice%"=="6" exit
 if "%choice%"=="7" goto test_current_api
-if "%choice%"=="8" goto switch_kuaipao
-if "%choice%"=="9" goto switch_atlascloud
-if "%choice%"=="10" goto switch_atlascloud_grok
-if "%choice%"=="11" goto switch_ccvibe_gpt
+if "%choice%"=="8" goto switch_xiaoyi_sol
+if "%choice%"=="9" goto switch_atlascloud_grok
+if "%choice%"=="10" goto switch_atlascloud
 goto invalid_choice
 
 :start_gateway
@@ -972,8 +1017,8 @@ echo Testing API connection...
 set "HERMES_HOME=%ROOT_DIR%data"
 "%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main doctor
 echo.
-echo Testing kuaipao API...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import urllib.request,json; req=urllib.request.Request('https://kuaipao.ai/v1/models',headers={'Authorization':'Bearer sk-YOUR_KUAIPAO_KEY'}); r=urllib.request.urlopen(req); print('kuaipao OK:',[m['id'] for m in json.loads(r.read())['data'][:5]])"
+echo Checking Xiaoyi image MCP local config...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import os; key=os.environ.get('XIAOYI_GROK_IMAGE_KEY',''); assert key.startswith('sk-'), 'XIAOYI_GROK_IMAGE_KEY missing'; print('Xiaoyi image MCP configured: https://xiaoyiapi.xyz/v1 / grok-imagine-image / 2048x2048')"
 echo.
 pause
 goto menu
@@ -993,30 +1038,23 @@ if errorlevel 1 (
 pause
 goto menu
 
-:switch_kuaipao
-echo Switching to kuaipao (gpt-5.6-sol)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"kuaipao\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://kuaipao.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to kuaipao gpt-5.6-sol')"
+:switch_atlascloud_grok
+echo Switching to atlascloud (xai/grok-4.3)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.3\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
 call :configure_failover
 pause
 goto menu
 
 :switch_atlascloud
-echo Switching to atlascloud (zai-org/glm-5.2)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"zai-org/glm-5.2\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud zai-org/glm-5.2')"
+echo Switching to atlascloud (xai/grok-4.5)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.5\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.5\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.5')"
 call :configure_failover
 pause
 goto menu
 
-:switch_atlascloud_grok
-echo Switching to atlascloud (xai/grok-4.3)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
-call :configure_failover
-pause
-goto menu
-
-:switch_ccvibe_gpt
-echo Switching to cc-vibe-gpt (gpt-5.6-sol)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"cc-vibe-gpt\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://cc-vibe.com/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to cc-vibe-gpt gpt-5.6-sol')"
+:switch_xiaoyi_sol
+echo Switching to Xiaoyi (gpt-5.6-sol)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"Xiaoyi-gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to Xiaoyi gpt-5.6-sol')"
 call :configure_failover
 pause
 goto menu
@@ -1202,9 +1240,9 @@ goto top
                     <div class="step-content">
                         <p>启动菜单出现前应看到以下摘要。重复运行不会重复添加条目，输出 <code>already current</code> 表示配置已是目标状态：</p>
                         <div class="code-block" style="background:#0c1015;color:#39ff14;border-color:#39ff14">
-                            <code>[configure_failover] primary: cc-vibe-gpt
-[configure_failover] fallback: kuaipao/gpt-5.6-sol -> atlascloud/xai/grok-4.3
-[configure_failover] already current: F:\hermes_ui\data\config.yaml</code>
+                            <code>[configure_failover] primary: Xiaoyi-gpt-5.6-sol
+                            [configure_failover] fallback: atlascloud-grok-4.3/xai/grok-4.3 -> atlascloud-grok-4.5/xai/grok-4.5
+                            [configure_failover] already current: F:\hermes_ui\data\config.yaml</code>
                         </div>
                         <p>也可手动执行：</p>
                         <div class="code-block">
@@ -1219,9 +1257,9 @@ goto top
                     <div class="step-content">
                         <p>打开 Chrome 或 Edge，访问 <strong><code>http://localhost:8787/</code></strong>。点击输入框底部的模型选择器，在顶部 Configured 区确认：</p>
                         <ul>
-                            <li><code>cc-vibe-gpt / gpt-5.6-sol</code> 显示 <strong>Primary</strong>。</li>
-                            <li><code>kuaipao / gpt-5.6-sol</code> 显示 <strong>Fallback 1</strong>。</li>
-                            <li><code>atlascloud / xai/grok-4.3</code> 显示 <strong>Fallback 2</strong>。</li>
+                            <li><code>Xiaoyi-gpt-5.6-sol / gpt-5.6-sol</code> 显示 <strong>Primary</strong>。</li>
+                            <li><code>atlascloud-grok-4.3 / xai/grok-4.3</code> 显示 <strong>Fallback 1</strong>。</li>
+                            <li><code>atlascloud-grok-4.5 / xai/grok-4.5</code> 显示 <strong>Fallback 2</strong>。</li>
                             <li>当前选中模型行保持 active 背景高亮；这些 badge 仅描述路由角色，不会增删模型。</li>
                         </ul>
                     </div>
@@ -1300,22 +1338,23 @@ goto top
                     <li>Hermes 原生 MCP 配置键是 <code>mcp_servers</code>，不是 Windsurf / Claude Desktop 常见的 <code>mcpServers</code>。</li>
                     <li><code>mcp</code> Python SDK 必须安装到 WebUI 实际运行的虚拟环境，例如 <code>F:\rely\venv\Scripts\python.exe -m pip install mcp</code>。装到系统 Python 不会被 WebUI 进程看到。</li>
                     <li>如果 WebUI 启动时还没有安装 <code>mcp</code>，<code>tools.mcp_tool</code> 会在导入期缓存 MCP 不可用状态；运行中补装 SDK 后，仅执行 <code>/reload-mcp</code> 可能仍显示 <code>No MCP servers connected</code>，需要重启 WebUI/Hermes 后端进程。</li>
-                    <li>stdio MCP server 只会继承 Hermes 允许的基础环境变量；API key、输出目录等必须写在对应 server 的 <code>env</code> 字段里，Hermes 才会注入给 Node 子进程。</li>
+                    <li>stdio MCP server 只会继承 Hermes 允许的基础环境变量；API key、输出目录等必须写在对应 server 的 <code>env</code> 字段里，Hermes 才会注入给 Node 子进程。MCP stdout 只能输出 JSON-RPC，诊断日志必须写 stderr；否则会出现 <code>Failed to parse JSONRPC message</code>。</li>
+                    <li><strong>GitHub MCP：</strong>确认 <code>start.bat</code> 中的 <code>GITHUB_PERSONAL_ACCESS_TOKEN</code> 已替换为有效 Token；如果只想查询 GitHub，优先使用只读权限。配置由 <code>inject_mcp_config.py</code> 自动生成，GitHub MCP 服务名为 <code>github</code>。</li>
                     <li>MCP server 入口脚本已便携化到 <code>F:\hermes_ui\mcp\</code> 目录，<code>start.bat</code> 启动时调用 <code>inject_mcp_config.py</code> 动态注入配置。如仍报路径错误，手动运行 <code>python inject_mcp_config.py</code> 确认输出 <code>OK - mcp_servers injected</code>，再检查 <code>mcp\&lt;server&gt;\build\index.js</code> 是否存在。</li>
                     <li><strong>Node.js 必须便携化：</strong>MCP 配置为 <code>command: node</code>，hermes 在 <code>PATH</code> 中查找 <code>node</code>。新电脑如果没装 Node.js，所有 MCP 直接启动失败。便携化到 <code>F:\rely\node\</code> 后 <code>start.bat</code> 自动加入 <code>PATH</code>，换任何电脑都能用。验证：<code>start.bat</code> 启动后 <code>where node</code> 应显示 <code>F:\rely\node\node.exe</code>。</li>
                     <li><strong>Git for Windows 已便携化：</strong>Hermes 的 terminal、read_file、write_file、search_files、patch 等核心工具全部依赖 <code>bash.exe</code>。便携化到 <code>F:\rely\git\</code> 后 <code>start.bat</code> 通过 <code>HERMES_GIT_BASH_PATH</code> 环境变量动态指向，换任何电脑都不依赖目标机器是否安装 Git。<strong>不要在 config.yaml 中写 <code>bash_path</code></strong>——config.yaml 里的路径含盘符，换盘后会失效；环境变量由 start.bat 动态设置，始终正确。</li>
                     <li><strong>Python + venv 便携化 + pyvenv.cfg 动态修复：</strong>venv 的 <code>pyvenv.cfg</code> 会写死创建时的 host Python 路径，换电脑后 venv 找不到解释器。便携化到 <code>F:\rely\python\</code> 和 <code>F:\rely\venv\</code> 后，<code>start.bat</code> 每次启动时通过 <code>fix_pyvenv.py</code> 自动重写 <code>home=</code> 为 <code>%RELY_DIR%python</code>，确保 venv 始终找到便携 Python。</li>
                     <li><strong>editable-install finder 路径动态修复：</strong>使用 <code>uv pip install -e</code> 可编辑安装 hermes-agent 后，venv <code>site-packages</code> 中的 <code>__editable___hermes_agent_*_finder.py</code> 固化了旧盘符路径。换盘后 <code>import hermes_cli</code> 报 <code>ModuleNotFoundError</code>。<code>start.bat</code> 每次启动时通过 <code>fix_editable_finder.py</code> 自动将 finder 路径重写为当前 <code>%ROOT_DIR%hermes-agent</code>。验证：<code>start.bat</code> 启动时看 <code>[fix_editable_finder] OK</code> 输出；手动修复：<code>F:\rely\python\python.exe F:\hermes_ui\fix_editable_finder.py "F:\rely" "F:\hermes_ui"</code>。</li>
-                    <li>验证顺序建议为：检查 <code>config.yaml</code> 的 <code>mcp_servers</code>；检查 <code>python -c "import mcp"</code> 使用的是 WebUI venv；检查便携目录 <code>mcp\</code> 下 Node 入口脚本存在；重启后执行 <code>/reload-mcp</code>。</li>
+                    <li>验证顺序建议为：检查当前启动生成的 <code>config.yaml</code> 中 <code>mcp_servers</code>；检查 <code>python -c "import mcp"</code> 使用的是 WebUI venv；检查便携目录 <code>mcp\</code> 下 Node 入口脚本存在；重启后执行 <code>/reload-mcp</code>。不要把运行后的 <code>config.yaml</code> 分享出去。</li>
                 </ul>
                 <strong>MCP Node 子进程连接失败排查（<code>Connection closed</code> / <code>initial connection failed</code>）：</strong>
                 <ul>
                     <li>Hermes 日志报 <code>MCP server 'xxx' initial connection failed ... Connection closed</code>，本质是 Node 子进程在启动瞬间崩溃（stdio 通道随之关闭），不是 Hermes 本身或网络问题。必须手动运行 <code>node build\index.js</code> 复现真实错误。</li>
                     <li><strong>PowerShell 陷阱：</strong>直接 <code>node build\index.js</code> 时，PowerShell 会把 Node 写到 stderr 的正常日志（如 <code>OpenAI Integration MCP server running on stdio</code>）包装成 <code>NativeCommandError</code>，看起来像报错。判断标准是看 Node 是否真的抛出 <code>Error:</code> 堆栈，而非 PowerShell 的红色包装。建议用 <code>$output = node build\index.js 2>&1 | Out-String; $output | Out-File out.txt</code> 重定向后再读文件，避免误判。</li>
-                    <li><strong>node_modules 损坏是高频根因：</strong><code>@modelcontextprotocol/sdk</code> 1.29+ 的 <code>zod-compat.js</code> 强依赖 <code>zod</code>，但 <code>kuaipao-img</code> 的 <code>package.json</code> 未显式声明 <code>zod</code>，npm 安装时若 peer 解析失败就会整体缺失，导致 <code>ERR_MODULE_NOT_FOUND: Cannot find package 'zod'</code>。</li>
+                    <li><strong>node_modules 损坏是高频根因：</strong><code>@modelcontextprotocol/sdk</code> 1.29+ 的 <code>zod-compat.js</code> 强依赖 <code>zod</code>，但 <code>xiaoyi-grok-image</code> 的 <code>package.json</code> 未显式声明 <code>zod</code>，npm 安装时若 peer 解析失败就会整体缺失，导致 <code>ERR_MODULE_NOT_FOUND: Cannot find package 'zod'</code>。</li>
                     <li><strong>部分安装的传递依赖：</strong><code>es-abstract</code> 这类深层依赖可能出现"有 <code>2024.js</code> 但缺 <code>2024\Call.js</code> 目录"的半损坏状态（<code>npm install</code> 报 <code>up to date</code> 但实际文件不全）。此时必须 <code>Remove-Item -Recurse -Force node_modules; Remove-Item package-lock.json</code> 后重装，不能只跑 <code>npm install</code>。</li>
-                    <li><strong>重装必须加 <code>--ignore-scripts</code>：</strong><code>kuaipao-image</code> 和 AtlasCloud MCP 的 <code>package.json</code> 有 <code>prepare -> npm run build -> tsc</code> 钩子，但便携目录已无 <code>tsconfig.json</code>，<code>npm install</code> 会在 prepare 阶段报 <code>tsc</code> 用法帮助并退出码 1。<code>--ignore-scripts</code> 跳过该钩子，直接补齐 <code>node_modules</code>，复用现成的 <code>build\</code> 产物即可。</li>
-                    <li><strong>目录命名应与 inject_mcp_config.py 一致：</strong>排查时容易混淆，务必确保 <code>inject_mcp_config.py</code> 的 server 名、<code>args</code> 路径、物理目录三者统一。当前便携版使用 <code>kuaipao-image</code>（快跑 grok-image 文生图）、<code>atlascloud-seedream-v5-pro</code>（AtlasCloud 文生图，模型 bytedance/seedream-v5.0-pro/text-to-image）、4 个 AtlasCloud 编辑 MCP。</li>
+                    <li><strong>重装必须加 <code>--ignore-scripts</code>：</strong><code>xiaoyi-grok-image</code> 物理目录和 AtlasCloud MCP 的 <code>package.json</code> 有 <code>prepare -> npm run build -> tsc</code> 钩子，但便携目录已无 <code>tsconfig.json</code>，<code>npm install</code> 会在 prepare 阶段报 <code>tsc</code> 用法帮助并退出码 1。<code>--ignore-scripts</code> 跳过该钩子，直接补齐 <code>node_modules</code>，复用现成的 <code>build\</code> 产物即可。</li>
+                    <li><strong>服务名与物理目录：</strong>当前便携版使用 <code>xiaoyi-grok-image</code> 服务名，物理目录为 <code>mcp\xiaoyi-grok-image\build\index.js</code>。该服务实际连接 Xiaoyi，模型为 <code>grok-imagine-image</code>，默认尺寸为 <code>2048x2048</code>；其余为 AtlasCloud 文生图和 4 个编辑 MCP。</li>
                     <li><strong>Windows Job Object 拒绝访问告警可忽略：</strong>日志中 <code>Failed to assign process ... to Job Object: (5, 'AssignProcessToJobObject', '拒绝访问。')</code> 是 Windows 进程组权限限制的告警，不影响 MCP stdio 通信，无需处理。</li>
                     <li><strong>修复后验证流程：</strong>① <code>node build\index.js</code> 看到 <code>running on stdio</code>；② 在 Hermes 中 <code>/reload-mcp</code> 或重启 Gateway；③ 调用 <code>mcp_list_tools</code> 确认工具列表返回；④ 实际调用 <code>generate_image</code> 生成一张测试图确认端到端可用。</li>
                 </ul>
@@ -1324,7 +1363,7 @@ goto top
             <div class="callout danger">
                 <strong>AtlasCloud Seedream MCP 经验教训（新增 2026-07-07）：</strong>
                 <ul>
-                    <li><strong>AtlasCloud 图片 API ≠ OpenAI 兼容格式：</strong>直接复用 <code>kuaipao-img</code> 的 OpenAI 端点（<code>/v1/images/generations</code>、<code>/v1/images/edits</code>）调用 AtlasCloud 会持续报 <code>ECONNRESET</code> 和 <code>unreachable</code>。AtlasCloud 使用原生端点 <code>POST /api/v1/model/generateImage</code>，请求体为 JSON（非 FormData），图片以 URL 数组传入 <code>images</code> 字段，而非 multipart 上传。</li>
+                    <li><strong>AtlasCloud 图片 API ≠ OpenAI 兼容格式：</strong>直接复用 <code>xiaoyi-grok-image</code> 的 OpenAI 端点（<code>/v1/images/generations</code>、<code>/v1/images/edits</code>）调用 AtlasCloud 会持续报 <code>ECONNRESET</code> 和 <code>unreachable</code>。AtlasCloud 使用原生端点 <code>POST /api/v1/model/generateImage</code>，请求体为 JSON（非 FormData），图片以 URL 数组传入 <code>images</code> 字段，而非 multipart 上传。</li>
                     <li><strong>异步轮询模式：</strong>AtlasCloud 图片 API 是异步的——<code>generateImage</code> 返回 <code>prediction_id</code>，需轮询 <code>GET /api/v1/model/prediction/{id}</code> 直到 <code>status</code> 为 <code>completed</code> 或 <code>succeeded</code>，再从 <code>outputs</code> 数组取结果 URL。不能像 OpenAI 那样同步等返回。</li>
                     <li><strong>本地图片需先上传：</strong>AtlasCloud 编辑 API 不接受 FormData 直传图片。本地文件必须先 <code>POST /api/v1/model/uploadMedia</code>（multipart）上传到 AtlasCloud 存储，获取 <code>download_url</code> 后再作为 <code>images</code> 数组元素传入。URL 图片可直接使用。</li>
                     <li><strong>API_URL 必须是裸域名：</strong><code>config.yaml</code> 中的 <code>API_URL</code> 应设为 <code>https://api.atlascloud.ai</code>（不含 <code>/api</code> 或 <code>/v1</code> 后缀），因为 handler 代码会自行拼接 <code>${apiUrl}/api/v1/model/generateImage</code>。若填 <code>https://api.atlascloud.ai/api</code> 会导致路径变成 <code>/api/api/v1/model/...</code> 返回 404。</li>
@@ -1351,15 +1390,13 @@ goto top
             </div>
 
             <div class="callout danger">
-                <strong>OpenAI 兼容 MCP 经验教训（kuaipao-image，新增 2026-07-07）：</strong>
+                <strong>Xiaoyi OpenAI 兼容图片 MCP 说明：</strong>
                 <ul>
-                    <li><strong>API_URL 拼接陷阱：</strong>当 <code>config.yaml</code> 中的 <code>API_URL</code> 已包含 <code>/v1</code>（如 <code>https://kuaipao.ai/v1</code>）时，handler 代码若直接 <code>${apiUrl}/v1/images/generations</code> 拼接会导致路径变成 <code>/v1/v1/images/generations</code> 返回 404。正确做法：<code>const baseUrl = apiUrl.endsWith('/v1') ? apiUrl : `${apiUrl}/v1`;</code> 智能检测 base URL 后再拼接端点。</li>
-                    <li><strong>快速默认参数避免 524：</strong>快跑同步生图端点前面的 Cloudflare 代理约 120 秒读超时。handler 应将 <code>1024x1024</code> 归一化为 <code>auto</code>，默认 <code>quality: low</code>、<code>output_format: jpeg</code>、<code>n: 1</code>，降低触发 524 概率。高耗时参数应由模型明确要求时才传递。</li>
-                    <li><strong>524 降档重试策略：</strong>catch 到 <code>err?.response?.status === 524</code> 后，自动用 <code>size: auto, quality: low, output_format: jpeg</code> 重试一次，避免用户等几分钟后直接失败。这个策略不能绕过服务端代理超时，但可以降低触发概率。</li>
-                    <li><strong>本地保存失败不影响核心功能：</strong>MCP 返回的在线 URL 可直接在界面查看和使用。本地下载到 <code>DEFAULT_OUTPUT_PATH/images/</code> 失败（CDN 慢/速率限制）只是次要功能，不应报错中断；应在 result 中标记 <code>error</code> 但保留 <code>output_url</code>。</li>
-                    <li><strong>OpenAI 标准参数与非标准参数：</strong>OpenAI <code>/v1/images/generations</code> 标准参数包括 <code>model</code>、<code>prompt</code>、<code>n</code>、<code>size</code>、<code>quality</code>、<code>response_format</code>。快跑扩展支持非标准参数（<code>width</code>、<code>height</code>、<code>steps</code>、<code>background</code>、<code>output_compression</code>），仅在用户明确传递时发送，避免不支持的后端报错。</li>
-                    <li><strong>工具描述应引导快速参数：</strong><code>definitions.js</code> 中对 <code>size</code>/<code>quality</code> 的描述应写明"prefer auto/low for faster responses"，减少模型主动传递慢参数的概率。</li>
-                    <li><strong>无审查 vs 无 moderation 参数：</strong>"无审查"指 MCP 代码不发送 <code>moderation</code> 参数，不在客户端层触发过滤。但快跑服务端本身是否审查不在 MCP 代码控制范围内，属于上游 API 策略。</li>
+                    <li><strong>服务配置：</strong><code>xiaoyi-grok-image</code> 使用 <code>https://xiaoyiapi.xyz/v1</code>，请求端点为 <code>/v1/images/generations</code>，默认模型为 <code>grok-imagine-image</code>。</li>
+                    <li><strong>默认 2K：</strong><code>DEFAULT_IMAGE_SIZE=2048x2048</code> 会在调用未显式传入 <code>size</code> 时进入请求体。工具同时允许 <code>2048x1536</code> 和 <code>1536x2048</code> 等 2K 横竖构图。</li>
+                    <li><strong>独立密钥：</strong>图片 MCP 使用 <code>XIAOYI_GROK_IMAGE_KEY</code>，与对话渠道的 <code>HERMES_XIAOYI_KEY</code> 分离，互不覆盖。</li>
+                    <li><strong>物理目录：</strong>服务名和物理目录均为 <code>xiaoyi-grok-image</code>，运行时日志前缀和 API 上游均已切换为 Xiaoyi。</li>
+                    <li><strong>本地保存失败不影响核心功能：</strong>MCP 返回的在线 URL 可直接在界面查看和使用。本地下载失败时应保留 <code>output_url</code> 并在结果中记录错误。</li>
                 </ul>
             </div>
 
@@ -1392,11 +1429,11 @@ goto top
                     <tr>
                         <td><strong>模型切换后回退链仍包含当前主 provider</strong></td>
                         <td>使用了旧版菜单脚本，切换后没有调用 <code>:configure_failover</code></td>
-                        <td>确认每个 <code>:switch_*</code> 分支写入主模型后都有 <code>call :configure_failover</code>；手动运行配置器并重启 Gateway。配置器会自动排除当前主 provider。</td>
+                        <td>确认每个 <code>:switch_*</code> 分支写入主模型后都有 <code>call :configure_failover</code>；手动运行配置器并重启 Gateway。配置器只排除完全相同的主 provider/model，因此同供应商的不同保护模型可以合法保留。</td>
                     </tr>
                     <tr>
                         <td><strong>API 报错 401 / Invalid token</strong></td>
-                        <td>快跑或 AtlasCloud 的 API 密钥被误改或失效</td>
+                        <td>Xiaoyi、Xiaoyi 图片 MCP 或 AtlasCloud 的 API 密钥被误改或失效</td>
                         <td>打开 <code>data\.env</code> 核对密钥，运行 <code>start.bat</code> 菜单 `5` 测试连通性。</td>
                     </tr>
                     <tr>
@@ -1417,7 +1454,7 @@ goto top
                     <tr>
                         <td><strong>左侧显示历史会话但点击打不开 / 新会话不保存</strong></td>
                         <td>WebUI 和 Gateway 读取的 HERMES_HOME 不一致，或 HERMES_HOME 末尾存在空格导致路径解析错误</td>
-                        <td>始终使用 <code>start.bat</code> 启动；确认系统环境变量 <code>HERMES_HOME</code> 没有尾部空格；脚本已显式设置 <code>HERMES_WEBUI_STATE_DIR=%ROOT_DIR%data\webui</code>。</td>
+                        <td>始终使用 <code>start.bat</code> 启动；确认系统环境变量 <code>HERMES_HOME</code> 没有尾部空格；脚本已显式设置 <code>HERMES_BASE_HOME</code>、<code>HERMES_CONFIG_PATH</code> 和 <code>HERMES_WEBUI_STATE_DIR</code> 指向当前盘符的 <code>data</code>。</td>
                     </tr>
                     <tr>
                         <td><strong>左侧显示 claude_code 会话且无法交互</strong></td>
@@ -1427,16 +1464,16 @@ goto top
                     <tr>
                         <td><strong>MCP server 连接失败 <code>Connection closed</code> / 生图工具不可用</strong></td>
                         <td>Node 子进程启动即崩溃：缺 <code>zod</code> 或 <code>es-abstract</code> 等依赖，<code>node_modules</code> 半损坏</td>
-                        <td>进 <code>mcp\kuaipao-image\</code> 手动 <code>node build\index.js</code> 复现错误；删 <code>node_modules</code> + <code>package-lock.json</code> 后 <code>npm install --ignore-scripts</code> 重装；验证 <code>running on stdio</code> 后重启 Gateway。</td>
+                        <td>进 <code>mcp\xiaoyi-grok-image\</code> 手动 <code>node build\index.js</code> 复现物理入口错误；删 <code>node_modules</code> + <code>package-lock.json</code> 后 <code>npm install --ignore-scripts</code> 重装；验证 <code>running on stdio</code> 后重启 Gateway。</td>
                     </tr>
                     <tr>
-                        <td><strong>快跑 <code>kuaipao-image</code> 生图长时间无结果 / 返回 <code>524 Proxy Read Timeout</code></strong></td>
-                        <td>快跑同步生图端点 <code>/v1/images/generations</code> 前面的代理有约 120 秒读超时；若上游生成慢，会返回 524。此时本地 Hermes、MCP、Node、路径和输出目录通常都是正常的。可用 AtlasCloud Seedream/Wan MCP 成功出图作为本地链路健康的反证。</td>
-                        <td>优先改用 AtlasCloud 图片 MCP（原生异步轮询端点）；或降低快跑请求复杂度（<code>size=auto</code>、<code>quality=low</code>、<code>output_format=jpeg</code>、<code>n=1</code>）。单纯把本地 <code>REQUEST_TIMEOUT</code> 加大不能绕过服务端代理 524。</td>
+                        <td><strong><code>xiaoyi-grok-image</code> 返回 401 或模型不可用</strong></td>
+                        <td><code>XIAOYI_GROK_IMAGE_KEY</code> 无效，或当前密钥没有 <code>grok-imagine-image</code> 权限</td>
+                        <td>菜单 <code>5</code> 只做本地密钥和配置校验；图片专用密钥可能不允许访问 <code>/models</code>，返回 403 不一定代表生图不可用。确认启动脚本与 <code>data\.env</code> 中的独立图片密钥一致，然后重启 Gateway 或执行 <code>/reload-mcp</code>。</td>
                     </tr>
                     <tr>
                         <td><strong>OpenAI 兼容 MCP 调用失败 <code>404</code> / 日志显示 <code>/v1/v1/images/generations</code></strong></td>
-                        <td><code>config.yaml</code> 中 <code>API_URL</code> 已包含 <code>/v1</code>（如 <code>https://kuaipao.ai/v1</code>），但 handler 代码直接拼接 <code>/v1/images/generations</code> 导致路径重复</td>
+                        <td><code>config.yaml</code> 中 <code>API_URL</code> 已包含 <code>/v1</code>（如 <code>https://xiaoyiapi.xyz/v1</code>），但 handler 代码直接拼接 <code>/v1/images/generations</code> 导致路径重复</td>
                         <td>修改 <code>mcp/xxx/build/tools/handlers.js</code>：在拼接端点前智能检测 base URL，<code>const baseUrl = apiUrl.endsWith('/v1') ? apiUrl : `${apiUrl}/v1`; const generateUrl = `${baseUrl}/images/generations`;</code>。确认日志显示正确路径后重启 Gateway 或 <code>/reload-mcp</code>。</td>
                     </tr>
                     <tr>
@@ -1485,13 +1522,18 @@ goto top
                         <td>在 <code>start.bat</code> 中添加 <code>set "HERMES_WEBUI_PYTHON=%RELY_DIR%venv\Scripts\python.exe"</code>，让 <code>_discover_python()</code> 第①步直接命中便携 venv Python；同时添加 <code>set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"</code> 确保 Agent 目录正确发现。验证：<code>where python</code> 不应返回 WindowsApps 路径</td>
                     </tr>
                     <tr>
+                        <td><strong>Xiaoyi 能列出模型、简单测试也成功，但 Hermes 面板请求约 40 秒后无回复或日志出现 <code>APITimeoutError</code></strong></td>
+                        <td>Hermes 会附带完整系统提示词和工具定义，实际请求远大于简单的 <code>Reply only: OK</code> 测试；Xiaoyi 首包可能超过全局短超时。只测试 <code>/v1/models</code> 不能证明完整对话请求能在该时限内返回。</td>
+                        <td>在 <code>providers.Xiaoyi-gpt-5.6-sol</code> 下设置 <code>request_timeout_seconds: 300</code>；同时确保 <code>data\.env</code> 与 <code>start.bat</code> 都有 <code>HERMES_XIAOYI_KEY</code>。重启 Gateway 后检查 <code>data\logs\agent.log</code>，确认不再于约 40 秒时提前超时。全局 <code>HERMES_API_TIMEOUT=60</code> 可继续作为其他 provider 的兜底。</td>
+                    </tr>
+                    <tr>
                         <td><strong>MCP 服务报 <code>CancelledError</code> 连接失败</strong></td>
                         <td>MCP 子进程（<code>node</code>）启动超时或立即退出。可能原因：① <code>node</code> 不在 PATH 中；② <code>config.yaml</code> 中 MCP 入口脚本路径含旧盘符；③ <code>node_modules</code> 损坏缺失；④ <code>API_KEY</code> 错误导致服务启动后立即退出</td>
                         <td>① 确认 <code>start.bat</code> 将 <code>%RELY_DIR%node</code> 加入 PATH，<code>where node</code> 返回便携 Node；② 确认 <code>inject_mcp_config.py</code> 已运行并注入路径；③ 手动运行 <code>node build\index.js</code> 复现错误；④ 检查 <code>data\logs\mcp-stderr.log</code> 中的 Node 子进程输出；⑤ 必要时增加 <code>connect_timeout: 120</code></td>
                     </tr>
                     <tr>
                         <td><strong>AtlasCloud Seedream MCP 调用报 <code>ECONNRESET</code> / <code>unreachable</code></strong></td>
-                        <td>复用 <code>kuaipao-img</code> 的 OpenAI 端点（<code>/v1/images/edits</code>）调用 AtlasCloud，API 格式不兼容</td>
+                        <td>复用 <code>xiaoyi-grok-image</code> 的 OpenAI 端点（<code>/v1/images/edits</code>）调用 AtlasCloud，API 格式不兼容</td>
                         <td>使用独立目录 <code>mcp\atlascloud-seedream-edit\</code> 的重写版 handler，走 AtlasCloud 原生端点 <code>/api/v1/model/generateImage</code> + 异步轮询 <code>/api/v1/model/prediction/{id}</code>；确认 <code>config.yaml</code> 中 <code>API_URL</code> 为裸域名 <code>https://api.atlascloud.ai</code>（不含 <code>/api</code> 后缀）。</td>
                     </tr>
                     <tr>
@@ -1503,6 +1545,11 @@ goto top
                         <td><strong>Wan 2.7 MCP 返回 <code>{"code":400,"msg":"not found"}</code></strong></td>
                         <td>模型名误含 <code>+</code> 后缀：<code>alibaba/wan-2.7/image-edit+</code> 是显示名，API 模型 ID 为 <code>alibaba/wan-2.7/image-edit</code>（无 <code>+</code>）</td>
                         <td>修改 <code>inject_mcp_config.py</code> 中 <code>generate_mcp_yaml()</code> 函数里 <code>atlascloud-wan-edit</code> 的 <code>DEFAULT_EDIT_IMAGE_MODEL</code>，去掉末尾 <code>+</code> 号，改为 <code>alibaba/wan-2.7/image-edit</code>。Pro 版 <code>alibaba/wan-2.7-pro/image-edit</code> 无此问题。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>删除模型后 WebUI 下拉框 Configured 区仍显示旧模型（如 <code>gpt-5.4</code>）</strong></td>
+                        <td>三层缓存叠加：(1) 浏览器 <code>localStorage</code> 持久化了旧选中模型 <code>hermes-webui-model</code>；(2) Service Worker (<code>sw.js</code>) 缓存了修改前的旧 <code>ui.js</code>，服务器离线时回退到旧 JS；(3) 旧版前端 JS 的 <code>_ensureModelOptionInDropdown</code> 会把不在目录中的旧模型重新注入下拉框</td>
+                        <td>已在 <code>ui.js</code> 和 <code>boot.js</code> 添加 4 层防御（见下方"模型下拉框旧模型残留"专节）。用户侧操作：① 重新运行 <code>start.bat</code> 启动服务；② 浏览器 <code>Ctrl+Shift+R</code> 强制刷新；③ 如仍残留，DevTools Console 执行 <code>localStorage.removeItem('hermes-webui-model'); localStorage.removeItem('hermes-webui-model-state'); caches.keys().then(k=&gt;Promise.all(k.map(c=&gt;caches.delete(c)))); location.reload();</code></td>
                     </tr>
                 </table>
             
@@ -1542,11 +1589,11 @@ set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"</code>
       <p>MCP 服务连接失败报 <code>CancelledError</code> 时，需排查以下环节：</p>
       <ul style="margin-left: 20px;">
         <li><strong>Node.js 是否在 PATH 中：</strong><code>start.bat</code> 已将 <code>%RELY_DIR%node</code> 加入 <code>PATH</code>，MCP 子进程通过 <code>_resolve_stdio_command()</code> 解析 <code>node</code> 命令。验证：<code>where node</code> 应返回 <code>D:\rely\node\node.EXE</code>（或当前盘符对应路径）。</li>
-        <li><strong>MCP 入口脚本是否存在：</strong><code>inject_mcp_config.py</code> 已将 <code>config.yaml</code> 中的 MCP 路径注入为当前盘符。验证：<code>dir D:\hermes_ui\mcp\kuaopao-image\build\index.js</code> 应存在。</li>
-        <li><strong>Node 子进程是否能正常启动：</strong>手动运行 <code>node D:\hermes_ui\mcp\kuaopao-image\build\index.js</code>，应看到 <code>OpenAI Integration MCP server running on stdio</code>。如果报 <code>Cannot find module</code>，检查 <code>node_modules</code> 是否完整。</li>
+        <li><strong>MCP 入口脚本是否存在：</strong><code>inject_mcp_config.py</code> 已将 <code>config.yaml</code> 中的 MCP 路径注入为当前盘符。验证：<code>dir D:\hermes_ui\mcp\xiaoyi-grok-image\build\index.js</code> 应存在。</li>
+        <li><strong>Node 子进程是否能正常启动：</strong>手动运行 <code>node D:\hermes_ui\mcp\xiaoyi-grok-image\build\index.js</code>，应看到 <code>OpenAI Integration MCP server running on stdio</code>。如果报 <code>Cannot find module</code>，检查 <code>node_modules</code> 是否完整。</li>
         <li><strong>MCP stderr 日志：</strong>Hermes 将所有 MCP 子进程的 stderr 重定向到 <code>data\logs\mcp-stderr.log</code>，检查此文件可看到 Node 子进程的真实启动输出和错误。</li>
         <li><strong>连接超时：</strong>默认 <code>connect_timeout=60</code> 秒。如果 Node 子进程启动慢（如首次加载大模块），可能超时。可在 <code>config.yaml</code> 中为特定 MCP 服务增加 <code>connect_timeout: 120</code>。</li>
-        <li><strong>API_KEY 是否正确：</strong>MCP 服务启动时需要 <code>API_KEY</code> 环境变量。如果 key 过期或错误，MCP 服务可能启动后立即退出。检查 <code>inject_mcp_config.py</code> 中 <code>generate_mcp_yaml()</code> 函数读取的环境变量（<code>HERMES_KUAIPAO_GPT_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>）是否在 <code>start.bat</code> 中正确设置。</li>
+        <li><strong>API_KEY 是否正确：</strong>MCP 服务启动时需要 <code>API_KEY</code> 环境变量。如果 key 过期或错误，MCP 服务可能启动后立即退出。检查 <code>inject_mcp_config.py</code> 中 <code>generate_mcp_yaml()</code> 函数读取的环境变量（<code>XIAOYI_GROK_IMAGE_KEY</code>、<code>MCP_ATLASCLOUD_KEY</code>）是否在 <code>start.bat</code> 中正确设置。</li>
       </ul>
 
       <div class="card">
@@ -1558,6 +1605,62 @@ set "HERMES_WEBUI_AGENT_DIR=%ROOT_DIR%hermes-agent"</code>
           <li>在 WebUI 中发送测试消息，确认不再卡住</li>
           <li>调用 MCP 工具（如 <code>generate_image</code>）确认端到端可用</li>
         </ol>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⚠️ 常见问题：删除模型后下拉框仍显示旧模型</h2>
+
+      <div class="card danger">
+        <strong>问题描述：</strong> 在 <code>config.yaml</code> 中删除了某个模型（如 <code>openai / gpt-4.1</code>）并重启服务后，WebUI 对话框下方的模型下拉框"Configured"区域仍然显示该已删除的模型，无法消除。
+      </div>
+
+      <h3>根因分析：三层缓存叠加</h3>
+      <p>该问题不是单一来源，而是三层缓存叠加导致：</p>
+      <ol style="margin-left: 20px;">
+        <li><strong>浏览器 <code>localStorage</code></strong>：前端 JS 把用户上次选中的模型 ID 持久化到 <code>localStorage["hermes-webui-model"]</code>。即使后端已删除该模型，浏览器仍保留旧值。</li>
+        <li><strong>Service Worker 缓存</strong>：<code>sw.js</code> 会缓存 <code>ui.js</code> 等 shell 资源。当 Hermes 服务未运行时，浏览器回退到缓存的旧版 <code>ui.js</code>（修改前的版本），旧代码会把不在目录中的旧模型重新注入下拉框。</li>
+        <li><strong>前端 JS 注入逻辑</strong>：旧版 <code>ui.js</code> 的 <code>_ensureModelOptionInDropdown</code> 函数在会话恢复和 <code>_reconcileModelDropdownSelection</code> 时，会把 <code>localStorage</code> 或旧会话中的模型 ID 无条件注入下拉框——即使该模型已不在后端目录中。同样，<code>renderModelDropdown</code> 会把 <code>window._configuredModelBadges</code> 中所有 badge 条目注入 <code>_modelData</code>，不检查 provider 是否仍存在于当前配置。</li>
+      </ol>
+
+      <h3>已实施的 4 层防御修复</h3>
+      <div class="card success">
+        <p>已在 <code>hermes-webui\static\ui.js</code> 和 <code>hermes-webui\static\boot.js</code> 中添加 4 层防御：</p>
+        <ol style="margin-left: 20px;">
+          <li><strong><code>ui.js</code> · <code>_reconcileModelDropdownSelection</code>（约 L2484-2517）</strong>：新增 <code>_isModelAvailable</code> 辅助函数，检查模型是否在当前目录或有 configured badge。旧模型不可用时，调用 <code>_clearStalePersistedModel</code> 清除 <code>localStorage</code>，回退到服务器默认模型，不再注入。</li>
+          <li><strong><code>ui.js</code> · 会话模型恢复（约 L9507-9516）</strong>：只有模型有 configured badge 时才通过 <code>_ensureModelOptionInDropdown</code> 注入；否则调用 <code>_applySessionModelFallback</code> 回退到默认模型。</li>
+          <li><strong><code>ui.js</code> · <code>renderModelDropdown</code> badge 注入（约 L3477-3498）</strong>：新增 <code>_knownProviderIds</code> 集合，从当前下拉框组中收集已知 provider ID。注入 <code>window._configuredModelBadges</code> 中的 badge 条目时，若 badge 的 provider 不在已知集合中则跳过，防止旧 provider 的模型出现在 Configured 区。</li>
+          <li><strong><code>boot.js</code> · 启动时会话模型恢复（约 L3203-3213）</strong>：只有模型有 configured badge 时才调用 <code>_ensureModelOptionInDropdown</code> 注入，防止启动时从旧会话状态注入已删除的模型。</li>
+        </ol>
+      </div>
+
+      <h3>用户侧操作步骤</h3>
+      <div class="card">
+        <ol style="margin-left: 20px;">
+          <li><strong>确认后端配置干净</strong>：检查 <code>data\config.yaml</code> 中 <code>providers</code> 和 <code>fallback_providers</code> 不含已删除模型；检查 <code>data\webui\settings.json</code> 的 <code>default_model_provider</code> 指向有效 provider。</li>
+          <li><strong>重启服务</strong>：关闭所有 Hermes 窗口，重新运行 <code>start.bat</code>。</li>
+          <li><strong>浏览器强制刷新</strong>：按 <code>Ctrl+Shift+R</code>（或 <code>Ctrl+F5</code>）强制刷新页面，加载新的 <code>ui.js</code>。</li>
+          <li><strong>如仍残留（Service Worker 缓存顽固）</strong>：按 <code>F12</code> 打开 DevTools，在 Console 中执行：
+            <div class="code-block" style="margin: 10px 0;">
+              <code>localStorage.removeItem('hermes-webui-model');
+localStorage.removeItem('hermes-webui-model-state');
+caches.keys().then(k =&gt; Promise.all(k.map(c =&gt; caches.delete(c))));
+location.reload();</code>
+            </div>
+            这会清除 <code>localStorage</code> 中的旧模型选择和 Service Worker 的全部缓存，然后重新加载页面。
+          </li>
+          <li><strong>验证</strong>：打开模型下拉框，Configured 区应只显示 <code>config.yaml</code> 中定义的模型（Primary + Fallback），已删除的模型不再出现。</li>
+        </ol>
+      </div>
+
+      <div class="card warning">
+        <strong>⚠️ 排查要点：</strong>
+        <ul style="margin: 10px 0 0 20px;">
+          <li>后端所有文件（<code>config.yaml</code>、<code>auth.json</code>、<code>.env</code>、<code>models_cache.json</code>、<code>state.db</code>）都可能已干净——问题出在前端缓存。不要浪费时间反复清理后端文件。</li>
+          <li><code>state.db</code> 中可能存在 FTS 索引的幽灵数据（<code>messages_fts</code> 表），这是 SQLite 全文检索的未分配空间残留，不影响功能，无需清理。</li>
+          <li>Service Worker 缓存是最后防线——即使 <code>localStorage</code> 已清除，如果 <code>sw.js</code> 仍缓存旧 <code>ui.js</code>，旧代码会重新写入 <code>localStorage</code>。必须同时清除两者。</li>
+          <li>修改 <code>ui.js</code> / <code>boot.js</code> 后必须重启 Hermes 服务（服务进程内存中可能缓存旧版响应）并强制刷新浏览器才能生效。</li>
+        </ul>
       </div>
     </div>
 
