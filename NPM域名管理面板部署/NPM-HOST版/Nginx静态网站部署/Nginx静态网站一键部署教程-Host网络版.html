@@ -426,13 +426,23 @@ location ~ ^/(?!\.well-known/) {
     proxy_set_header Host filedn.eu;
     proxy_set_header Referer "";
     proxy_set_header Origin "";
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
 
-    # 替换响应中的 pCloud code，避免页面内链接带前缀
     proxy_set_header Accept-Encoding "";
-    sub_filter '"code": "你的pCloud_code"' '"code": "."';
+
+    # 替换响应中的 pCloud 链接，让路径更简洁
+    sub_filter '"code": "你的pCloud_code"' '"code": ""';
+    sub_filter '"dirpath": "\/' '"dirpath": "';
     sub_filter '/你的pCloud_code/' '/';
+
+    # 去掉跳转 pCloud 官网的链接
+    sub_filter 'href="https://www.pcloud.com/"' 'href="/"';
+    sub_filter 'https://www.pcloud.com/' '/';
+
     sub_filter_once off;
-    sub_filter_types *;
+    sub_filter_types text/html text/css text/javascript application/javascript application/json;
 
     # 允许 iframe 嵌入 + 跨域
     proxy_hide_header X-Frame-Options;
