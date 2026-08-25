@@ -30,7 +30,7 @@ location ~ ^/(?!\.well-known/) {
 
     # JS: path = code + dirpath，必须让最终链接变成 /en/ 而不是 //en/ 或 /./en/
     sub_filter '"code": "luAFbRWknPyfToYDs9VNNI8"' '"code": ""';
-    sub_filter '"dirpath": "\/' '"dirpath": "'";
+    sub_filter '"dirpath": "\/' '"dirpath": "';
     sub_filter '/luAFbRWknPyfToYDs9VNNI8/' '/';
 
     # 去掉跳转 pCloud 官网的链接
