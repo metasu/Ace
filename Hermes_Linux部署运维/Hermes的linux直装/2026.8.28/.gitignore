@@ -1,0 +1,91 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+dist/
+build/
+*.so
+
+# ===== venv =====
+venv/
+
+# ===== Node.js =====
+node_modules/
+npm-debug.log*
+
+# ===== Git sub-repos (hermes-agent / hermes-webui are cloned by deploy script) =====
+hermes-agent/
+hermes-webui/
+
+# ===== Runtime data — do NOT upload =====
+data/output/
+data/skills/
+data/state.db
+data/state.db-shm
+data/state.db-wal
+data/kanban.db
+data/kanban.db-shm
+data/kanban.db-wal
+data/kanban.db.dispatch.lock
+data/kanban.db.init.lock
+data/kanban/.dispatcher.lock
+data/response_store.db
+data/response_store.db-shm
+data/response_store.db-wal
+data/verification_evidence.db
+data/models_dev_cache.json
+data/__pycache__/
+data/audio_cache/
+data/image_cache/
+data/cache/
+data/logs/
+data/sessions/
+data/pending_messages/
+data/sandboxes/
+data/bin/
+data/lsp/
+data/pairing/
+data/platforms/
+data/processes.json
+data/gateway.pid
+data/gateway.lock
+data/gateway-starts.log
+data/.clean_shutdown
+data/gateway_state.json
+data/.mcp-discovery.lock
+data/.session_cleanup.lock
+data/.skills_prompt_snapshot.json
+data/auth.lock
+data/cron/
+data/state/gateway.heartbeat
+data/state/gateway.lifecycle.json
+data/channel_directory.json
+data/memories/MEMORY.md
+data/memories/MEMORY.md.lock
+data/memories/USER.md
+data/memories/USER.md.lock
+
+# ===== WebUI runtime state =====
+data/webui/
+
+# ===== Secrets — never upload real keys =====
+# .env, auth.json, config.yaml are provided as .example templates only
+data/.env
+data/auth.json
+data/config.yaml
+
+# ===== Backups =====
+backups/
+
+# ===== MCP (rebuilt from upstream + patches by deploy script) =====
+mcp/
+
+# ===== Logs =====
+*.log
+deploy.log
+
+# ===== OS =====
+.DS_Store
+Thumbs.db

@@ -1,0 +1,19 @@
+live={'default': 'grok-4.5', 'provider': 'kuaipao-gpt-chat', 'base_url': 'https://kuaipao.ai/v1', 'default_headers': {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'}}
+prov_model=grok-4.5
+models=['gpt-5.5', 'gpt-5.6-sol', 'grok-4.5']
+deploy_model_block=
+model:
+  default: "grok-4.5"
+  provider: "kuaipao-gpt-chat"
+  base_url: "https://kuaipao.ai/v1"
+  default_headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+      like Gecko) Chrome/124.0.0.0 Safari/537.36
+
+deploy_has_default_grok=True
+deploy_kuaipao_model_grok=True
+ctl_default_title=True
+ctl_menu24_default=True
+tut_default_section=True
+tut_system_default=True
+tut_menu24_default=True
