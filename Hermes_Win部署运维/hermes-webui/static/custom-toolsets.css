@@ -1,0 +1,109 @@
+/* 自定义 CSS - 强制显示工具选择器 */
+
+/* 覆盖默认的 display:none 规则 */
+.composer-toolsets-wrap {
+    display: block !important;
+}
+
+/* 覆盖容器查询的限制 - 在任何宽度下都显示 */
+@container composer-footer (min-width: 0px) {
+    .composer-toolsets-wrap {
+        display: block !important;
+    }
+}
+
+/* 也覆盖 cf-burger 模式下的隐藏规则 */
+.composer-footer.cf-burger .composer-left > .composer-toolsets-wrap {
+    display: block !important;
+}
+
+/* 确保在 composer-left 中也显示 */
+.composer-left > .composer-toolsets-wrap {
+    display: block !important;
+}
+
+/* 工具选择器按钮样式优化 */
+.composer-toolsets-chip {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.composer-toolsets-chip:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--border2);
+}
+
+.composer-toolsets-chip.active {
+    color: var(--text);
+    background: var(--accent-bg);
+    border-color: var(--accent-bg);
+}
+
+/* 工具选择器图标和标签 */
+.composer-toolsets-icon,
+.composer-toolsets-chevron {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.composer-toolsets-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 下拉菜单样式 */
+.composer-toolsets-dropdown {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    min-width: 300px;
+    max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 1000;
+    padding: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.composer-toolsets-dropdown.open {
+    display: block !important;
+}
+
+/* 小屏幕优化 - 调整按钮大小 */
+@media (max-width: 768px) {
+    .composer-toolsets-chip {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 4px;
+    }
+    
+    .composer-toolsets-icon svg,
+    .composer-toolsets-chevron svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* 确保工具选择器在所有响应式模式下都可见 */
+@media (min-width: 1px) {
+    .composer-toolsets-wrap {
+        display: block !important;
+    }
+}

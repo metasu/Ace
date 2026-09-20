@@ -1,0 +1,72 @@
+# === Output directory (user-generated content, never commit) ===
+output/
+
+# === Python caches ===
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# === Node.js ===
+node_modules/
+mcp/*/node_modules/
+mcp/*/dist/
+
+# === Nested git repos (hermes-agent & hermes-webui are upstream sources) ===
+hermes-agent/.git/
+hermes-webui/.git/
+
+# === Databases & runtime state (user data, not for repo) ===
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/state.db
+data/response_store.db*
+data/verification_evidence.db
+data/kanban.db*
+data/gateway.lock
+data/gateway.pid
+data/gateway_state.json
+data/processes.json
+data/auth.lock
+
+# === Caches & temporary files ===
+data/cache/
+data/audio_cache/
+data/image_cache/
+data/logs/
+data/sessions/
+data/backups/
+data/sandboxes/
+data/cron/
+data/models_dev_cache.json.bak
+data/webui/sessions/
+data/webui/attachments/
+data/webui/*.tmp
+data/webui/models_cache.json*
+
+# === Memories & user-specific data ===
+data/memories/
+data/.skills_prompt_snapshot.json
+
+# === hermes-webui runtime data (logs, caches, sessions, databases) ===
+hermes-webui/data/
+
+# === hermes-agent skills index cache ===
+hermes-agent/skills/index-cache/
+
+# === Temp files ===
+_tmp_*
+*.tmp
+test_err.txt
+
+# === IDE / editor ===
+.vscode/
+.idea/
+
+# === OS ===
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+_secret_backup/
