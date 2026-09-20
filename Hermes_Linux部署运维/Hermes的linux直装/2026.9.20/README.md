@@ -17,6 +17,7 @@ Hermes Agent CLI + WebUI + MCP Server 在 Ubuntu 22.04+ 上的本机直装部署
 ├── README.md                 # 本文件
 ├── patches/                  # WebUI 移动端补丁 + 历史配置脚本
 │   ├── apply_webui_mobile_toolsets.py   # 移动端圆形按钮 → Toolsets/MCP 入口
+│   ├── fix_toolsets_mcp_additive.py     # 会话 MCP 勾选改为追加语义，不取代常规工具
 │   └── ...
 ├── mcp-patches/              # MCP server 定制补丁（跨机必带）
 │   ├── xiaoyi-grok-image/

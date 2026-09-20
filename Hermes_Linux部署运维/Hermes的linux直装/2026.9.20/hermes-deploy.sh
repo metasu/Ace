@@ -1044,6 +1044,10 @@ step_webui_mobile_patch(){
   if [[ -f "$swr_py" ]]; then
     python3 "$swr_py" "$HERMES_WEBUI" || wrn "session_visit SWR 补丁执行失败（可稍后 hermesctl.sh webui-patch）"
   fi
+  local additive_py="${HERMES_DIR}/patches/fix_toolsets_mcp_additive.py"
+  if [[ -f "$additive_py" ]]; then
+    python3 "$additive_py" "$HERMES_WEBUI" || wrn "additive-toolsets 补丁执行失败（可稍后 hermesctl.sh webui-patch）"
+  fi
   check_webui_mobile_mcp_entry
 }
 

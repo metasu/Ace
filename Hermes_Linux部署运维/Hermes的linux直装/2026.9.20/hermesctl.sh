@@ -145,6 +145,11 @@ cmd_webui_patch(){
     say "应用 session_visit 模型目录 SWR 补丁（过期缓存立即返回）"
     python3 "$swr_py" "$HERMES_WEBUI" || die "session-visit-swr-patch 失败"
   fi
+  local additive_py="${HERMES_DIR}/patches/fix_toolsets_mcp_additive.py"
+  if [[ -f "$additive_py" ]]; then
+    say "应用会话工具集 MCP 追加补丁（MCP 勾选不取代常规工具）"
+    python3 "$additive_py" "$HERMES_WEBUI" || die "toolsets-mcp-additive-patch 失败"
+  fi
   # 注入 MCP 配置（顺带）
   inject_mcp_config
   check_webui_mobile_mcp_entry
