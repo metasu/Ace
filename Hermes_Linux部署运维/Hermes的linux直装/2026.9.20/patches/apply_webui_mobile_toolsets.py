@@ -38,9 +38,15 @@ APPLY_CHIP = '''function _applyToolsetsChip(toolsets) {
   const stagedSuffix = (!S || !S.session) ? ' *' : '';
   if (chip) chip.classList.toggle('active', hasCustom);
   if (hasCustom) {
-    label.textContent = toolsets.join(', ') + stagedSuffix;
+    // MCP-only picks are additive — chip shows defaults + those servers.
+    const catalog = Array.isArray(_toolsetsCatalog) ? _toolsetsCatalog : [];
+    const mcpOnly = catalog.length
+      ? toolsets.every(function(name){ return catalog.indexOf(name) !== -1; })
+      : true;
+    const chipText = (mcpOnly ? ('defaults + ' + toolsets.join(', ')) : toolsets.join(', ')) + stagedSuffix;
+    label.textContent = chipText;
     label.classList.add('custom');
-    if (chip) chip.title = t('session_toolsets') + ': ' + toolsets.join(', ') + stagedSuffix;
+    if (chip) chip.title = t('session_toolsets') + ': ' + chipText;
   } else {
     label.textContent = t('session_toolsets_profile_defaults');
     label.classList.remove('custom');
@@ -131,6 +137,7 @@ def ready() -> bool:
         'id="composerMobileToolsetsAction"' in h
         and "composerMobileToolsetsAction" in u
         and "Narrow screens hide the footer chip" in u
+        and "defaults + " in u
         and "composerMobileToolsetsAction" in b
     )
 

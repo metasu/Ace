@@ -250,6 +250,16 @@ MCP_FROM_UPSTREAM=1 MCP_ONLY=1 bash /opt/hermes/hermes-deploy.sh
 
 ---
 
+## Compact / MCP 叠加（改文件失败时看这里）
+
+- **Compact 不再阉工具。** `patches/compact_request.py` 接到 `conversation_loop`：Xiaoyi（gpt-6-astra / fable，防网关超时）只在 system prompt > 8k 或历史过长时瘦文本；**永远保留全部 tools + tool_choice**；裁历史不拆 assistant/tool 成对；生图意图只加提示，不删其它工具。短请求原样发送。
+- **会话勾选 MCP 是叠加，不是覆盖。** `_merge_session_toolsets`：勾选 github 等 MCP 不会关掉终端/文件（`hermes-cli` 仍在）。工具集 chip 在 MCP-only 时显示 `defaults + github`。
+- **Fable 上游未改。** `HTTP 403 无权访问 Claude MAX 分组` 仍走现有 failover（AtlasCloud Grok）。这是上游权限问题，不是本机工具集问题。
+
+升级 agent/webui 后请再跑一次 `/opt/hermes/hermesctl.sh webui-patch`（会重打 compact 钩子 + MCP 追加）。改完须重启 WebUI（`hermesctl.sh restart`）。用 GPT-6 再说一次「写 md」：成功标志是日志里 `in=` 从几百升到上万，并出现 `tool write_file completed`。
+
+---
+
 ## 常见问题
 
 ### Q: 部署后 WebUI 无法访问？

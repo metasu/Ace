@@ -1048,6 +1048,10 @@ step_webui_mobile_patch(){
   if [[ -f "$additive_py" ]]; then
     python3 "$additive_py" "$HERMES_WEBUI" || wrn "additive-toolsets 补丁执行失败（可稍后 hermesctl.sh webui-patch）"
   fi
+  local compact_py="${HERMES_DIR}/patches/fix_compact_keep_tools.py"
+  if [[ -f "$compact_py" ]]; then
+    python3 "$compact_py" "$HERMES_DIR" || wrn "compact-keep-tools 补丁执行失败（可稍后 hermesctl.sh webui-patch）"
+  fi
   check_webui_mobile_mcp_entry
 }
 

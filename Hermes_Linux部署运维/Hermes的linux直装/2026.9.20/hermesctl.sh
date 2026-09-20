@@ -150,6 +150,11 @@ cmd_webui_patch(){
     say "应用会话工具集 MCP 追加补丁（MCP 勾选不取代常规工具）"
     python3 "$additive_py" "$HERMES_WEBUI" || die "toolsets-mcp-additive-patch 失败"
   fi
+  local compact_py="${HERMES_DIR}/patches/fix_compact_keep_tools.py"
+  if [[ -f "$compact_py" ]]; then
+    say "应用 compact 保工具补丁（Xiaoyi 瘦请求但不剥 tools）"
+    python3 "$compact_py" "$HERMES_DIR" || die "compact-keep-tools-patch 失败"
+  fi
   # 注入 MCP 配置（顺带）
   inject_mcp_config
   check_webui_mobile_mcp_entry

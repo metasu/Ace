@@ -27,6 +27,23 @@ WEBUI = Path(sys.argv[1] if len(sys.argv) > 1 else "/opt/hermes/hermes-webui")
 STREAMING = WEBUI / "api" / "streaming.py"
 I18N = WEBUI / "static" / "i18n.js"
 
+STREAMING_HELPER = '''def _merge_session_toolsets(base_toolsets, override, mcp_names):
+    """Resolve per-session toolsets as base (non-MCP) ∪ override.
+
+    Composer MCP checkboxes must add servers on top of hermes-cli / regular
+    tools, never replace them. An override that names only base toolsets
+    (e.g. ``["hermes-cli"]``) still yields the base-only set.
+    """
+    base_list = list(base_toolsets or [])
+    if not override:
+        return base_list
+    mcp = set(mcp_names or ())
+    base = [t for t in base_list if t not in mcp]
+    return base + [t for t in override if t not in base]
+
+
+'''
+
 STREAMING_REPLACEMENTS = [
     (
         "                    if _override:\n"
@@ -38,19 +55,45 @@ STREAMING_REPLACEMENTS = [
         "                        # enabled, so picking MCPs in the composer can\n"
         "                        # never strip hermes-cli / regular tools.\n"
         "                        _mcp_names = set(((_cfg or {}).get('mcp_servers') or {}).keys())\n"
+        "                        _toolsets = _merge_session_toolsets(_toolsets, _override, _mcp_names)\n",
+    ),
+    (
+        "                    if _override:\n"
+        "                        # Deploy-local patch: the session override is\n"
+        "                        # ADDITIVE for MCP servers — non-MCP (base)\n"
+        "                        # toolsets from the active profile always stay\n"
+        "                        # enabled, so picking MCPs in the composer can\n"
+        "                        # never strip hermes-cli / regular tools.\n"
+        "                        _mcp_names = set(((_cfg or {}).get('mcp_servers') or {}).keys())\n"
         "                        _base_ts = [t for t in _toolsets if t not in _mcp_names]\n"
         "                        _toolsets = _base_ts + [t for t in _override if t not in _base_ts]\n",
+        "                    if _override:\n"
+        "                        # Deploy-local patch: the session override is\n"
+        "                        # ADDITIVE for MCP servers — non-MCP (base)\n"
+        "                        # toolsets from the active profile always stay\n"
+        "                        # enabled, so picking MCPs in the composer can\n"
+        "                        # never strip hermes-cli / regular tools.\n"
+        "                        _mcp_names = set(((_cfg or {}).get('mcp_servers') or {}).keys())\n"
+        "                        _toolsets = _merge_session_toolsets(_toolsets, _override, _mcp_names)\n",
     ),
 ]
 
 I18N_REPLACEMENTS = [
     (
         "session_toolsets_desc:'Use active profile defaults or choose a custom toolset list for this session',",
+        "session_toolsets_desc:'Checking MCP does not turn off terminal/file tools; picks are added on top of defaults',",
+    ),
+    (
         "session_toolsets_desc:'Base tools always on; pick MCP toolsets to add for this session',",
+        "session_toolsets_desc:'Checking MCP does not turn off terminal/file tools; picks are added on top of defaults',",
     ),
     (
         "session_toolsets_desc: '使用当前配置档默认工具，或为此会话选择自定义工具集',",
+        "session_toolsets_desc: '勾选 MCP 不会关掉终端/文件工具；只是追加到默认工具集之上',",
+    ),
+    (
         "session_toolsets_desc: '常规工具始终启用；勾选要为本会话追加的 MCP 工具集',",
+        "session_toolsets_desc: '勾选 MCP 不会关掉终端/文件工具；只是追加到默认工具集之上',",
     ),
 ]
 
@@ -60,7 +103,12 @@ def ready() -> bool:
         return False
     s = STREAMING.read_text(encoding="utf-8", errors="ignore")
     i = I18N.read_text(encoding="utf-8", errors="ignore")
-    return "_base_ts" in s and "Base tools always on" in i
+    return (
+        "def _merge_session_toolsets" in s
+        and "_merge_session_toolsets(_toolsets, _override, _mcp_names)" in s
+        and "Checking MCP does not turn off terminal/file tools" in i
+        and "勾选 MCP 不会关掉终端/文件工具" in i
+    )
 
 
 def apply_replacements(text: str, pairs: list[tuple[str, str]], label: str) -> str:
@@ -68,9 +116,18 @@ def apply_replacements(text: str, pairs: list[tuple[str, str]], label: str) -> s
         if new in text:
             continue  # already patched
         if old not in text:
-            raise RuntimeError(f"{label}: pattern not found (upstream changed?): {old!r}")
+            continue  # older/newer snapshot; other pair may match
         text = text.replace(old, new, 1)
     return text
+
+
+def ensure_helper(text: str) -> str:
+    if "def _merge_session_toolsets(" in text:
+        return text
+    marker = "def _compact_for_echo_compare(value: str) -> str:\n"
+    if marker in text:
+        return text.replace(marker, STREAMING_HELPER + marker, 1)
+    raise RuntimeError("streaming.py: cannot find insertion point for _merge_session_toolsets")
 
 
 def main() -> int:
@@ -85,8 +142,9 @@ def main() -> int:
             print(f"ERROR: missing {p}", file=sys.stderr)
             return 1
     try:
+        streaming = ensure_helper(STREAMING.read_text(encoding="utf-8"))
         STREAMING.write_text(
-            apply_replacements(STREAMING.read_text(encoding="utf-8"), STREAMING_REPLACEMENTS, "streaming.py"),
+            apply_replacements(streaming, STREAMING_REPLACEMENTS, "streaming.py"),
             encoding="utf-8",
         )
         I18N.write_text(
