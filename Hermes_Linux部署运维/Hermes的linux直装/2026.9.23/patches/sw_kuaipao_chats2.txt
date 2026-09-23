@@ -1,0 +1,40 @@
++ [[ -z '' ]]
++ provider=kuaipao-gpt-chats
++ shift
++ [[ 0 -gt 0 ]]
++ [[ -n kuaipao-gpt-chats ]]
++ switch_provider kuaipao-gpt-chats '' ''
++ local provider=kuaipao-gpt-chats model= url=
++ check_venv
++ [[ -x /opt/hermes/venv/bin/python ]]
++ [[ -f /opt/hermes/data/config.yaml ]]
++ case "$provider" in
++ provider=kuaipao-gpt-chat
++ model=grok-4.5
++ url=https://kuaipao.ai/v1
++ say '切换 → provider=kuaipao-gpt-chat model=grok-4.5'
++ echo -e '\033[34mℹ️  切换 → provider=kuaipao-gpt-chat model=grok-4.5\033[0m'
+[34mℹ️  切换 → provider=kuaipao-gpt-chat model=grok-4.5[0m
++ HERMES_SW_MODEL=grok-4.5
++ HERMES_SW_PROVIDER=kuaipao-gpt-chat
++ HERMES_SW_URL=https://kuaipao.ai/v1
++ HERMES_SW_CONFIG=/opt/hermes/data/config.yaml
++ /opt/hermes/venv/bin/python -
+已写入 config.yaml: provider=kuaipao-gpt-chat, model=grok-4.5, base_url=https://kuaipao.ai/v1
++ cmd_refresh
++ check_venv
++ [[ -x /opt/hermes/venv/bin/python ]]
++ [[ -f /opt/hermes/data/refresh_auth_json.py ]]
++ /opt/hermes/venv/bin/python /opt/hermes/data/refresh_auth_json.py
+✅ auth.json 已从 .env 刷新
++ systemctl is-active --quiet hermes-gateway
++ systemctl restart hermes-gateway
++ ok '已切换并重启 gateway'
++ echo -e '\033[0;32m✅ 已切换并重启 gateway\033[0m'
+[0;32m✅ 已切换并重启 gateway[0m
++ show_current_model
++ [[ ! -f /opt/hermes/data/config.yaml ]]
++ [[ ! -x /opt/hermes/venv/bin/python ]]
++ /opt/hermes/venv/bin/python -
+  当前: provider=kuaipao-gpt-chat  model=grok-4.5
+  base_url=https://kuaipao.ai/v1
