@@ -55,32 +55,36 @@ exit /b 1
 :home_ok
 
 :: ===== 对话渠道密钥（config.yaml 的 key_env 引用）=====
-set "HERMES_ATLASCLOUD_GROK_43_KEY=your-atlascloud-grok-43-key"
-set "HERMES_ATLASCLOUD_GROK_45_KEY=your-atlascloud-grok-45-key"
-set "HERMES_XIAOYI_KEY=your-xiaoyi-key"
+set "HERMES_ATLASCLOUD_GROK_43_KEY=YOUR_ATLASCLOUD_GROK_KEY"
+set "HERMES_ATLASCLOUD_GROK_46_KEY=YOUR_ATLASCLOUD_GROK_KEY"
+set "HERMES_XIAOYI_ASTRA_KEY=YOUR_XIAOYI_ASTRA_KEY"
+set "HERMES_XIAOYI_FABLE_KEY=YOUR_XIAOYI_FABLE_KEY"
 
 :: ===== MCP 服务配置（inject_mcp_config.py 读取，不写入 config.yaml）=====
-set "XIAOYI_GROK_IMAGE_KEY=your-xiaoyi-image-key"
-set "MCP_ATLASCLOUD_KEY=your-atlascloud-mcp-key"
+set "XIAOYI_GROK_IMAGE_KEY=YOUR_XIAOYI_GROK_IMAGE_KEY"
+set "MCP_ATLASCLOUD_KEY=YOUR_MCP_ATLASCLOUD_KEY"
 set "MCP_ATLASCLOUD_API_URL=https://api.atlascloud.ai"
 
 :: ===== GitHub MCP（npx @modelcontextprotocol/server-github）=====
 :: 前往 https://github.com/settings/tokens 生成 Personal Access Token（classic），至少勾选 repo / read:org / read:user / gist
-set "GITHUB_PERSONAL_ACCESS_TOKEN=your-github-pat"
-:: Xiaoyi's SSE path is unreliable; use completed Chat Completions responses.
-set "HERMES_NON_STREAMING_PROVIDERS=Xiaoyi-gpt-5.6-sol"
-:: Xiaoyi is healthy for compact Chat Completions payloads; avoid sending the
-:: full Hermes tool schema/system prompt to this provider only.
-set "HERMES_COMPACT_REQUEST_PROVIDERS=Xiaoyi-gpt-5.6-sol"
-:: Xiaoyi GPT-5.6 expects max_tokens on Chat Completions.
-set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=Xiaoyi-gpt-5.6-sol"
-:: Use the SDK default transport; Xiaoyi is incompatible with Hermes' custom
-:: keepalive httpx client. Other providers keep the custom transport.
-set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=Xiaoyi-gpt-5.6-sol"
+set "GITHUB_PERSONAL_ACCESS_TOKEN=YOUR_GITHUB_PERSONAL_ACCESS_TOKEN"
+:: Provider workarounds for Xiaoyi Chat Completions channels.
+:: Streaming verified working on xiaoyi 2026-09-17 (SSE + streamed tool_calls
+:: assemble valid JSON). If a broken edge-case stream ever returns truncated
+:: replies, re-enable with:
+::   set "HERMES_NON_STREAMING_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
+:: Compact slims oversized system prompts / history for Xiaoyi gateways.
+:: Tools (file / terminal / MCP) are ALWAYS kept — dropping them made GPT-6
+:: look like it could not edit files. Fable 403 upstream is a separate issue.
+set "HERMES_COMPACT_REQUEST_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
+set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
+set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
 :: Let Xiaoyi finish normal slow generations before fallback is considered.
 :: The provider remains primary; fallback is used only after a real failure.
 :: Bound each upstream request so provider fallback cannot be held indefinitely.
-set "HERMES_API_TIMEOUT=60"
+:: 120s: deep-reasoning models (gpt-6-astra) often exceed 60s on first response;
+:: 60s caused frequent spurious fallbacks and mid-conversation model switches.
+set "HERMES_API_TIMEOUT=120"
 
 :: ===== Pre-flight diagnostics: verify all critical paths exist =====
 call :check_deps
@@ -113,14 +117,15 @@ echo  [4] Stop all Hermes processes
 echo  [5] Test API connection
 echo  [6] Exit
 echo  [7] Test CURRENT configured channel API
-echo  [8] Switch to Xiaoyi (gpt-5.6-sol) [DEFAULT]
-echo  [9] Switch to atlascloud (xai/grok-4.3)
-echo  [10] Switch to atlascloud (xai/grok-4.5)
-echo  [11] Apply WebUI mobile Toolsets/MCP patch
-echo  [12] Refresh auth.json from .env
+echo  [8] Switch to xiaoyi (gpt-6-astra)
+echo  [9] Switch to xiaoyi (claude-fable-5-1) [DEFAULT]
+echo  [10] Switch to atlascloud (xai/grok-4.3)
+echo  [11] Switch to atlascloud (xai/grok-4.6)
+echo  [12] Apply WebUI mobile Toolsets/MCP patch
+echo  [13] Refresh auth.json from .env
 echo.
 set "choice="
-set /p choice="Select [1-12]: "
+set /p choice="Select [1-13]: "
 if not defined choice goto no_choice
 
 if "%choice%"=="1" goto start_gateway
@@ -130,11 +135,12 @@ if "%choice%"=="4" goto stop_all
 if "%choice%"=="5" goto test_api
 if "%choice%"=="6" exit
 if "%choice%"=="7" goto test_current_api
-if "%choice%"=="8" goto switch_xiaoyi_sol
-if "%choice%"=="9" goto switch_atlascloud_grok
-if "%choice%"=="10" goto switch_atlascloud
-if "%choice%"=="11" goto apply_webui_patch
-if "%choice%"=="12" goto refresh_auth
+if "%choice%"=="8" goto switch_xiaoyi_astra
+if "%choice%"=="9" goto switch_xiaoyi_fable
+if "%choice%"=="10" goto switch_atlascloud_grok
+if "%choice%"=="11" goto switch_atlascloud_grok46
+if "%choice%"=="12" goto apply_webui_patch
+if "%choice%"=="13" goto refresh_auth
 goto invalid_choice
 
 :start_gateway
@@ -255,16 +261,23 @@ call :configure_failover
 pause
 goto menu
 
-:switch_atlascloud
-echo Switching to atlascloud (xai/grok-4.5)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.5\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.5\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.5')"
+:switch_atlascloud_grok46
+echo Switching to atlascloud (xai/grok-4.6)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.6\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.6\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.6')"
 call :configure_failover
 pause
 goto menu
 
-:switch_xiaoyi_sol
-echo Switching to Xiaoyi (gpt-5.6-sol)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"Xiaoyi-gpt-5.6-sol\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to Xiaoyi gpt-5.6-sol')"
+:switch_xiaoyi_astra
+echo Switching to xiaoyi (gpt-6-astra)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-6-astra\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"xiaoyi-gpt-6-astra\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to xiaoyi gpt-6-astra')"
+call :configure_failover
+pause
+goto menu
+
+:switch_xiaoyi_fable
+echo Switching to xiaoyi (claude-fable-5-1)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"claude-fable-5-1\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"xiaoyi-claude-fable-5-1\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to xiaoyi claude-fable-5-1')"
 call :configure_failover
 pause
 goto menu

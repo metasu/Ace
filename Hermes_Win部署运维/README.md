@@ -73,18 +73,20 @@ F:\
 
 ```env
 HERMES_ATLASCLOUD_GROK_43_KEY=你的AtlasCloud-Grok-4.3密钥
-HERMES_ATLASCLOUD_GROK_45_KEY=你的AtlasCloud-Grok-4.5密钥
-HERMES_XIAOYI_KEY=你的Xiaoyi密钥
+HERMES_ATLASCLOUD_GROK_46_KEY=你的AtlasCloud-Grok-4.6密钥
+HERMES_XIAOYI_ASTRA_KEY=你的Xiaoyi-gpt-6-astra密钥
+HERMES_XIAOYI_FABLE_KEY=你的Xiaoyi-claude-fable-5-1密钥
 ```
 
 #### 3.2 编辑 `start.bat`
 
-在 `start.bat` 第 58-69 行，将占位符替换为真实密钥：
+在 `start.bat` 的对话渠道密钥段，将占位符替换为真实密钥：
 
 ```bat
 set "HERMES_ATLASCLOUD_GROK_43_KEY=你的AtlasCloud-Grok-4.3密钥"
-set "HERMES_ATLASCLOUD_GROK_45_KEY=你的AtlasCloud-Grok-4.5密钥"
-set "HERMES_XIAOYI_KEY=你的Xiaoyi密钥"
+set "HERMES_ATLASCLOUD_GROK_46_KEY=你的AtlasCloud-Grok-4.6密钥"
+set "HERMES_XIAOYI_ASTRA_KEY=你的Xiaoyi-gpt-6-astra密钥"
+set "HERMES_XIAOYI_FABLE_KEY=你的Xiaoyi-claude-fable-5-1密钥"
 set "XIAOYI_GROK_IMAGE_KEY=你的Xiaoyi图片生成密钥"
 set "MCP_ATLASCLOUD_KEY=你的AtlasCloud-MCP密钥"
 set "GITHUB_PERSONAL_ACCESS_TOKEN=你的GitHub令牌"
@@ -105,11 +107,12 @@ set "GITHUB_PERSONAL_ACCESS_TOKEN=你的GitHub令牌"
 | **[5]** | 测试 API 连接 |
 | **[6]** | 退出 |
 | **[7]** | 测试当前配置的渠道 API |
-| **[8]** | 切换到 Xiaoyi (gpt-5.6-sol) [默认] |
-| **[9]** | 切换到 atlascloud (xai/grok-4.3) |
-| **[10]** | 切换到 atlascloud (xai/grok-4.5) |
-| **[11]** | 应用 WebUI 移动端 Toolsets/MCP 补丁 |
-| **[12]** | 从 .env 刷新 auth.json |
+| **[8]** | 切换到 Xiaoyi (gpt-6-astra) |
+| **[9]** | 切换到 Xiaoyi (claude-fable-5-1) [默认] |
+| **[10]** | 切换到 atlascloud (xai/grok-4.3) |
+| **[11]** | 切换到 atlascloud (xai/grok-4.6) |
+| **[12]** | 应用 WebUI 移动端 Toolsets/MCP 补丁 |
+| **[13]** | 从 .env 刷新 auth.json |
 
 推荐选择 **[3]** 同时启动 Gateway + WebUI。
 
@@ -127,8 +130,8 @@ API Server 地址：`http://localhost:50001`
 
 ```yaml
 model:
-  default: "gpt-5.6-sol"
-  provider: "Xiaoyi-gpt-5.6-sol"
+  default: "claude-fable-5-1"
+  provider: "xiaoyi-claude-fable-5-1"
   base_url: "https://xiaoyiapi.xyz/v1"
 ```
 
@@ -136,16 +139,18 @@ model:
 
 | Provider 名称 | 平台 | 模型 | 密钥环境变量 |
 |--------------|------|------|-------------|
-| `Xiaoyi-gpt-5.6-sol` | Xiaoyi | gpt-5.6-sol | `HERMES_XIAOYI_KEY` |
+| `xiaoyi-gpt-6-astra` | Xiaoyi | gpt-6-astra | `HERMES_XIAOYI_ASTRA_KEY` |
+| `xiaoyi-claude-fable-5-1` | Xiaoyi | claude-fable-5-1 | `HERMES_XIAOYI_FABLE_KEY` |
 | `atlascloud-grok-4.3` | AtlasCloud | xai/grok-4.3 | `HERMES_ATLASCLOUD_GROK_43_KEY` |
-| `atlascloud-grok-4.5` | AtlasCloud | xai/grok-4.5 | `HERMES_ATLASCLOUD_GROK_45_KEY` |
+| `atlascloud-grok-4.6` | AtlasCloud | xai/grok-4.6 | `HERMES_ATLASCLOUD_GROK_46_KEY` |
 
 ### 故障转移（Failover）
 
 `configure_failover.py` 在每次启动时自动维护故障转移链。当主 Provider 不可用时，按以下顺序回退：
 
 1. `atlascloud-grok-4.3` / xai/grok-4.3
-2. `atlascloud-grok-4.5` / xai/grok-4.5
+2. `atlascloud-grok-4.6` / xai/grok-4.6
+3. `xiaoyi-gpt-6-astra` / gpt-6-astra
 
 ### MCP Server 配置
 
@@ -162,6 +167,14 @@ model:
 | `github` | GitHub MCP Server | `GITHUB_PERSONAL_ACCESS_TOKEN` |
 
 图片输出路径：`hermes_ui\output\`（已 gitignore，不会上传）
+
+WebUI 会话里勾选 MCP（如 github）是**叠加**到默认工具集上，不会关掉终端 / 文件 / 网页等内置工具。
+
+### Xiaoyi compact 请求
+
+`start.bat` 对 Xiaoyi 渠道设置了 `HERMES_COMPACT_REQUEST_PROVIDERS`，用来压缩过大的 system prompt / 历史，避免网关超时。**工具定义不会被裁剪**（`write_file` / `terminal` / MCP 始终保留）。若 GPT-6 只回文字不改文件，请重启 WebUI 使本修复生效。
+
+xiaoyi-claude-fable-5-1 若返回 `HTTP 403 无权访问 Claude MAX 分组`，属于上游分组权限/拥挤，会按 failover 落到 AtlasCloud Grok；这与 compact 无关。
 
 ## 便携部署原理
 
@@ -208,7 +221,7 @@ Hermes Agent Windows本地便携部署教程.html
 
 ### Q: 如何切换模型？
 
-使用 `start.bat` 菜单 [8]-[10] 一键切换，或直接编辑 `data/config.yaml` 中的 `model.default` 和 `model.provider`。
+使用 `start.bat` 菜单 [8]-[11] 一键切换，或直接编辑 `data/config.yaml` 中的 `model.default` 和 `model.provider`。
 
 ### Q: MCP Server 不工作？
 

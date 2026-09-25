@@ -1,0 +1,6 @@
+[34mℹ️  切换 → provider=kuaipao-gpt-chat model=grok-4.5[0m
+已写入 config.yaml: provider=kuaipao-gpt-chat, model=grok-4.5, base_url=https://kuaipao.ai/v1
+✅ auth.json 已从 .env 刷新
+[0;32m✅ 已切换并重启 gateway[0m
+  当前: provider=kuaipao-gpt-chat  model=grok-4.5
+  base_url=https://kuaipao.ai/v1
