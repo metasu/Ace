@@ -3,7 +3,7 @@ import config from '../config/index.js';
 const toolDefinitions = [
     {
         name: 'generate_image',
-        description: 'Generates a 2K image using the xiaoyi grok-imagine-image model via an OpenAI-compatible API. When the tool returns GENERATION_COMPLETE, report the result and include the line "MEDIA:<output_url>" in your response so the WebUI renders the image inline. Do not call generate_image again.',
+        description: 'Generates a 2K image using the xiaoyi gpt-image-2.5-sunburst-cf model via an OpenAI-compatible API. When the tool returns GENERATION_COMPLETE, report the result and include the line "MEDIA:<output_url>" in your response so the WebUI renders the image inline. Do not call generate_image again.',
         inputSchema: {
             type: 'object',
             properties: {

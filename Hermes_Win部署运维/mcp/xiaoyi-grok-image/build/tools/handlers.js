@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as path from 'path';
+import * as fs from 'fs';
 import { randomUUID } from 'crypto';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { ensureDirectoryExists, downloadFile } from '../utils/index.js';
@@ -64,27 +65,28 @@ export async function handleToolCall({ toolName, args, config }) {
                 for (const item of responseData) {
                     let localPath = null;
                     let saveError = null;
+                    const isDataUrl = typeof item.url === 'string' && item.url.startsWith('data:');
                     const imageUrl = item.url || item.b64_json;
                     if (!imageUrl) {
                         saveError = 'No URL or base64 data in response';
                     } else {
                         let ext;
-                        if (item.mime_type) {
-                            if (item.mime_type === 'image/jpeg' || item.mime_type === 'image/jpg') ext = 'jpg';
-                            else if (item.mime_type === 'image/png') ext = 'png';
-                            else if (item.mime_type === 'image/webp') ext = 'webp';
-                            else ext = 'bin';
-                        } else {
-                            ext = requestBody.output_format === 'jpeg' ? 'jpg' : 'png';
-                        }
+                        const mimeType = item.mime_type || (isDataUrl ? item.url.slice(5, item.url.indexOf(';')) : null);
+                        if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') ext = 'jpg';
+                        else if (mimeType === 'image/png') ext = 'png';
+                        else if (mimeType === 'image/webp') ext = 'webp';
+                        else if (mimeType) ext = 'bin';
+                        else ext = requestBody.output_format === 'jpeg' ? 'jpg' : 'png';
                         const filename = `generated_xiaoyi_grok_imagine_${randomUUID()}.${ext}`;
                         try {
                             localPath = path.join(imagesOutputDir, filename);
-                            if (item.url) {
+                            if (isDataUrl) {
+                                const base64 = item.url.slice(item.url.indexOf(',') + 1);
+                                await fs.promises.writeFile(localPath, Buffer.from(base64, 'base64'));
+                            } else if (item.url) {
                                 await downloadFile(item.url, localPath);
                             } else if (item.b64_json) {
-                                const buffer = Buffer.from(item.b64_json, 'base64');
-                                await require('fs').promises.writeFile(localPath, buffer);
+                                await fs.promises.writeFile(localPath, Buffer.from(item.b64_json, 'base64'));
                             }
                             console.error(`[xiaoyi-grok-image] Generated image saved to: ${localPath}`);
                         } catch (err) {
@@ -94,14 +96,14 @@ export async function handleToolCall({ toolName, args, config }) {
                     }
                     results.push({
                         local_path: localPath,
-                        output_url: item.url,
+                        output_url: isDataUrl ? null : item.url,
                         mime_type: item.mime_type,
                         error: saveError,
                     });
                 }
 
                 const lines = [
-                    'GENERATION_COMPLETE: xiaoyi grok-imagine-image generation succeeded.',
+                    'GENERATION_COMPLETE: xiaoyi gpt-image-2.5-sunburst-cf generation succeeded.',
                     'Do not call generate_image again for this request. Report the result to the user and include the MEDIA: token so the WebUI renders the image inline.',
                     '',
                     ...results.flatMap((item, index) => {
@@ -110,9 +112,10 @@ export async function handleToolCall({ toolName, args, config }) {
                         if (item.local_path) parts.push(`Local file: ${item.local_path}`);
                         if (item.output_url) parts.push(`Remote URL: ${item.output_url}`);
                         if (item.mime_type) parts.push(`MIME type: ${item.mime_type}`);
-                        if (item.output_url) {
-                            parts.push(`MEDIA token (paste this exact line into your response to render the image inline): MEDIA:${item.output_url}`);
-                            parts.push(`Markdown preview: ![Generated image ${n}](${item.output_url})`);
+                        const mediaRef = item.output_url || (item.local_path ? item.local_path.replace(/\\/g, '/') : null);
+                        if (mediaRef) {
+                            parts.push(`MEDIA token (paste this exact line into your response to render the image inline): MEDIA:${mediaRef}`);
+                            parts.push(`Markdown preview: ![Generated image ${n}](${mediaRef})`);
                         }
                         if (item.local_path) {
                             const localUri = `file:///${item.local_path.replace(/\\/g, '/')}`;

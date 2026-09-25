@@ -2128,6 +2128,14 @@ def interruptible_streaming_api_call(agent, api_kwargs: dict, *, on_first_delta=
             if agent._interrupt_requested:
                 break
 
+            # Some OpenAI-compatible providers emit bare `data: null` SSE
+            # frames (the SDK's _process_response_data returns None for null
+            # data, so the stream yields a None chunk).  Skip them instead of
+            # crashing on chunk.choices — seen on the xiaoyi gateway when the
+            # upstream model starts emitting a tool call.
+            if chunk is None:
+                continue
+
             if not chunk.choices:
                 if hasattr(chunk, "model") and chunk.model:
                     model_name = chunk.model

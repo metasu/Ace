@@ -24,7 +24,6 @@ FALLBACK_CANDIDATES = (
     ("atlascloud-grok-4.3", "xai/grok-4.3"),
     ("atlascloud-grok-4.6", "xai/grok-4.6"),
     ("xiaoyi-gpt-6-astra", "gpt-6-astra"),
-    ("xiaoyi-claude-fable-5-1", "claude-fable-5-1"),
 )
 
 _TOP_LEVEL_FALLBACK_RE = re.compile(

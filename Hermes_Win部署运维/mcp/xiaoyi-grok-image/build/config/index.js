@@ -16,8 +16,8 @@ function parseCliArgs(argv) {
 const cliArgs = parseCliArgs(process.argv);
 // --- Configuration Loading ---
 const API_KEY = cliArgs.API_KEY || process.env.API_KEY;
-const API_URL = cliArgs.API_URL || process.env.API_URL || 'https://xiaoyiapi.xyz/v1';
-const DEFAULT_IMAGE_MODEL = cliArgs.DEFAULT_IMAGE_MODEL || process.env.DEFAULT_IMAGE_MODEL || 'grok-imagine-image';
+const API_URL = cliArgs.API_URL || process.env.API_URL || 'https://image.xiaoyiapi.xyz/v1';
+const DEFAULT_IMAGE_MODEL = cliArgs.DEFAULT_IMAGE_MODEL || process.env.DEFAULT_IMAGE_MODEL || 'gpt-image-2.5-sunburst-cf';
 const DEFAULT_IMAGE_SIZE = cliArgs.DEFAULT_IMAGE_SIZE || process.env.DEFAULT_IMAGE_SIZE || '2048x2048';
 const DEFAULT_EDIT_IMAGE_MODEL = cliArgs.DEFAULT_EDIT_IMAGE_MODEL || process.env.DEFAULT_EDIT_IMAGE_MODEL || 'gpt-image-2';
 const DEFAULT_SPEECH_MODEL = cliArgs.DEFAULT_SPEECH_MODEL || process.env.DEFAULT_SPEECH_MODEL || 'tts-1';

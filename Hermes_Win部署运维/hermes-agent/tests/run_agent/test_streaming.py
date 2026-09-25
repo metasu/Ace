@@ -97,6 +97,55 @@ class TestStreamingAccumulator:
 
     @patch("run_agent.AIAgent._create_request_openai_client")
     @patch("run_agent.AIAgent._close_request_openai_client")
+    def test_null_sse_chunks_are_skipped(self, mock_close, mock_create):
+        """Providers that emit bare `data: null` SSE frames make the OpenAI
+        SDK yield None chunks (_process_response_data returns None for null
+        data).  They must be skipped — previously the loop crashed on
+        chunk.choices, which dropped the in-flight tool call and failed the
+        turn after 4 continuation retries (xiaoyi gateway, session
+        452fe97937ef)."""
+        from run_agent import AIAgent
+
+        chunks = [
+            _make_stream_chunk(content="Writing the file: "),
+            None,  # `data: null` frame — SDK surfaces it as a None chunk
+            _make_stream_chunk(tool_calls=[
+                _make_tool_call_delta(index=0, tc_id="call_1", name="write_file"),
+            ]),
+            None,
+            _make_stream_chunk(tool_calls=[
+                _make_tool_call_delta(
+                    index=0, arguments='{"path": "/tmp/hi.txt", "content": "hi"}'
+                ),
+            ]),
+            _make_stream_chunk(finish_reason="tool_calls", model="test-model"),
+        ]
+
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value = iter(chunks)
+        mock_create.return_value = mock_client
+
+        agent = AIAgent(
+            api_key="test-key",
+            base_url="https://openrouter.ai/api/v1",
+            model="test/model",
+            quiet_mode=True,
+            skip_context_files=True,
+            skip_memory=True,
+        )
+        agent.api_mode = "chat_completions"
+        agent._interrupt_requested = False
+
+        response = agent._interruptible_streaming_api_call({})
+
+        assert response.choices[0].finish_reason == "tool_calls"
+        tool_calls = response.choices[0].message.tool_calls
+        assert tool_calls is not None and len(tool_calls) == 1
+        assert tool_calls[0].function.name == "write_file"
+        assert '"path": "/tmp/hi.txt"' in tool_calls[0].function.arguments
+
+    @patch("run_agent.AIAgent._create_request_openai_client")
+    @patch("run_agent.AIAgent._close_request_openai_client")
     def test_native_gemini_endpoint_omits_stream_options(self, mock_close, mock_create):
         """Google's native Gemini REST endpoint rejects OpenAI-only stream_options."""
         from run_agent import AIAgent

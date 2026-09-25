@@ -58,7 +58,6 @@ exit /b 1
 set "HERMES_ATLASCLOUD_GROK_43_KEY=YOUR_ATLASCLOUD_GROK_KEY"
 set "HERMES_ATLASCLOUD_GROK_46_KEY=YOUR_ATLASCLOUD_GROK_KEY"
 set "HERMES_XIAOYI_ASTRA_KEY=YOUR_XIAOYI_ASTRA_KEY"
-set "HERMES_XIAOYI_FABLE_KEY=YOUR_XIAOYI_FABLE_KEY"
 
 :: ===== MCP 服务配置（inject_mcp_config.py 读取，不写入 config.yaml）=====
 set "XIAOYI_GROK_IMAGE_KEY=YOUR_XIAOYI_GROK_IMAGE_KEY"
@@ -72,13 +71,13 @@ set "GITHUB_PERSONAL_ACCESS_TOKEN=YOUR_GITHUB_PERSONAL_ACCESS_TOKEN"
 :: Streaming verified working on xiaoyi 2026-09-17 (SSE + streamed tool_calls
 :: assemble valid JSON). If a broken edge-case stream ever returns truncated
 :: replies, re-enable with:
-::   set "HERMES_NON_STREAMING_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
+::   set "HERMES_NON_STREAMING_PROVIDERS=xiaoyi-gpt-6-astra"
 :: Compact slims oversized system prompts / history for Xiaoyi gateways.
 :: Tools (file / terminal / MCP) are ALWAYS kept — dropping them made GPT-6
-:: look like it could not edit files. Fable 403 upstream is a separate issue.
-set "HERMES_COMPACT_REQUEST_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
-set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
-set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=xiaoyi-gpt-6-astra,xiaoyi-claude-fable-5-1"
+:: look like it could not edit files.
+set "HERMES_COMPACT_REQUEST_PROVIDERS=xiaoyi-gpt-6-astra"
+set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=xiaoyi-gpt-6-astra"
+set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=xiaoyi-gpt-6-astra"
 :: Let Xiaoyi finish normal slow generations before fallback is considered.
 :: The provider remains primary; fallback is used only after a real failure.
 :: Bound each upstream request so provider fallback cannot be held indefinitely.
@@ -117,15 +116,14 @@ echo  [4] Stop all Hermes processes
 echo  [5] Test API connection
 echo  [6] Exit
 echo  [7] Test CURRENT configured channel API
-echo  [8] Switch to xiaoyi (gpt-6-astra)
-echo  [9] Switch to xiaoyi (claude-fable-5-1) [DEFAULT]
-echo  [10] Switch to atlascloud (xai/grok-4.3)
-echo  [11] Switch to atlascloud (xai/grok-4.6)
-echo  [12] Apply WebUI mobile Toolsets/MCP patch
-echo  [13] Refresh auth.json from .env
+echo  [8] Switch to xiaoyi (gpt-6-astra) [DEFAULT]
+echo  [9] Switch to atlascloud (xai/grok-4.3)
+echo  [10] Switch to atlascloud (xai/grok-4.6)
+echo  [11] Apply WebUI mobile Toolsets/MCP patch
+echo  [12] Refresh auth.json from .env
 echo.
 set "choice="
-set /p choice="Select [1-13]: "
+set /p choice="Select [1-12]: "
 if not defined choice goto no_choice
 
 if "%choice%"=="1" goto start_gateway
@@ -136,11 +134,10 @@ if "%choice%"=="5" goto test_api
 if "%choice%"=="6" exit
 if "%choice%"=="7" goto test_current_api
 if "%choice%"=="8" goto switch_xiaoyi_astra
-if "%choice%"=="9" goto switch_xiaoyi_fable
-if "%choice%"=="10" goto switch_atlascloud_grok
-if "%choice%"=="11" goto switch_atlascloud_grok46
-if "%choice%"=="12" goto apply_webui_patch
-if "%choice%"=="13" goto refresh_auth
+if "%choice%"=="9" goto switch_atlascloud_grok
+if "%choice%"=="10" goto switch_atlascloud_grok46
+if "%choice%"=="11" goto apply_webui_patch
+if "%choice%"=="12" goto refresh_auth
 goto invalid_choice
 
 :start_gateway
@@ -234,7 +231,7 @@ set "HERMES_WEBUI_PRESERVE_ENV=1"
 "%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main doctor
 echo.
 echo Checking xiaoyi-grok-image MCP local config...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import os; key=os.environ.get('XIAOYI_GROK_IMAGE_KEY',''); assert key.startswith('sk-'), 'XIAOYI_GROK_IMAGE_KEY missing'; print('xiaoyi-grok-image MCP configured: https://xiaoyiapi.xyz/v1 / grok-imagine-image / 2048x2048')"
+"%RELY_DIR%venv\Scripts\python.exe" -c "import os; key=os.environ.get('XIAOYI_GROK_IMAGE_KEY',''); assert key.startswith('sk-'), 'XIAOYI_GROK_IMAGE_KEY missing'; print('xiaoyi-grok-image MCP configured: https://image.xiaoyiapi.xyz/v1 / gpt-image-2.5-sunburst-cf / 2048x2048')"
 echo.
 pause
 goto menu
@@ -271,13 +268,6 @@ goto menu
 :switch_xiaoyi_astra
 echo Switching to xiaoyi (gpt-6-astra)...
 "%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-6-astra\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"xiaoyi-gpt-6-astra\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to xiaoyi gpt-6-astra')"
-call :configure_failover
-pause
-goto menu
-
-:switch_xiaoyi_fable
-echo Switching to xiaoyi (claude-fable-5-1)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"claude-fable-5-1\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"xiaoyi-claude-fable-5-1\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to xiaoyi claude-fable-5-1')"
 call :configure_failover
 pause
 goto menu
