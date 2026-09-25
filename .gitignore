@@ -3,3 +3,6 @@ Class Space/术数类/
 
 # Exclude services
 services/
+
+# Exclude ops materials (contains credentials)
+运维资料/
