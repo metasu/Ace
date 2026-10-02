@@ -3475,8 +3475,21 @@ function renderModelDropdown(){
     }
   }
   const _existingConfiguredKeys=new Set(_modelData.map(existing=>_normalizeConfiguredModelKey(existing.value)));
+  // Badge keys are emitted in up to three id-forms per configured model
+  // (model, provider/model, @provider:model). The @provider: form already
+  // normalizes onto the bare model id, but provider/model does not: stripping
+  // only the first slash segment leaves 'vendor/model' which collides with
+  // nothing and renders as a phantom duplicate row. Strip a leading
+  // '<provider>/' segment (when it matches the badge's own provider) before
+  // the dedup check so all three forms collapse onto one entry.
+  const _badgeNormKey=(modelId,badge)=>{
+    let s=String(modelId||'');
+    const bp=String(badge&&badge.provider||'').toLowerCase();
+    if(bp&&s.toLowerCase().startsWith(bp+'/')) s=s.slice(bp.length+1);
+    return _normalizeConfiguredModelKey(s);
+  };
   for(const [modelId,badge] of Object.entries(_badgeMap)){
-    if(_existingConfiguredKeys.has(_normalizeConfiguredModelKey(modelId))) continue;
+    if(_existingConfiguredKeys.has(_badgeNormKey(modelId,badge))) continue;
     _modelData.push({
       value:modelId,
       name:esc(getModelLabel(modelId)),
@@ -3484,7 +3497,7 @@ function renderModelDropdown(){
       group:'',
       badge,
     });
-    _existingConfiguredKeys.add(_normalizeConfiguredModelKey(modelId));
+    _existingConfiguredKeys.add(_badgeNormKey(modelId,badge));
   }
   // Create search input FIRST before filterModels definition
   const _scopeNote=document.createElement('div');

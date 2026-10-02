@@ -55,31 +55,29 @@ exit /b 1
 :home_ok
 
 :: ===== 对话渠道密钥（config.yaml 的 key_env 引用）=====
-set "HERMES_ATLASCLOUD_GROK_43_KEY=your-atlascloud-grok-43-key"
-set "HERMES_ATLASCLOUD_GROK_46_KEY=your-atlascloud-grok-46-key"
-set "HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY=your-atlascloud-gpt-sol-codex-key"
-set "HERMES_XIAOYI_ASTRA_KEY=your-xiaoyi-astra-key"
+set "HERMES_ATLASCLOUD_KEY=your-atlascloud-chat-key"
+set "HERMES_KUAIPAO_KEY=your-kuaipao-key"
 
 :: ===== MCP 服务配置（inject_mcp_config.py 读取，不写入 config.yaml）=====
-set "XIAOYI_GROK_IMAGE_KEY=your-xiaoyi-image-key"
+set "KUAIPAO_IMAGE_KEY=your-kuaipao-key"
 set "MCP_ATLASCLOUD_KEY=your-atlascloud-mcp-key"
 set "MCP_ATLASCLOUD_API_URL=https://api.atlascloud.ai"
 
 :: ===== GitHub MCP（npx @modelcontextprotocol/server-github）=====
 :: 前往 https://github.com/settings/tokens 生成 Personal Access Token（classic），至少勾选 repo / read:org / read:user / gist
 set "GITHUB_PERSONAL_ACCESS_TOKEN=your-github-token"
-:: Provider workarounds for Xiaoyi Chat Completions channels.
-:: Streaming verified working on xiaoyi 2026-09-17 (SSE + streamed tool_calls
+:: Provider workarounds for Kuaipao Chat Completions channels.
+:: Streaming verified working on the aggregator gateway (SSE + streamed tool_calls
 :: assemble valid JSON). If a broken edge-case stream ever returns truncated
 :: replies, re-enable with:
-::   set "HERMES_NON_STREAMING_PROVIDERS=xiaoyi-gpt-6-astra"
-:: Compact slims oversized system prompts / history for Xiaoyi gateways.
+::   set "HERMES_NON_STREAMING_PROVIDERS=kuaipao"
+:: Compact slims oversized system prompts / history for Kuaipao gateways.
 :: Tools (file / terminal / MCP) are ALWAYS kept — dropping them made GPT-6
 :: look like it could not edit files.
-set "HERMES_COMPACT_REQUEST_PROVIDERS=xiaoyi-gpt-6-astra"
-set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=xiaoyi-gpt-6-astra"
-set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=xiaoyi-gpt-6-astra"
-:: Let Xiaoyi finish normal slow generations before fallback is considered.
+set "HERMES_COMPACT_REQUEST_PROVIDERS=kuaipao"
+set "HERMES_FORCE_MAX_TOKENS_PROVIDERS=kuaipao"
+set "HERMES_SKIP_CUSTOM_HTTP_PROVIDERS=kuaipao"
+:: Let Kuaipao finish normal slow generations before fallback is considered.
 :: The provider remains primary; fallback is used only after a real failure.
 :: Bound each upstream request so provider fallback cannot be held indefinitely.
 :: 120s: deep-reasoning models (gpt-6-astra) often exceed 60s on first response;
@@ -120,7 +118,7 @@ echo  [7]  Apply WebUI mobile Toolsets/MCP patch
 echo  [8]  Refresh auth.json from .env
 echo  [9]  Exit
 echo  ------------- Switch model -------------
-echo  [10] Switch to xiaoyi (gpt-6-astra) [DEFAULT]
+echo  [10] Switch to kuaipao (gpt-6.1-sol) [DEFAULT]
 echo  [11] Switch to atlascloud (xai/grok-4.3)
 echo  [12] Switch to atlascloud (xai/grok-4.6)
 echo  [13] Switch to atlascloud (openai/gpt-6-sol-codex)
@@ -138,7 +136,7 @@ if "%choice%"=="6" goto test_current_api
 if "%choice%"=="7" goto apply_webui_patch
 if "%choice%"=="8" goto refresh_auth
 if "%choice%"=="9" exit
-if "%choice%"=="10" goto switch_xiaoyi_astra
+if "%choice%"=="10" goto switch_kuaipao_sol
 if "%choice%"=="11" goto switch_atlascloud_grok
 if "%choice%"=="12" goto switch_atlascloud_grok46
 if "%choice%"=="13" goto switch_atlascloud_sol_codex
@@ -234,8 +232,8 @@ set "HERMES_CONFIG_PATH=%ROOT_DIR%data\config.yaml"
 set "HERMES_WEBUI_PRESERVE_ENV=1"
 "%RELY_DIR%venv\Scripts\python.exe" -m hermes_cli.main doctor
 echo.
-echo Checking xiaoyi-grok-image MCP local config...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import os; key=os.environ.get('XIAOYI_GROK_IMAGE_KEY',''); assert key.startswith('sk-'), 'XIAOYI_GROK_IMAGE_KEY missing'; print('xiaoyi-grok-image MCP configured: https://image.xiaoyiapi.xyz/v1 / gpt-image-2.5-sunburst-cf / 2048x2048')"
+echo Checking kuaipao-image MCP local config...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import os; key=os.environ.get('KUAIPAO_IMAGE_KEY',''); assert key.startswith('sk-'), 'KUAIPAO_IMAGE_KEY missing'; print('kuaipao-image MCP configured: https://kuaipao.ai/v1 / gpt-image-2.5-2k / 2048x2048')"
 echo.
 pause
 goto menu
@@ -257,28 +255,28 @@ goto menu
 
 :switch_atlascloud_grok
 echo Switching to atlascloud (xai/grok-4.3)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.3\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.3\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.3')"
 call :configure_failover
 pause
 goto menu
 
 :switch_atlascloud_grok46
 echo Switching to atlascloud (xai/grok-4.6)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.6\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-grok-4.6\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.6')"
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"xai/grok-4.6\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud xai/grok-4.6')"
 call :configure_failover
 pause
 goto menu
 
 :switch_atlascloud_sol_codex
 echo Switching to atlascloud (openai/gpt-6-sol-codex)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"openai/gpt-6-sol-codex\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud-gpt-sol-codex\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud openai/gpt-6-sol-codex')"
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"openai/gpt-6-sol-codex\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"atlascloud\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://api.atlascloud.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to atlascloud openai/gpt-6-sol-codex')"
 call :configure_failover
 pause
 goto menu
 
-:switch_xiaoyi_astra
-echo Switching to xiaoyi (gpt-6-astra)...
-"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-6-astra\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"xiaoyi-gpt-6-astra\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://xiaoyiapi.xyz/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to xiaoyi gpt-6-astra')"
+:switch_kuaipao_sol
+echo Switching to kuaipao (gpt-6.1-sol)...
+"%RELY_DIR%venv\Scripts\python.exe" -c "import pathlib,re; p=pathlib.Path(r'%ROOT_DIR%data\config.yaml'); t=p.read_text(encoding='utf-8'); t=re.sub(r'^  default:.*$','  default: \"gpt-6.1-sol\"',t,flags=re.M); t=re.sub(r'^  provider:.*$','  provider: \"kuaipao\"',t,flags=re.M); t=re.sub(r'^  base_url:.*$','  base_url: \"https://kuaipao.ai/v1\"',t,flags=re.M); p.write_text(t,encoding='utf-8',newline='\n'); print('Switched to kuaipao gpt-6.1-sol')"
 call :configure_failover
 pause
 goto menu

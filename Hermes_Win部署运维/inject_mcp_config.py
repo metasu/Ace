@@ -26,23 +26,23 @@ def _env(name: str) -> str:
 
 
 def generate_mcp_yaml(root: str) -> str:
-    xiaoyi_grok_image_key = _env("XIAOYI_GROK_IMAGE_KEY")
+    kuaipao_image_key = _env("KUAIPAO_IMAGE_KEY")
     atlascloud_key = _env("MCP_ATLASCLOUD_KEY")
     atlascloud_url = _env("MCP_ATLASCLOUD_API_URL") or "https://api.atlascloud.ai"
     out = f"{root}\\output"
 
     return (
         "mcp_servers:\n"
-        "  xiaoyi-grok-image:\n"
+        "  kuaipao-image:\n"
         "    command: node\n"
         "    args:\n"
-        f"      - {root}\\mcp\\xiaoyi-grok-image\\build\\index.js\n"
+        f"      - {root}\\mcp\\kuaipao-image\\build\\index.js\n"
         "    timeout: 660\n"
         "    connect_timeout: 180\n"
         "    env:\n"
-        f"      API_KEY: {xiaoyi_grok_image_key}\n"
-        "      API_URL: https://image.xiaoyiapi.xyz/v1\n"
-        "      DEFAULT_IMAGE_MODEL: gpt-image-2.5-sunburst-cf\n"
+        f"      API_KEY: {kuaipao_image_key}\n"
+        "      API_URL: https://kuaipao.ai/v1\n"
+        "      DEFAULT_IMAGE_MODEL: gpt-image-2.5-2k\n"
         "      DEFAULT_IMAGE_SIZE: 2048x2048\n"
         f"      DEFAULT_OUTPUT_PATH: {out}\n"
         "      REQUEST_TIMEOUT: '600000'\n"

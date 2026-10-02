@@ -21,10 +21,10 @@ import yaml
 
 
 FALLBACK_CANDIDATES = (
-    ("atlascloud-grok-4.3", "xai/grok-4.3"),
-    ("atlascloud-grok-4.6", "xai/grok-4.6"),
-    ("atlascloud-gpt-sol-codex", "openai/gpt-6-sol-codex"),
-    ("xiaoyi-gpt-6-astra", "gpt-6-astra"),
+    ("atlascloud", "xai/grok-4.3"),
+    ("atlascloud", "xai/grok-4.6"),
+    ("atlascloud", "openai/gpt-6-sol-codex"),
+    ("kuaipao", "gpt-6.1-sol"),
 )
 
 _TOP_LEVEL_FALLBACK_RE = re.compile(
@@ -37,20 +37,41 @@ _AGENT_BLOCK_RE = re.compile(
 )
 
 
-def _fallback_model(provider_name: str, provider: dict[str, Any]) -> str | None:
+def _declared_model_ids(models_cfg: Any) -> list[str]:
+    """Model ids declared in a provider's ``models`` allowlist.
+
+    Accepts both config shapes: ``{"model-id": {...}}`` dicts and
+    ``[{id: ...}]`` / ``["model-id"]`` lists.
+    """
+    ids: list[str] = []
+    if isinstance(models_cfg, dict):
+        ids = [str(k).strip() for k in models_cfg]
+    elif isinstance(models_cfg, list):
+        for item in models_cfg:
+            if isinstance(item, dict):
+                mid = item.get("id") or item.get("model") or item.get("name")
+            else:
+                mid = item
+            if mid:
+                ids.append(str(mid).strip())
+    elif isinstance(models_cfg, str) and models_cfg.strip():
+        ids.append(models_cfg.strip())
+    return [i for i in ids if i]
+
+
+def _fallback_model(provider_name: str, provider: dict[str, Any], candidate_model: str) -> str | None:
     """Resolve a target without mutating the provider's model catalog."""
+    declared = _declared_model_ids(provider.get("models"))
+    if candidate_model and candidate_model in declared:
+        return candidate_model
+
     explicit = str(provider.get("model") or "").strip()
     if explicit:
         return explicit
 
-    models = provider.get("models")
-    if isinstance(models, dict) and models:
-        return str(next(iter(models))).strip() or None
-
-    for candidate_provider, candidate_model in FALLBACK_CANDIDATES:
-        if candidate_provider == provider_name:
-            return candidate_model
-    return None
+    if declared:
+        return declared[0]
+    return candidate_model or None
 
 
 def _build_fallback_chain(config: dict[str, Any]) -> list[dict[str, str]]:
@@ -62,20 +83,21 @@ def _build_fallback_chain(config: dict[str, Any]) -> list[dict[str, str]]:
         return []
 
     chain: list[dict[str, str]] = []
-    seen: set[str] = set()
+    seen: set[tuple[str, str]] = set()
     for candidate_name, candidate_model in FALLBACK_CANDIDATES:
-        # Keep same-provider protection models, but never duplicate the exact
-        # active provider/model pair.
-        if (
-            candidate_name in seen
-            or (candidate_name == primary and candidate_model == primary_model)
-        ):
-            continue
         provider = providers.get(candidate_name)
         if not isinstance(provider, dict):
             continue
-        model = _fallback_model(candidate_name, provider)
+        model = _fallback_model(candidate_name, provider, candidate_model)
         if not model:
+            continue
+        # Keep same-provider protection models, but never duplicate the exact
+        # active provider/model pair. Dedup is per (provider, model) so a
+        # multi-model provider can contribute several chain entries.
+        if (
+            (candidate_name, model) in seen
+            or (candidate_name == primary and model == primary_model)
+        ):
             continue
         entry = {"provider": candidate_name, "model": model}
         key_env = str(provider.get("key_env") or "").strip()
@@ -85,7 +107,7 @@ def _build_fallback_chain(config: dict[str, Any]) -> list[dict[str, str]]:
         if base_url:
             entry["base_url"] = base_url
         chain.append(entry)
-        seen.add(candidate_name)
+        seen.add((candidate_name, model))
     return chain
 
 

@@ -1,62 +1,51 @@
 model:
-  default: gpt-6-astra
-  provider: xiaoyi-gpt-6-astra
-  base_url: https://xiaoyiapi.xyz/v1
+  default: gpt-6.1-sol
+  provider: kuaipao
+  base_url: https://kuaipao.ai/v1
   max_tokens: 2048
   default_headers:
     User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
       like Gecko) Chrome/124.0.0.0 Safari/537.36
   context_length: 1000000
 providers:
-  xiaoyi-gpt-6-astra:
-    base_url: https://xiaoyiapi.xyz/v1
-    key_env: HERMES_XIAOYI_ASTRA_KEY
+  kuaipao:
+    base_url: https://kuaipao.ai/v1
+    key_env: HERMES_KUAIPAO_KEY
     api_mode: chat_completions
-    model: gpt-6-astra
+    model: gpt-6.1-sol
     models:
-      gpt-6-astra:
-        timeout_seconds: 120
+    - id: gpt-6.1-sol
+      label: gpt-6.1-sol
+      timeout_seconds: 120
     request_timeout_seconds: 300
     stale_timeout_seconds: 300
-  atlascloud-grok-4.3:
+  atlascloud:
     base_url: https://api.atlascloud.ai/v1
-    key_env: HERMES_ATLASCLOUD_GROK_43_KEY
+    key_env: HERMES_ATLASCLOUD_KEY
     api_mode: chat_completions
     model: xai/grok-4.3
     models:
     - id: xai/grok-4.3
-      label: GROK-4.3
+      label: grok-4.3
       timeout_seconds: 60
-  atlascloud-grok-4.6:
-    base_url: https://api.atlascloud.ai/v1
-    key_env: HERMES_ATLASCLOUD_GROK_46_KEY
-    api_mode: chat_completions
-    model: xai/grok-4.6
-    models:
     - id: xai/grok-4.6
-      label: GROK-4.6
+      label: grok-4.6
       timeout_seconds: 60
-  atlascloud-gpt-sol-codex:
-    base_url: https://api.atlascloud.ai/v1
-    key_env: HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY
-    api_mode: chat_completions
-    model: openai/gpt-6-sol-codex
-    models:
     - id: openai/gpt-6-sol-codex
-      label: GPT-SOL-CODEX6
+      label: gpt-sol-codex6
       timeout_seconds: 60
 fallback_providers:
-- provider: atlascloud-grok-4.3
+- provider: atlascloud
   model: xai/grok-4.3
-  key_env: HERMES_ATLASCLOUD_GROK_43_KEY
+  key_env: HERMES_ATLASCLOUD_KEY
   base_url: https://api.atlascloud.ai/v1
-- provider: atlascloud-grok-4.6
+- provider: atlascloud
   model: xai/grok-4.6
-  key_env: HERMES_ATLASCLOUD_GROK_46_KEY
+  key_env: HERMES_ATLASCLOUD_KEY
   base_url: https://api.atlascloud.ai/v1
-- provider: atlascloud-gpt-sol-codex
+- provider: atlascloud
   model: openai/gpt-6-sol-codex
-  key_env: HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY
+  key_env: HERMES_ATLASCLOUD_KEY
   base_url: https://api.atlascloud.ai/v1
 
 agent:
@@ -81,16 +70,16 @@ command_allowlist:
 streaming: true
 _config_version: 35
 mcp_servers:
-  xiaoyi-grok-image:
+  kuaipao-image:
     command: node
     args:
-      - F:\hermes_ui\mcp\xiaoyi-grok-image\build\index.js
+      - F:\hermes_ui\mcp\kuaipao-image\build\index.js
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: your-xiaoyi-image-key
-      API_URL: https://image.xiaoyiapi.xyz/v1
-      DEFAULT_IMAGE_MODEL: gpt-image-2.5-sunburst-cf
+      API_KEY: your-kuaipao-key
+      API_URL: https://kuaipao.ai/v1
+      DEFAULT_IMAGE_MODEL: gpt-image-2.5-2k
       DEFAULT_IMAGE_SIZE: 2048x2048
       DEFAULT_OUTPUT_PATH: F:\hermes_ui\output
       REQUEST_TIMEOUT: '600000'

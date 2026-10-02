@@ -77,7 +77,7 @@ class OpenAIIntegrationServer {
         const transport = new StdioServerTransport();
         try {
             await this.server.connect(transport);
-            console.error('xiaoyi-grok-image MCP server running on stdio');
+            console.error('kuaipao-image MCP server running on stdio');
             console.error(`Using API URL: ${this.config.apiUrl}`);
             console.error(`Default Image Model: ${this.config.defaultImageConfig.model}`);
             console.error(`Default Speech Model: ${this.config.defaultSpeechModel}`);

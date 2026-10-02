@@ -36,8 +36,8 @@ export async function handleToolCall({ toolName, args, config }) {
                 // Handle base URL that may or may not include /v1
                 const baseUrl = apiUrl.endsWith('/v1') ? apiUrl : `${apiUrl}/v1`;
                 const generateUrl = `${baseUrl}/images/generations`;
-                console.error(`[xiaoyi-grok-image] Submitting generation request to ${generateUrl}`);
-                console.error(`[xiaoyi-grok-image] Request body: ${JSON.stringify(requestBody, null, 2)}`);
+                console.error(`[kuaipao-image] Submitting generation request to ${generateUrl}`);
+                console.error(`[kuaipao-image] Request body: ${JSON.stringify(requestBody, null, 2)}`);
 
                 let response;
                 try {
@@ -55,7 +55,7 @@ export async function handleToolCall({ toolName, args, config }) {
 
                 const responseData = response.data?.data;
                 if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
-                    throw new McpError(ErrorCode.InternalError, `xiaoyi-grok-image API did not return image data. Response: ${JSON.stringify(response.data)}`);
+                    throw new McpError(ErrorCode.InternalError, `kuaipao-image API did not return image data. Response: ${JSON.stringify(response.data)}`);
                 }
 
                 const results = [];
@@ -77,7 +77,7 @@ export async function handleToolCall({ toolName, args, config }) {
                         else if (mimeType === 'image/webp') ext = 'webp';
                         else if (mimeType) ext = 'bin';
                         else ext = requestBody.output_format === 'jpeg' ? 'jpg' : 'png';
-                        const filename = `generated_xiaoyi_grok_imagine_${randomUUID()}.${ext}`;
+                        const filename = `generated_kuaipao_image_${randomUUID()}.${ext}`;
                         try {
                             localPath = path.join(imagesOutputDir, filename);
                             if (isDataUrl) {
@@ -88,9 +88,9 @@ export async function handleToolCall({ toolName, args, config }) {
                             } else if (item.b64_json) {
                                 await fs.promises.writeFile(localPath, Buffer.from(item.b64_json, 'base64'));
                             }
-                            console.error(`[xiaoyi-grok-image] Generated image saved to: ${localPath}`);
+                            console.error(`[kuaipao-image] Generated image saved to: ${localPath}`);
                         } catch (err) {
-                            console.error(`[xiaoyi-grok-image] Error saving generated image: ${err.message}`);
+                            console.error(`[kuaipao-image] Error saving generated image: ${err.message}`);
                             saveError = `Error saving generated image: ${err.message}`;
                         }
                     }
@@ -103,7 +103,7 @@ export async function handleToolCall({ toolName, args, config }) {
                 }
 
                 const lines = [
-                    'GENERATION_COMPLETE: xiaoyi gpt-image-2.5-sunburst-cf generation succeeded.',
+                    'GENERATION_COMPLETE: kuaipao gpt-image-2.5-2k generation succeeded.',
                     'Do not call generate_image again for this request. Report the result to the user and include the MEDIA: token so the WebUI renders the image inline.',
                     '',
                     ...results.flatMap((item, index) => {
@@ -133,14 +133,14 @@ export async function handleToolCall({ toolName, args, config }) {
                 throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${toolName}`);
         }
     } catch (error) {
-        console.error(`[xiaoyi-grok-image] Error calling tool ${toolName}:`, error);
+        console.error(`[kuaipao-image] Error calling tool ${toolName}:`, error);
         if (error instanceof McpError) {
             throw error;
         }
         let errorMessage = `Error processing tool ${toolName}`;
         let mcpErrorCode = ErrorCode.InternalError;
         if (axios.isAxiosError(error)) {
-            console.error('[xiaoyi-grok-image] Axios error details:', {
+            console.error('[kuaipao-image] Axios error details:', {
                 message: error.message,
                 url: error.config?.url,
                 method: error.config?.method,
@@ -151,7 +151,7 @@ export async function handleToolCall({ toolName, args, config }) {
             if (error.response?.data) {
                 apiErrorMessage = error.response.data?.error?.message || error.response.data?.message || JSON.stringify(error.response.data) || apiErrorMessage;
             }
-            errorMessage = `xiaoyi-grok-image API Error: ${apiErrorMessage}`;
+            errorMessage = `kuaipao-image API Error: ${apiErrorMessage}`;
             if (error.response?.status && error.response.status >= 400 && error.response.status < 500) {
                 mcpErrorCode = ErrorCode.InvalidParams;
             }

@@ -75,5 +75,5 @@
   "password_hash": null,
   "auth_disabled_acknowledged": false,
   "provider_cost_budget": null,
-  "default_model_provider": "xiaoyi-gpt-6-astra"
+  "default_model_provider": "kuaipao"
 }
