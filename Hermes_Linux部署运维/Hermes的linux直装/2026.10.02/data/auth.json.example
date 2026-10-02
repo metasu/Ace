@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "providers": {},
+  "credential_pool": {
+    "anthropic": [
+      {
+        "id": "newapi-anthropic",
+        "label": "ANTHROPIC_API_KEY",
+        "auth_type": "api_key",
+        "priority": 0,
+        "source": "env:ANTHROPIC_API_KEY",
+        "last_status": null,
+        "last_status_at": null,
+        "last_error_code": null,
+        "last_error_reason": null,
+        "last_error_message": null,
+        "last_error_reset_at": null,
+        "base_url": "http://127.0.0.1:50006",
+        "request_count": 0
+      }
+    ],
+    "gemini": [
+      {
+        "id": "newapi-gemini",
+        "label": "GOOGLE_API_KEY",
+        "auth_type": "api_key",
+        "priority": 0,
+        "source": "env:GOOGLE_API_KEY",
+        "last_status": null,
+        "last_status_at": null,
+        "last_error_code": null,
+        "last_error_reason": null,
+        "last_error_message": null,
+        "last_error_reset_at": null,
+        "base_url": "http://127.0.0.1:50006/v1",
+        "request_count": 0
+      }
+    ],
+    "openai": [
+      {
+        "id": "openai-compatible",
+        "label": "OPENAI_API_KEY",
+        "auth_type": "api_key",
+        "priority": 0,
+        "source": "env:OPENAI_API_KEY",
+        "access_token": "",
+        "base_url": "",
+        "request_count": 0,
+        "last_status": null,
+        "last_status_at": null,
+        "last_error_code": null,
+        "last_error_reason": null,
+        "last_error_message": null,
+        "last_error_reset_at": null
+      }
+    ],
+    "openrouter": []
+  },
+  "updated_at": "2026-01-01T00:00:00+00:00"
+}
