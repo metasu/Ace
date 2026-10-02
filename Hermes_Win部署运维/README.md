@@ -74,6 +74,7 @@ F:\
 ```env
 HERMES_ATLASCLOUD_GROK_43_KEY=你的AtlasCloud-Grok-4.3密钥
 HERMES_ATLASCLOUD_GROK_46_KEY=你的AtlasCloud-Grok-4.6密钥
+HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY=你的AtlasCloud-GPT-SOL-CODEX6密钥
 HERMES_XIAOYI_ASTRA_KEY=你的Xiaoyi-gpt-6-astra密钥
 ```
 
@@ -84,6 +85,7 @@ HERMES_XIAOYI_ASTRA_KEY=你的Xiaoyi-gpt-6-astra密钥
 ```bat
 set "HERMES_ATLASCLOUD_GROK_43_KEY=你的AtlasCloud-Grok-4.3密钥"
 set "HERMES_ATLASCLOUD_GROK_46_KEY=你的AtlasCloud-Grok-4.6密钥"
+set "HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY=你的AtlasCloud-GPT-SOL-CODEX6密钥"
 set "HERMES_XIAOYI_ASTRA_KEY=你的Xiaoyi-gpt-6-astra密钥"
 set "XIAOYI_GROK_IMAGE_KEY=你的Xiaoyi图片生成密钥"
 set "MCP_ATLASCLOUD_KEY=你的AtlasCloud-MCP密钥"
@@ -103,13 +105,16 @@ set "GITHUB_PERSONAL_ACCESS_TOKEN=你的GitHub令牌"
 | **[3]** | 同时启动 Gateway + WebUI |
 | **[4]** | 停止所有 Hermes 进程 |
 | **[5]** | 测试 API 连接 |
-| **[6]** | 退出 |
-| **[7]** | 测试当前配置的渠道 API |
-| **[8]** | 切换到 Xiaoyi (gpt-6-astra) [默认] |
-| **[9]** | 切换到 atlascloud (xai/grok-4.3) |
-| **[10]** | 切换到 atlascloud (xai/grok-4.6) |
-| **[11]** | 应用 WebUI 移动端 Toolsets/MCP 补丁 |
-| **[12]** | 从 .env 刷新 auth.json |
+| **[6]** | 测试当前配置的渠道 API |
+| **[7]** | 应用 WebUI 移动端 Toolsets/MCP 补丁 |
+| **[8]** | 从 .env 刷新 auth.json |
+| **[9]** | 退出 |
+| **[10]** | 切换到 Xiaoyi (gpt-6-astra) [默认] |
+| **[11]** | 切换到 atlascloud (xai/grok-4.3) |
+| **[12]** | 切换到 atlascloud (xai/grok-4.6) |
+| **[13]** | 切换到 atlascloud (openai/gpt-6-sol-codex) |
+
+模型切换项集中在菜单末尾（[10]-[13]）。
 
 推荐选择 **[3]** 同时启动 Gateway + WebUI。
 
@@ -139,6 +144,7 @@ model:
 | `xiaoyi-gpt-6-astra` | Xiaoyi | gpt-6-astra | `HERMES_XIAOYI_ASTRA_KEY` |
 | `atlascloud-grok-4.3` | AtlasCloud | xai/grok-4.3 | `HERMES_ATLASCLOUD_GROK_43_KEY` |
 | `atlascloud-grok-4.6` | AtlasCloud | xai/grok-4.6 | `HERMES_ATLASCLOUD_GROK_46_KEY` |
+| `atlascloud-gpt-sol-codex` | AtlasCloud | openai/gpt-6-sol-codex (GPT-SOL-CODEX6) | `HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY` |
 
 ### 故障转移（Failover）
 
@@ -146,7 +152,8 @@ model:
 
 1. `atlascloud-grok-4.3` / xai/grok-4.3
 2. `atlascloud-grok-4.6` / xai/grok-4.6
-3. `xiaoyi-gpt-6-astra` / gpt-6-astra
+3. `atlascloud-gpt-sol-codex` / openai/gpt-6-sol-codex
+4. `xiaoyi-gpt-6-astra` / gpt-6-astra
 
 ### MCP Server 配置
 
@@ -169,6 +176,58 @@ WebUI 会话里勾选 MCP（如 github）是**叠加**到默认工具集上，�
 ### Xiaoyi compact 请求
 
 `start.bat` 对 Xiaoyi 渠道设置了 `HERMES_COMPACT_REQUEST_PROVIDERS`，用来压缩过大的 system prompt / 历史，避免网关超时。**工具定义不会被裁剪**（`write_file` / `terminal` / MCP 始终保留）。若 GPT-6 只回文字不改文件，请重启 WebUI 使本修复生效。
+
+## 维护速查（下次修改先看这里）
+
+### 密钥位置
+
+| 用途 | 变量名 | 存放位置 | 说明 |
+|------|--------|---------|------|
+| AtlasCloud **对话统一密钥** | `HERMES_ATLASCLOUD_GROK_43_KEY`<br>`HERMES_ATLASCLOUD_GROK_46_KEY`<br>`HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY` | `data/.env` 和 `start.bat` **两处都要改** | 三个变量共用同一密钥值，供 `config.yaml` 的 `key_env` 引用 |
+| AtlasCloud **MCP 统一密钥** | `MCP_ATLASCLOUD_KEY` | 仅 `start.bat` | 启动时由 `inject_mcp_config.py` 注入 `config.yaml` 的 `mcp_servers` 段 |
+| Xiaoyi 对话密钥 | `HERMES_XIAOYI_ASTRA_KEY` | `data/.env` 和 `start.bat` 两处 | |
+| Xiaoyi 图片生成密钥 | `XIAOYI_GROK_IMAGE_KEY` | 仅 `start.bat` | 注入 `mcp_servers.xiaoyi-grok-image` |
+| GitHub PAT | `GITHUB_PERSONAL_ACCESS_TOKEN` | 仅 `start.bat` | 注入 `mcp_servers.github` |
+
+当前真实密钥值见 `data/.env` 与 `start.bat`（本 README 保持脱敏，勿提交真实密钥）。
+
+### config.yaml 中自动生成的区块（不要只改 yaml）
+
+- **`mcp_servers:` 段** —— 每次启动被 `inject_mcp_config.py` 整段重写。改 MCP 密钥/服务器要改 `start.bat` 的环境变量或该脚本本身，手改 yaml 会在下次启动时被覆盖。
+- **`fallback_providers:` 段** —— 每次启动被 `configure_failover.py` 重写。加/删/调回退模型要改脚本顶部的 `FALLBACK_CANDIDATES` 元组（顺序即回退优先级，当前激活的主渠道会被自动跳过）。
+- **`auth.json`** —— 可手动在 `credential_pool` 加 `"custom:<provider名>": []` 槽位，或用菜单 **[8]** 从 `.env` + `config.yaml` 整体重建（重建会把真实 token 写入该文件）。
+
+### 新增一个对话模型的完整步骤
+
+以 atlascloud 的 `openai/gpt-6-sol-codex`（显示名 `GPT-SOL-CODEX6`）为例，共 6 处：
+
+1. **`data/.env` + `start.bat`**：加 `HERMES_ATLASCLOUD_<NAME>_KEY=<统一密钥>`
+2. **`data/config.yaml` `providers:`**：加 provider 块。`models` 用**列表写法**，`label` 即 WebUI 模型下拉的显示名：
+
+   ```yaml
+   atlascloud-gpt-sol-codex:
+     base_url: https://api.atlascloud.ai/v1
+     key_env: HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY
+     api_mode: chat_completions
+     model: openai/gpt-6-sol-codex
+     models:
+       - id: openai/gpt-6-sol-codex
+         label: GPT-SOL-CODEX6
+         timeout_seconds: 60
+   ```
+
+   > `models` 写成列表 `- id:/label:` 时 `label` 是显示名；写成字典 `id: {…}` 时显示名自动取 id 第一段 `/` 之后的小写原文（如 `grok-4.3`）。AtlasCloud 三个模型统一大写显示名：`GROK-4.3` / `GROK-4.6` / `GPT-SOL-CODEX6`。
+3. **`configure_failover.py`**：`FALLBACK_CANDIDATES` 加 `("atlascloud-gpt-sol-codex", "openai/gpt-6-sol-codex")`
+4. **`start.bat`**：菜单加切换项（仿 `:switch_atlascloud_sol_codex`，注意同时改 `Select [1-N]` 范围和 `if "%choice%"=="N"` 分派行）
+5. **`data/auth.json`**：`credential_pool` 加 `"custom:atlascloud-gpt-sol-codex": []`
+6. **本 README**：更新 Provider 表、菜单表、回退链列表
+
+### 更换密钥的最小步骤
+
+- **AtlasCloud 对话密钥**：改 `data/.env` 3 行 + `start.bat` 3 行 `HERMES_ATLASCLOUD_*_KEY`
+- **AtlasCloud MCP 密钥**：只改 `start.bat` 的 `MCP_ATLASCLOUD_KEY` 一行（`config.yaml` 里 `mcp_servers` 段的明文 `API_KEY` 会在下次启动时自动同步；如要立即生效也可顺手改 yaml）
+
+改完用菜单 **[6]** 测当前渠道、**[5]** 跑 `hermes doctor`。
 
 ## 便携部署原理
 
@@ -210,12 +269,12 @@ Hermes Agent Windows本地便携部署教程.html
 ### Q: API 测试失败？
 
 1. 检查 `data/.env` 和 `start.bat` 中的密钥是否已替换为真实值
-2. 使用菜单 [7] 测试当前渠道
+2. 使用菜单 [6] 测试当前渠道
 3. 使用菜单 [5] 运行 `hermes doctor` 诊断
 
 ### Q: 如何切换模型？
 
-使用 `start.bat` 菜单 [8]-[11] 一键切换，或直接编辑 `data/config.yaml` 中的 `model.default` 和 `model.provider`。
+使用 `start.bat` 菜单 [10] / [11] / [12] / [13] 一键切换，或直接编辑 `data/config.yaml` 中的 `model.default` 和 `model.provider`。
 
 ### Q: MCP Server 不工作？
 

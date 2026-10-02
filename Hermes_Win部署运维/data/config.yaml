@@ -1,7 +1,7 @@
 model:
-  default: "gpt-6-astra"
-  provider: "xiaoyi-gpt-6-astra"
-  base_url: "https://xiaoyiapi.xyz/v1"
+  default: gpt-6-astra
+  provider: xiaoyi-gpt-6-astra
+  base_url: https://xiaoyiapi.xyz/v1
   max_tokens: 2048
   default_headers:
     User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
@@ -24,16 +24,27 @@ providers:
     api_mode: chat_completions
     model: xai/grok-4.3
     models:
-      xai/grok-4.3:
-        timeout_seconds: 60
+    - id: xai/grok-4.3
+      label: GROK-4.3
+      timeout_seconds: 60
   atlascloud-grok-4.6:
     base_url: https://api.atlascloud.ai/v1
     key_env: HERMES_ATLASCLOUD_GROK_46_KEY
     api_mode: chat_completions
     model: xai/grok-4.6
     models:
-      xai/grok-4.6:
-        timeout_seconds: 60
+    - id: xai/grok-4.6
+      label: GROK-4.6
+      timeout_seconds: 60
+  atlascloud-gpt-sol-codex:
+    base_url: https://api.atlascloud.ai/v1
+    key_env: HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY
+    api_mode: chat_completions
+    model: openai/gpt-6-sol-codex
+    models:
+    - id: openai/gpt-6-sol-codex
+      label: GPT-SOL-CODEX6
+      timeout_seconds: 60
 fallback_providers:
 - provider: atlascloud-grok-4.3
   model: xai/grok-4.3
@@ -43,10 +54,14 @@ fallback_providers:
   model: xai/grok-4.6
   key_env: HERMES_ATLASCLOUD_GROK_46_KEY
   base_url: https://api.atlascloud.ai/v1
+- provider: atlascloud-gpt-sol-codex
+  model: openai/gpt-6-sol-codex
+  key_env: HERMES_ATLASCLOUD_GPT_SOL_CODEX_KEY
+  base_url: https://api.atlascloud.ai/v1
 
 agent:
   api_max_retries: 1
-  reasoning_effort: high
+  reasoning_effort: medium
 terminal:
   backend: local
   cwd: .
@@ -73,7 +88,7 @@ mcp_servers:
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: YOUR_XIAOYI_GROK_IMAGE_KEY
+      API_KEY: your-xiaoyi-image-key
       API_URL: https://image.xiaoyiapi.xyz/v1
       DEFAULT_IMAGE_MODEL: gpt-image-2.5-sunburst-cf
       DEFAULT_IMAGE_SIZE: 2048x2048
@@ -86,7 +101,7 @@ mcp_servers:
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: YOUR_MCP_ATLASCLOUD_KEY
+      API_KEY: your-atlascloud-mcp-key
       API_URL: https://api.atlascloud.ai
       DEFAULT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/text-to-image
       DEFAULT_OUTPUT_PATH: F:\hermes_ui\output
@@ -98,7 +113,7 @@ mcp_servers:
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: YOUR_MCP_ATLASCLOUD_KEY
+      API_KEY: your-atlascloud-mcp-key
       API_URL: https://api.atlascloud.ai
       DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-pro/edit
       DEFAULT_OUTPUT_PATH: F:\hermes_ui\output
@@ -110,7 +125,7 @@ mcp_servers:
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: YOUR_MCP_ATLASCLOUD_KEY
+      API_KEY: your-atlascloud-mcp-key
       API_URL: https://api.atlascloud.ai
       DEFAULT_EDIT_IMAGE_MODEL: bytedance/seedream-v5.0-lite/edit-sequential
       DEFAULT_OUTPUT_PATH: F:\hermes_ui\output
@@ -122,7 +137,7 @@ mcp_servers:
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: YOUR_MCP_ATLASCLOUD_KEY
+      API_KEY: your-atlascloud-mcp-key
       API_URL: https://api.atlascloud.ai
       DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7/image-edit
       DEFAULT_OUTPUT_PATH: F:\hermes_ui\output
@@ -134,7 +149,7 @@ mcp_servers:
     timeout: 660
     connect_timeout: 180
     env:
-      API_KEY: YOUR_MCP_ATLASCLOUD_KEY
+      API_KEY: your-atlascloud-mcp-key
       API_URL: https://api.atlascloud.ai
       DEFAULT_EDIT_IMAGE_MODEL: alibaba/wan-2.7-pro/image-edit
       DEFAULT_OUTPUT_PATH: F:\hermes_ui\output
@@ -147,5 +162,5 @@ mcp_servers:
     timeout: 300
     connect_timeout: 300
     env:
-      GITHUB_PERSONAL_ACCESS_TOKEN: YOUR_GITHUB_PERSONAL_ACCESS_TOKEN
+      GITHUB_PERSONAL_ACCESS_TOKEN: your-github-token
 

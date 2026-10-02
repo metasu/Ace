@@ -23,6 +23,7 @@ import yaml
 FALLBACK_CANDIDATES = (
     ("atlascloud-grok-4.3", "xai/grok-4.3"),
     ("atlascloud-grok-4.6", "xai/grok-4.6"),
+    ("atlascloud-gpt-sol-codex", "openai/gpt-6-sol-codex"),
     ("xiaoyi-gpt-6-astra", "gpt-6-astra"),
 )
 
