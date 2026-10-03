@@ -17,6 +17,12 @@ from pathlib import Path
 WEBUI = Path(sys.argv[1] if len(sys.argv) > 1 else "/opt/hermes/hermes-webui")
 CONFIG = WEBUI / "api" / "config.py"
 
+# The SWR semantics change breaks upstream's session-visit tests (they assert
+# a blocking live rebuild). Ship the updated test verbatim so an upgraded
+# webui keeps a matching, green suite — vendored from the patched tree.
+VENDORED_TEST = Path(__file__).resolve().parent / "webui_tests" / "test_issue4756_session_visit_model_refresh.py"
+TEST_DEST = WEBUI / "tests" / "test_issue4756_session_visit_model_refresh.py"
+
 HELPER = '''_session_visit_refresh_lock = threading.Lock()
 _session_visit_refresh_in_flight = False
 
@@ -136,6 +142,17 @@ def apply(text: str) -> str:
     return text
 
 
+def deploy_test() -> None:
+    """Install the SWR-updated test file alongside the patched api/config.py."""
+    if not VENDORED_TEST.is_file() or not TEST_DEST.parent.is_dir():
+        return
+    new = VENDORED_TEST.read_text(encoding="utf-8")
+    if TEST_DEST.is_file() and TEST_DEST.read_text(encoding="utf-8", errors="ignore") == new:
+        return
+    TEST_DEST.write_text(new, encoding="utf-8")
+    print(f"OK: installed SWR test → {TEST_DEST}")
+
+
 def main() -> int:
     if not CONFIG.is_file():
         print(f"SKIP: missing {CONFIG}")
@@ -143,10 +160,11 @@ def main() -> int:
     original = CONFIG.read_text(encoding="utf-8")
     if ready(original):
         print(f"OK: already patched {CONFIG}")
-        return 0
-    updated = apply(original)
-    CONFIG.write_text(updated, encoding="utf-8")
-    print(f"OK: patched {CONFIG}")
+    else:
+        updated = apply(original)
+        CONFIG.write_text(updated, encoding="utf-8")
+        print(f"OK: patched {CONFIG}")
+    deploy_test()
     return 0
 
 
