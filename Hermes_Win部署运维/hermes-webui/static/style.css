@@ -2326,6 +2326,39 @@
     .msg-body pre code,.preview-md pre code{white-space:inherit !important;overflow-wrap:anywhere !important;word-break:break-word !important;}
     .msg-body pre code .token,.preview-md pre code .token{white-space:inherit !important;overflow-wrap:anywhere !important;word-break:inherit !important;}
     .diff-block .diff-line{white-space:pre-wrap !important;overflow-wrap:anywhere !important;word-break:break-word !important;}
+    /* Qimen nine-palace grids are intentional fixed-width ASCII layouts. Keep
+       their columns aligned on phones and let the user pan horizontally instead
+       of wrapping border lines and palace contents into unrelated rows. */
+    .msg-body pre.qimen-grid-block{
+      max-width:100%;
+      overflow-x:auto !important;
+      overflow-y:hidden;
+      white-space:pre !important;
+      overflow-wrap:normal !important;
+      word-break:normal !important;
+      font-family:var(--font-mono,ui-monospace),monospace !important;
+      /* Shrink the complete grid on phones before enabling pan. */
+      font-size:clamp(8px,2.2vw,var(--message-pre-code-font-size)) !important;
+      line-height:1.35 !important;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior-inline:contain;
+      touch-action:pan-x pan-y;
+    }
+    .msg-body pre.qimen-grid-block code{
+      display:block;
+      width:max-content;
+      min-width:100%;
+      font-size:inherit !important;
+      line-height:inherit !important;
+      white-space:pre !important;
+      overflow-wrap:normal !important;
+      word-break:normal !important;
+    }
+    .msg-body pre.qimen-grid-block code .token{
+      white-space:pre !important;
+      overflow-wrap:normal !important;
+      word-break:normal !important;
+    }
   }
   .pre-header{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 16px 8px;background:var(--input-bg);border-radius:10px 10px 0 0;border:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
   .pre-header::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.4;}

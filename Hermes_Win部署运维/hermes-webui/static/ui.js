@@ -6157,6 +6157,14 @@ function _stripVisibleAssistantEchoFromThinking(thinkingText, ...visibleTexts){
   return clean;
 }
 
+function _looksLikeQimenGridCode(code){
+  const text=String(code||'');
+  if(!/[+][-=]{3,}[+]/.test(text)) return false;
+  const palaceLabels=(text.match(/\|\s*【[^】]+】/g)||[]).length;
+  if(palaceLabels<3) return false;
+  return /\|\s*(?:神|星|门|天|引)(?:\s|$)/.test(text);
+}
+
 function renderMd(raw){
   let s=(raw||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
   // ── Entity decode: must run FIRST so &gt; lines become > for the blockquote
@@ -6276,7 +6284,7 @@ function renderMd(raw){
     } else {
       const h=lang?`<div class="pre-header">${esc(lang)}</div>`:'';
       const langAttr=lang?` class="language-${esc(lang)}"`:'';
-      const preClass=/^(md|markdown|mdx)$/.test(lang)?' class="md-source-block"':'';
+      const preClass=/^(md|markdown|mdx)$/.test(lang)?' class="md-source-block"':(_looksLikeQimenGridCode(code)?' class="qimen-grid-block"':'');
       // For diff/patch blocks, wrap each line in a colored span
       if(lang==='diff'||lang==='patch'){
         const colored=esc(code.replace(/\n$/,'')).split('\n').map(line=>{

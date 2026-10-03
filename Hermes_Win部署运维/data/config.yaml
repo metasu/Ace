@@ -57,7 +57,7 @@ terminal:
   timeout: 180
 compression:
   enabled: true
-  threshold: 0.8
+  threshold: 0.75
   target_ratio: 0.2
   protect_last_n: 20
 memory:
