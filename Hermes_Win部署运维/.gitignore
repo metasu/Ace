@@ -49,6 +49,10 @@ data/webui/models_cache.json*
 data/memories/
 data/.skills_prompt_snapshot.json
 
+# === Adult-content skills (never upload to public repo) ===
+data/skills/creative/twink/
+data/skills/creative/seedream-character-edit/
+
 # === hermes-webui runtime data (logs, caches, sessions, databases) ===
 hermes-webui/data/
 
