@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(node)",
+      "Exec(Select-String)",
+      "Exec(Out-String)",
+      "Exec(Get-ChildItem)"
+    ]
+  }
+}
